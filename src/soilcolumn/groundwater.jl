@@ -24,7 +24,7 @@ struct SimpleGroundwater <: GroundwaterProcess
     p::Vector{Float}
 end
 
-function interpolate_head!(sg)
+function interpolate_head!(sg::SimpleGroundwater)
     nbound = size(sg.boundary)
     z1 = sg.z[sg.boundary[1]]
     ϕ1 = sg.boundary[1]
@@ -126,7 +126,7 @@ function update_boundaries!(column::DarcyColumn, boundary::Vector{Int}, ϕ::Vect
 end
 
 function formulate!(column::DarcyColumn)
-    # A is a symmetric triadiagonal matrix, with attributes
+    # A is a symmetric tridiagonal matrix, with attributes
     # d: diagonal
     # ev: super-diagonal
     for i = 1:length(column.ϕ)-1

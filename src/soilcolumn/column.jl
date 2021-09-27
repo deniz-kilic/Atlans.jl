@@ -26,6 +26,13 @@ function remove_surcharge!(c::SoilColumn, depth::Float) end
 
 function set_groundwatertable!(c::SoilColumn, value::Float) end
 
-function split!(c::SoilColumn, level::Float) end
+function split!(c::SoilColumn, level::Float)
+    # split at depth
+    # insert new split cell
+    # push existing cells "upward"
+    # cell = pop!(cells, index)
+    #insert!(cells, index, newcell1)
+    #insert!(cells, index, newcell2)
+end
 
 function oxidation_depth(c::SoilColumn) end
