@@ -19,7 +19,7 @@ function mass_mineral(f_organic, ρb, Δz)
 end
 
 function mass_organic_minimal(m_mineral, f_minimum_organic)
-    m_mineral * f_minimum_organic / (1.0 - f_minimum_organic)
+    return (m_mineral * f_minimum_organic / (1.0 - f_minimum_organic))
 end
 
 function ρ_bulk(m_organic, m_mineral, Δz)
@@ -40,7 +40,7 @@ function volume_organic(f_organic, ρb)
     if f_organic == 0
         return 0
     else
-        return 0.5 * (f_org / ρb) * (1.0 + erfc((f_organic - 0.2) / 0.1))
+        return 0.5 * (f_organic / ρb) * (1.0 + erf((f_organic - 0.2) / 0.1))
     end
 end
 
@@ -51,11 +51,12 @@ function oxidate(cs::CarbonStore, Δt::Float64)::Tuple{Float64,CarbonStore}
     Δm = min(cs.m_organic - cs.m_minimum_organic, cs.α * cs.Δz * Δt)
     Δm = max(0, Δm)
     m_organic = cs.m_organic - Δm
-    oxidation = volume_organic(f_organic, cs.ρb) * Δm
+    oxidation = volume_organic(cs.f_organic, cs.ρb) * Δm
     f_organic = fraction_organic(m_organic, cs.m_mineral)
+    Δz = cs.Δz - oxidation
     return oxidation,
     CarbonStore(
-        Δz - oxidation,  # new
+        Δz,  # new
         f_organic,  # new
         cs.m_mineral,
         m_organic, # new
@@ -64,3 +65,4 @@ function oxidate(cs::CarbonStore, Δt::Float64)::Tuple{Float64,CarbonStore}
         ρ_bulk(m_organic, cs.m_mineral, Δz),  # new
     )
 end
+

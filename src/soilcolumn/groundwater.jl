@@ -25,16 +25,18 @@ struct SimpleGroundwater <: GroundwaterProcess
 end
 
 function interpolate_head!(sg::SimpleGroundwater)
-    nbound = size(sg.boundary)
+    nbound = length(sg.boundary)
     z1 = sg.z[sg.boundary[1]]
+    z2 = sg.z[sg.boundary[2]]
     ϕ1 = sg.boundary[1]
+    ϕ2 = sg.boundary[2]
     Δz = z2 - z1
     Δϕ = ϕ2 - ϕ1
     j = 2
     z2 = sg.z[sg.boundary[j]]
     ϕ2 = sg.boundary[j]
     i = 1
-    while i < size(sg.size)
+    while i < nbound
         zi = sg.z[i]
         if zi <= z1
             sg.ϕ[i] = ϕ1

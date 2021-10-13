@@ -33,6 +33,8 @@ function τ_intermediate(abc::ABC where {ABC<:AbcIsotache}, loadstep::Float64)
     return abc.τ * σ_term^e
 end
 
+function U(abc:)
+
 function consolidate(
     abc::DrainingAbcIsotache,
     σ′::Float64,
