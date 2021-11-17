@@ -20,6 +20,7 @@ include("soilcolumn/groundwater.jl")
 include("soilcolumn/consolidation.jl")
 include("soilcolumn/koppejan.jl")
 include("soilcolumn/abc_isotache.jl")
+include("soilcolumn/carbonstore.jl")
 
 include("drainage_unit.jl")
 

@@ -1,4 +1,5 @@
 const τ_ref = 1.0
+const γ_water = 9810.0
 
 abstract type AbcIsotache <: ConsolidationProcess end
 
@@ -19,6 +20,7 @@ struct DrainingAbcIsotache <: AbcIsotache
     τ::Float64
 end
 
+# compute intrinsic time (τ)
 function τ_intrinsic(abc::ABC where {ABC<:AbcIsotache}, ocr::Float64)
     if abc.c < 1.0e-4
         return 1.0e-9
@@ -29,21 +31,33 @@ end
 
 function τ_intermediate(abc::ABC where {ABC<:AbcIsotache}, loadstep::Float64)
     σ_term = (σ′ - loadstep) / σ′
-    e = (abc.b - abc.a) / abc.c
-    return abc.τ * σ_term^e
+    abc_term = (abc.b - abc.a) / abc.c
+    return abc.τ * σ_term^abc_term
 end
 
-function U(abc:)
+function U(abc::ABC where {ABC<:AbcIsotache}, t)
+    T = abc.c_v * t / abc.Δz
+    U = (T^3 / (T^3 + 0.5))^(1/6)
+    return U
+end
+
+function compress_γ_wet(abc::ABC where {ABC<:AbcIsotache}, consolidation)
+    return (abc.γ_w * abc.Δz - consolidation * γ_water) / (abc.Δz - consolidation)
+end
+
+function compress_γ_dry(abc::ABC where {ABC<:AbcIsotache}, consolidation)
+    return (abc.γ_d * abc.Δz) / (abc.Δz - consolidation)
+end
 
 function consolidate(
     abc::DrainingAbcIsotache,
     σ′::Float64,
     Δt::Float64,
-)::Tuple{Float64,DrainingAbcIsotache}
+    )::Tuple{Float64,DrainingAbcIsotache}
     t = abc.t + Δt
     # Degree of consolidation changes
-    U = U(abc, t)
-    ΔU = U - abc.U
+    U = U(abc, t) 
+    ΔU = U - abc.U #??abc.U??
     # Effective stress changes
     Δσ′ = σ′ - abc.σ′
     σ′ = abc.σ′ + U * Δσ′

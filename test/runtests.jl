@@ -1,12 +1,12 @@
 using Test
 using Atlans
 
-
-@testset "Atlans" begin
+@testset "CarbonStore" begin
     include("test_carbon_store.jl")
 end
 
-@testset "Atlans" begin
+@testset "AbcIsotache" begin
     include("test_abc_isotache.jl")
 end
 
+                                                
