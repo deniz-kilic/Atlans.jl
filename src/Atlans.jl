@@ -5,7 +5,8 @@ using Dates
 using LinearAlgebra
 using NCDatasets
 using Plots
-using StructArrays
+
+import RecipesBase.plot
 
 const Float = Float64
 

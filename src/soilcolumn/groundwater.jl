@@ -1,14 +1,17 @@
 function pore_pressure!(gw::GW where {GW<:GroundwaterProcess})
-    @. gw.p = gw.γ_w * (gw.ϕ - (gw.z + 0.5 * gw.Δz))
+    @. gw.p = gw.γ_water * (gw.ϕ - (gw.z + 0.5 * gw.Δz))
+    @. gw.dry = gw.p < 0.0
     gw.p[gw.dry] .= 0.0
+    return
 end
 
 function plot(gw::GW where {GW<:GroundwaterProcess})
-    y = gw.z .+ 0.5 .* Δz
-    plot(gw.ϕ, y, color = :blue)
-    plot!(gw.p, y, color = :red)
-    vline!(gw.z, color = :black)
-    vline!(gw.z[end] + gw.Δz[end], color = :black)
+    plot(gw.ϕ, gw.z, color = :blue, label = "ϕ")
+    plot!(gw.p / gw.γ_water, gw.z, color = :red, label = "p")
+    ybot = gw.z .- 0.5 .* gw.Δz
+    ytop = gw.z[end] + 0.5 * gw.Δz[end]
+    hline!(ybot, color = :black, label = "")  # bottom
+    hline!([ytop], color = :black, label = "") # top
 end
 
 """
@@ -22,21 +25,23 @@ struct SimpleGroundwater <: GroundwaterProcess
     dry::Vector{Bool}
     ϕ::Vector{Float}
     p::Vector{Float}
+    γ_water::Float
 end
 
 function interpolate_head!(sg::SimpleGroundwater)
+    nlayer = length(sg.Δz)
     nbound = length(sg.boundary)
     z1 = sg.z[sg.boundary[1]]
     z2 = sg.z[sg.boundary[2]]
-    ϕ1 = sg.boundary[1]
-    ϕ2 = sg.boundary[2]
+    ϕ1 = sg.boundary_ϕ[1]
+    ϕ2 = sg.boundary_ϕ[2]
     Δz = z2 - z1
     Δϕ = ϕ2 - ϕ1
     j = 2
     z2 = sg.z[sg.boundary[j]]
-    ϕ2 = sg.boundary[j]
+    ϕ2 = sg.boundary_ϕ[j]
     i = 1
-    while i < nbound
+    while i < nlayer
         zi = sg.z[i]
         if zi <= z1
             sg.ϕ[i] = ϕ1
@@ -50,11 +55,12 @@ function interpolate_head!(sg::SimpleGroundwater)
             z1 = z2
             ϕ1 = ϕ2
             z2 = sg.z[sg.boundary[j]]
-            ϕ2 = sg.boundary[j]
+            ϕ2 = sg.boundary_ϕ[j]
         else
             break
         end
     end
+    @show ϕ2
     sg.ϕ[i:end] .= ϕ2
     return
 end
