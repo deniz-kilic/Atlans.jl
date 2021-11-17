@@ -16,6 +16,10 @@ abstract type GroundwaterProcess end
 abstract type SoilCell end
 abstract type DrainageUnit end
 
+struct NullConsolidation <: ConsolidationProcess end
+struct NullOxidation <: OxidationProcess end
+struct NullGroundwater <: GroundwaterProcess end
+
 include("soilcolumn/column.jl")
 include("soilcolumn/groundwater.jl")
 include("soilcolumn/consolidation.jl")

@@ -18,7 +18,7 @@ end
 Linearly interpolated heads.
 """
 struct SimpleGroundwater <: GroundwaterProcess
-    z::Vector{Float}  # vertical coordinate [m]
+    z::Vector{Float}  # vertical midpoint coordinate [m]
     Δz::Vector{Float}  # cell height [m]
     boundary::Vector{Int}  # location of head boundaries
     boundary_ϕ::Vector{Float}  # head of boundaries
@@ -26,6 +26,21 @@ struct SimpleGroundwater <: GroundwaterProcess
     ϕ::Vector{Float}
     p::Vector{Float}
     γ_water::Float
+end
+
+function SimpleGroundwater(
+    z::Vector{Float},  # vertical midpoint coordinate [m]
+    Δz::Vector{Float},  # cell height [m]
+    boundary::Vector{Int},  # location of head boundaries
+    boundary_ϕ::Vector{Float},  # head of boundaries
+    γ_water::Float,
+)
+    # TODO: check length of other arrays?
+    nlayer = length(z)
+    dry = fill(false, nlayer)
+    ϕ = fill(NaN, nlayer)
+    p = fill(NaN, nlayer)
+    return SimpleGroundwater(z, Δz, boundary, boundary_ϕ, dry, ϕ, p, γ_water)
 end
 
 function interpolate_head!(sg::SimpleGroundwater)
@@ -60,7 +75,6 @@ function interpolate_head!(sg::SimpleGroundwater)
             break
         end
     end
-    @show ϕ2
     sg.ϕ[i:end] .= ϕ2
     return
 end

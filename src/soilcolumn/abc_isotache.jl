@@ -10,7 +10,7 @@ struct DrainingAbcIsotache <: AbcIsotache
     γ_w::Float64  # wet specific mass
     γ_d::Float64  # dry specific mass
     # Degree of consolidation
-    c_d::Float64  # drainage coefficient
+    c_d::Int  # drainage coefficient
     c_v::Float64  # drainage coefficient
     U::Float64
     # Isotache parameters
@@ -37,7 +37,7 @@ end
 
 function U(abc::ABC where {ABC<:AbcIsotache}, t)
     T = abc.c_v * t / abc.Δz
-    U = (T^3 / (T^3 + 0.5))^(1/6)
+    U = (T^3 / (T^3 + 0.5))^(1 / 6)
     return U
 end
 
@@ -53,10 +53,10 @@ function consolidate(
     abc::DrainingAbcIsotache,
     σ′::Float64,
     Δt::Float64,
-    )::Tuple{Float64,DrainingAbcIsotache}
+)::Tuple{Float64,DrainingAbcIsotache}
     t = abc.t + Δt
     # Degree of consolidation changes
-    U = U(abc, t) 
+    U = U(abc, t)
     ΔU = U - abc.U #??abc.U??
     # Effective stress changes
     Δσ′ = σ′ - abc.σ′
@@ -86,4 +86,40 @@ function consolidate(
         abc.c,
         τ,  # new
     )
+end
+
+
+"""
+Turn a collection of vectors into a collection of DrainingAbcIsotache cells.
+"""
+function draining_abc_isotache_column(
+    Δz,
+    γ_w,
+    γ_d,
+    c_d,
+    c_v,
+    a,
+    b,
+    c,
+)::Vector{DrainingAbcIsotache}
+    nlayer = length(Δz)
+    consolidation = Vector{DrainingAbcIsotache}(undef, nlayer)
+    for i = 1:nlayer
+        cell = DrainingAbcIsotache(
+            Δz[i],
+            0.0,  # t
+            0.0,  # σ′
+            γ_w[i],
+            γ_d[i],
+            c_d[i],
+            c_v[i],
+            0.0,  # U
+            a[i],
+            b[i],
+            c[i],
+            0.0,  # τ
+        )
+        consolidation[i] = cell
+    end
+    return consolidation
 end

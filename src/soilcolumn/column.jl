@@ -3,8 +3,8 @@ struct SoilColumn
     y::Float
     z::Vector{Float}
     Δz::Vector{Float}
-    consolidation::C where {C<:ConsolidationProcess}
-    oxidation::O where {O<:OxidationProcess}
+    consolidation::Vector{C} where {C<:ConsolidationProcess}
+    oxidation::Vector{O} where {O<:OxidationProcess}
     groundwater::G where {G<:GroundwaterProcess}
 end
 

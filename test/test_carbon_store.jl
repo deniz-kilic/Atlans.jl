@@ -8,7 +8,7 @@
         1.0e-3,
         1000,
     )
-    
+
     @testset "Initialization" begin
         @test typeof(cell) == Atlans.CarbonStore
     end
