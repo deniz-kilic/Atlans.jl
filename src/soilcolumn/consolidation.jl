@@ -1,8 +1,10 @@
+const γ_w = 9810.0
+
 """
 Consolidation reduces pore space, pushes out the water.
 """
 function compress_γ_wet(cell::C where {C<:ConsolidationProcess}, consolidation::Float64)
-    return cell.γ_w * cell.Δz - consolidation * cell.γ_w / (cell.Δz - consolidation)
+    return γ_w * cell.Δz - consolidation * γ_w / (cell.Δz - consolidation)
 end
 
 """

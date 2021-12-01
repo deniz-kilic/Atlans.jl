@@ -63,8 +63,8 @@ function consolidate(
     end
     # consolidation changes
     consolidation = min(Δz, strain * kpj.Δz)
-    γ_w = compress_γ_wet(kpj, consolidation)
-    γ_d = compress_γ_dry(kpj, consolidation)
+    γ_w = Atlans.compress_γ_wet(kpj, consolidation)
+    γ_d = Atlans.compress_γ_dry(kpj, consolidation)
     # return new state
     return consolidation,
     DrainingKoppejan(
