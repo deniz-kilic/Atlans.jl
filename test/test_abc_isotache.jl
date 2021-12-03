@@ -14,7 +14,7 @@
         0.008686,
         1,#\tau
     )
-    
+
     @testset "Initialization" begin
         @test typeof(cell) == Atlans.DrainingAbcIsotache
     end

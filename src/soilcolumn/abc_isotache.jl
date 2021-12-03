@@ -39,11 +39,11 @@ function consolidate(
     abc::DrainingAbcIsotache,
     σ′::Float64,
     Δt::Float64,
-    )::Tuple{Float64,DrainingAbcIsotache}
+)::Tuple{Float64,DrainingAbcIsotache}
     t = abc.t + Δt
     # Degree of consolidation changes
-    U = Atlans.U(abc, t) 
-    ΔU = U - abc.U 
+    U = Atlans.U(abc, t)
+    ΔU = U - abc.U
     # Effective stress changes
     Δσ′ = σ′ - abc.σ′
     σ′ = abc.σ′ + U * Δσ′
