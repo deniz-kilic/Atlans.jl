@@ -7,6 +7,7 @@
         Atlans.mass_organic_minimal(Atlans.mass_mineral(0.2, 1000, 1), 0.05),
         1.0e-3,
         1000,
+        0.0,
     )
 
     @testset "Initialization" begin

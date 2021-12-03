@@ -1,79 +1,7 @@
-function pore_pressure!(gw::GW where {GW<:GroundwaterProcess})
-    @. gw.p = gw.γ_w * (gw.ϕ - (gw.z + 0.5 * gw.Δz))
-    gw.p[gw.dry] .= 0.0
-end
-
-function plot(gw::GW where {GW<:GroundwaterProcess})
-    y = gw.z .+ 0.5 .* Δz
-    plot(gw.ϕ, y, color = :blue)
-    plot!(gw.p, y, color = :red)
-    vline!(gw.z, color = :black)
-    vline!(gw.z[end] + gw.Δz[end], color = :black)
-end
-
-"""
-Linearly interpolated heads.
-"""
-struct SimpleGroundwater <: GroundwaterProcess
-    z::Vector{Float}  # vertical coordinate [m]
-    Δz::Vector{Float}  # cell height [m]
-    boundary::Vector{Int}  # location of head boundaries
-    boundary_ϕ::Vector{Float}  # head of boundaries
-    dry::Vector{Bool}
-    ϕ::Vector{Float}
-    p::Vector{Float}
-end
-
-function interpolate_head!(sg::SimpleGroundwater)
-    nbound = length(sg.boundary)
-    z1 = sg.z[sg.boundary[1]]
-    z2 = sg.z[sg.boundary[2]]
-    ϕ1 = sg.boundary[1]
-    ϕ2 = sg.boundary[2]
-    Δz = z2 - z1
-    Δϕ = ϕ2 - ϕ1
-    j = 2
-    z2 = sg.z[sg.boundary[j]]
-    ϕ2 = sg.boundary[j]
-    i = 1
-    while i < nbound
-        zi = sg.z[i]
-        if zi <= z1
-            sg.ϕ[i] = ϕ1
-            i += 1
-        elseif zi <= z2
-            w = (zi - z1) / Δz
-            sg.ϕ[i] = ϕ1 + w * Δϕ
-            i += 1
-        elseif j < nbound
-            j += 1
-            z1 = z2
-            ϕ1 = ϕ2
-            z2 = sg.z[sg.boundary[j]]
-            ϕ2 = sg.boundary[j]
-        else
-            break
-        end
-    end
-    sg.ϕ[i:end] .= ϕ2
-    return
-end
-
-function solve!(sg::SimpleGroundwater)
-    if all(sg.boundary_ϕ == first(sg.boundary_ϕ))
-        sg.ϕ .= first(sg.boundary_ϕ)
-        return
-    else
-        interpolate_head!(sg)
-    end
-    return
-end
-
-
 """
 Finite difference vertical 1D groundwater flow.
 """
-struct DarcyColumn <: GroundwaterProcess
+struct DarcyColumn <: GroundwaterColumn
     k::Vector  # vertical conductivity [m/d]
     z::Vector  # vertical coordinate [m]
     Δz::Vector  # cell height [m]
@@ -82,7 +10,7 @@ struct DarcyColumn <: GroundwaterProcess
     S_ske::Vector  # skeletal storage [m/m]
     boundary::Vector{Int}  # location of head boundaries
     boundary_ϕ::Vector  # head of boundaries
-    γ_w::Float64  # specific weight [kg/m^3]
+    γ_water::Float  # specific weight [kg/m^3]
     # Intermediate
     conductance::Vector{Float}  # [m/d]
     ϕ::Vector{Float}  # average head [m]
@@ -91,14 +19,6 @@ struct DarcyColumn <: GroundwaterProcess
     A::SymTridiagonal
     constant::Vector{Bool}
     rhs::Vector
-end
-
-function push!(column::DarcyColumn, values)
-    for (field, v) in zip(fieldnames(column), values)
-        push!(column.(field), v)
-    end
-    # update conductance
-    return
 end
 
 function harmonicmean_conductance(k1, k2, Δz1, Δz2)
@@ -162,4 +82,9 @@ function solve!(column::DarcyColumn)
     end
     ldiv!(column.ϕ, column.A, column.rhs)
     return
+end
+
+function flow!(column::DarcyColumn, Δt::Float)
+    formulate!(column)
+    solve!(column)
 end

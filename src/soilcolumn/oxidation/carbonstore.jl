@@ -1,13 +1,14 @@
 using SpecialFunctions: erf
 
 struct CarbonStore <: OxidationProcess
-    Δz::Float64  # cell thickness
-    f_organic::Float64  # mass fraction organic material
-    m_organic::Float64  # mass of organic material
-    m_mineral::Float64  # mass of mineral material
-    m_minimum_organic::Float64  # no breakdown beyond this level
-    α::Float64  # oxidation rate
-    ρb::Float64  # bulk density
+    Δz::Float  # cell thickness
+    f_organic::Float  # mass fraction organic material
+    m_organic::Float  # mass of organic material
+    m_mineral::Float  # mass of mineral material
+    m_minimum_organic::Float  # no breakdown beyond this level
+    α::Float  # oxidation rate
+    ρb::Float  # bulk density
+    oxidation::Float  # computed oxidation
 end
 
 function mass_organic(f_organic, ρb, Δz)
@@ -33,7 +34,7 @@ end
 """
 Empirical equation to compute specific volume of organic material.
 
-As the organic matter in a soil breaks down, density increases. The "airest"
+As the organic matter in a soil breaks down, density increases. The "airiest"
 parts are the first to go.
 """
 function volume_organic(f_organic, ρb)
@@ -44,7 +45,7 @@ function volume_organic(f_organic, ρb)
     end
 end
 
-function oxidate(cs::CarbonStore, Δt::Float64)::Tuple{Float64,CarbonStore}
+function oxidate(cs::CarbonStore, Δt::Float)::Tuple{Float,CarbonStore}
     if cs.α == 0
         return 0.0, cs
     end
@@ -54,8 +55,7 @@ function oxidate(cs::CarbonStore, Δt::Float64)::Tuple{Float64,CarbonStore}
     oxidation = volume_organic(cs.f_organic, cs.ρb) * Δm
     f_organic = fraction_organic(m_organic, cs.m_mineral)
     Δz = cs.Δz - oxidation
-    return oxidation,
-    CarbonStore(
+    return CarbonStore(
         Δz,  # new
         f_organic,  # new
         cs.m_mineral,
@@ -63,6 +63,7 @@ function oxidate(cs::CarbonStore, Δt::Float64)::Tuple{Float64,CarbonStore}
         cs.m_minimum_organic,
         cs.α,
         ρ_bulk(m_organic, cs.m_mineral, Δz),  # new
+        oxidation,  # new
     )
 end
 
