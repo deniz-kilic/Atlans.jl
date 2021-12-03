@@ -10,6 +10,7 @@ using Plots
 import RecipesBase.plot
 
 const Float = Float64
+const γ_water = 9810.0
 
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end

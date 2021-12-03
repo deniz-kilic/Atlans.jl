@@ -9,7 +9,6 @@ struct InterpolatedGroundwater <: GroundwaterColumn
     dry::Vector{Bool}
     ϕ::Vector{Float}
     p::Vector{Float}
-    γ_water::Float
 end
 
 function InterpolatedGroundwater(
@@ -17,14 +16,13 @@ function InterpolatedGroundwater(
     Δz::Vector{Float},  # cell height [m]
     boundary::Vector{Int},  # location of head boundaries
     boundary_ϕ::Vector{Float},  # head of boundaries
-    γ_water::Float,
 )
     # TODO: check length of other arrays?
     nlayer = length(z)
     dry = fill(false, nlayer)
     ϕ = fill(NaN, nlayer)
     p = fill(NaN, nlayer)
-    return InterpolatedGroundwater(z, Δz, boundary, boundary_ϕ, dry, ϕ, p, γ_water)
+    return InterpolatedGroundwater(z, Δz, boundary, boundary_ϕ, dry, ϕ, p)
 end
 
 function interpolate_head!(ig::InterpolatedGroundwater)

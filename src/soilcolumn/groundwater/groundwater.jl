@@ -7,7 +7,7 @@ end
 
 function plot(gw::GW where {GW<:GroundwaterColumn})
     plot(gw.ϕ, gw.z, color = :blue, label = "ϕ")
-    plot!(gw.p / gw.γ_water, gw.z, color = :red, label = "p")
+    plot!(gw.p / γ_water, gw.z, color = :red, label = "p")
     ybot = gw.z .- 0.5 .* gw.Δz
     ytop = gw.z[end] + 0.5 * gw.Δz[end]
     hline!(ybot, color = :black, label = "")  # bottom

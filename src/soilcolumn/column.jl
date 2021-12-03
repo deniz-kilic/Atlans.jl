@@ -24,7 +24,7 @@ function advance_timestep!(c::SoilColumn, Δt::Float)
 
     flow!(c.groundwater, Δt)
     # Exchange pore pressure from groundwater column to consolidation column
-    @. c.consolidation.u = c.groundwater.p * c.consolidation.γ_water
+    @. c.consolidation.u = c.groundwater.p * γ_water
     consolidate!(c.consolidation, Δt)
     oxidate!(c.oxidation, Δt)
 

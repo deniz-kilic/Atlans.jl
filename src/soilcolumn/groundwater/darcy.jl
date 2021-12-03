@@ -10,7 +10,6 @@ struct DarcyColumn <: GroundwaterColumn
     S_ske::Vector  # skeletal storage [m/m]
     boundary::Vector{Int}  # location of head boundaries
     boundary_ϕ::Vector  # head of boundaries
-    γ_water::Float  # specific weight [kg/m^3]
     # Intermediate
     conductance::Vector{Float}  # [m/d]
     ϕ::Vector{Float}  # average head [m]

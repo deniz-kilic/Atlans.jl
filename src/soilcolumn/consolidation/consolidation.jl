@@ -1,3 +1,4 @@
+
 struct ConsolidationColumn
     cells::Vector{C} where {C<:ConsolidationProcess}
     z::Vector{Float}
@@ -5,7 +6,6 @@ struct ConsolidationColumn
     σ::Vector{Float}
     σ′::Vector{Float}
     u::Vector{Float}
-    γ_water::Float
 end
 
 """
@@ -58,7 +58,7 @@ end
 
 function submerged_weight(column::ConsolidationColumn, phreatic)
     surface = column.z[end] + 0.5 * column.Δz[end]
-    return (max(0.0, phreatic - surface) * column.γ_water)
+    return (max(0.0, phreatic - surface) * γ_water)
 end
 
 """
