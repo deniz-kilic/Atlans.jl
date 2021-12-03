@@ -2,26 +2,27 @@
 abstract type Koppejan <: ConsolidationProcess end
 
 struct DrainingKoppejan
-    Δz::Float64
-    t::Float64
-    σ′::Float64  # effective stress
-    γ_w::Float64  # wet specific mass
-    γ_d::Float64  # dry specific mass
-    c_d::Float64  # drainage coefficient
-    c_v::Float64  # drainage coefficient
-    U::Float64
-    Cp::Float64
-    Cs::Float64
-    Cp′::Float64
-    Cs′::Float64
-    σ′pre::Float64
+    Δz::Float
+    t::Float
+    σ′::Float  # effective stress
+    γ_wet::Float  # wet specific mass
+    γ_dry::Float  # dry specific mass
+    c_d::Float  # drainage coefficient
+    c_v::Float  # drainage coefficient
+    U::Float
+    Cp::Float
+    Cs::Float
+    Cp′::Float
+    Cs′::Float
+    σ′pre::Float
+    consolidation::Float
 end
 
 function consolidate(
     kpj::DrainingKoppejan,
-    σ′::Float64,
-    Δt::Float64,
-)::Tuple{Float64,DrainingKoppejan}
+    σ′::Float,
+    Δt::Float,
+)::Tuple{Float,DrainingKoppejan}
     t = kpj.t + Δt
     # Degree of consolidation changes
     U = U(kpj, t)
@@ -31,13 +32,12 @@ function consolidate(
     # Exit early for a number of cases Koppejan cannot deal with.
     if (kpj.Δz == 0) | (kpj.Cp == 0) | (kpj.σ′ == 0) | (Δσ′ < 0)
         consolidation = 0.0
-        return consolidation,
-        DrainingKoppejan(
+        return DrainingKoppejan(
             kpj.Δz,  # no change
             t,  # new
             σ′, # new
-            kpj.γ_w,
-            kpj.γ_d,
+            kpj.γ_wet,
+            kpj.γ_dry,
             kpj.c_d,
             kpj.c_v,
             U,  # new (?)
@@ -46,6 +46,7 @@ function consolidate(
             kpj.Cp′,
             kpj.Cs′,
             kpj.σ′pre,
+            consolidation,
         )
     end
 
@@ -63,16 +64,15 @@ function consolidate(
     end
     # consolidation changes
     consolidation = min(Δz, strain * kpj.Δz)
-    γ_w = compress_γ_wet(kpj, consolidation)
-    γ_d = compress_γ_dry(kpj, consolidation)
+    γ_wet = compress_γ_wetet(kpj, consolidation)
+    γ_dry = compress_γ_dryry(kpj, consolidation)
     # return new state
-    return consolidation,
-    DrainingKoppejan(
+    return DrainingKoppejan(
         kpj.Δz - consolidation,  # new
         t,  # new
         σ′, # new
-        γ_w,  # new
-        γ_d,  # new
+        γ_wet,  # new
+        γ_dry,  # new
         kpj.c_d,
         kpj.c_v,
         U,  # new
@@ -81,5 +81,6 @@ function consolidate(
         kpj.Cp′,
         kpj.Cs′,
         kpj.σ′pre,
+        consolidation,  # new
     )
 end

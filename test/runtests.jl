@@ -1,3 +1,4 @@
+using Revise
 using Test
 using Atlans
 
@@ -12,4 +13,3 @@ end
 @testset "AbcIsotache" begin
     include("test_abc_isotache.jl")
 end
-

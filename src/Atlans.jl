@@ -1,5 +1,6 @@
 module Atlans
 
+using Accessors
 using CFTime
 using Dates
 using LinearAlgebra
@@ -12,20 +13,23 @@ const Float = Float64
 
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end
-abstract type GroundwaterProcess end
+abstract type GroundwaterColumn end
 abstract type SoilCell end
 abstract type DrainageUnit end
 
-struct NullConsolidation <: ConsolidationProcess end
-struct NullOxidation <: OxidationProcess end
-struct NullGroundwater <: GroundwaterProcess end
+include("soilcolumn/groundwater/groundwater.jl")
+include("soilcolumn/groundwater/interpolated.jl")
+include("soilcolumn/groundwater/darcy.jl")
+
+include("soilcolumn/consolidation/consolidation.jl")
+include("soilcolumn/consolidation/koppejan.jl")
+include("soilcolumn/consolidation/abc_isotache.jl")
+
+include("soilcolumn/oxidation/oxidation.jl")
+include("soilcolumn/oxidation/carbonstore.jl")
 
 include("soilcolumn/column.jl")
-include("soilcolumn/groundwater.jl")
-include("soilcolumn/consolidation.jl")
-include("soilcolumn/koppejan.jl")
-include("soilcolumn/abc_isotache.jl")
-include("soilcolumn/carbonstore.jl")
+include("soilcolumn/split.jl")
 
 include("drainage_unit.jl")
 

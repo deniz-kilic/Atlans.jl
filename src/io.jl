@@ -41,12 +41,12 @@ function setup_output_netcdf(path, time_units, calendar)::NCDataset
     defVar(
         ds,
         "time",
-        Float64,
+        Float,
         ("time",),
         attrib = ["units" => time_units, "calendar" => calendar],
     )
-    defVar(ds, "shortage", Float64, ("node", "time"))
-    defVar(ds, "flow", Float64, ("edge", "time"))
+    defVar(ds, "shortage", Float, ("node", "time"))
+    defVar(ds, "flow", Float, ("edge", "time"))
     return ds
 end
 
