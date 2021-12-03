@@ -25,7 +25,7 @@ function shouldsplit(vector, newlength)
 end
 
 function cellsplit!(
-    column::Union{ConsolidationColumn, OxidationColumn},
+    column::Union{ConsolidationColumn,OxidationColumn},
     index,
     newlength,
     lowerΔz,
@@ -65,7 +65,7 @@ function zsplit!(z, Δz, index, newlength, lowerΔz, upperΔz)
     return
 end
 
-function columnsplit!(ig::InterpolatedGroundwater, index, newlength, lowerΔz, upperΔz) 
+function columnsplit!(ig::InterpolatedGroundwater, index, newlength, lowerΔz, upperΔz)
     zsplit!(ig.z, ig.Δz, index, newlength, lowerΔz, upperΔz)
     # If split, another cell is introduced at the the index.
     # This means that any index equal or higher should be incremented by one.
@@ -79,7 +79,7 @@ function columnsplit!(ig::InterpolatedGroundwater, index, newlength, lowerΔz, u
     return
 end
 
-function columnsplit!(cc::ConsolidationColumn, index, newlength, lowerΔz, upperΔz) 
+function columnsplit!(cc::ConsolidationColumn, index, newlength, lowerΔz, upperΔz)
     zsplit!(cc.z, cc.Δz, index, newlength, lowerΔz, upperΔz)
     cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
     push!(cc.σ, NaN)
@@ -87,7 +87,7 @@ function columnsplit!(cc::ConsolidationColumn, index, newlength, lowerΔz, upper
     push!(cc.u, NaN)
 end
 
-function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz) 
+function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)
     zsplit!(oc.z, oc.Δz, index, newlength, lowerΔz, upperΔz)
     cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
 end
@@ -106,8 +106,8 @@ function split!(c::SoilColumn, level::Float)
 end
 
 function split!(
-    c::Union{GroundwaterColumn, ConsolidationColumn, OxidationColumn},
-    level::Float
+    c::Union{GroundwaterColumn,ConsolidationColumn,OxidationColumn},
+    level::Float,
 )
     index, lowerΔz, upperΔz = find_split_index(c.z, c.Δz, level)
     newlength = length(c.z) + 1

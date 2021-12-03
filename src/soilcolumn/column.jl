@@ -12,8 +12,8 @@ struct SoilColumn
 end
 
 function deep_subsidence(
-    column::Union{SoilColumn, ConsolidationColumn, OxidationColumn},
-    subsidence::Float
+    column::Union{SoilColumn,ConsolidationColumn,OxidationColumn},
+    subsidence::Float,
 )
     column.z .-= subsidence
 end

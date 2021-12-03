@@ -34,13 +34,7 @@ end
 """
 Weight of (part of) a single cell
 """
-function weight(
-    phreatic_level::Float,
-    zbot::Float,
-    Δz::Float,
-    γ_wet::Float,
-    γ_dry::Float,
-)
+function weight(phreatic_level::Float, zbot::Float, Δz::Float, γ_wet::Float, γ_dry::Float)
     ztop = zbot + Δz
     if phreatic_level > ztop
         wet_Δz = Δz
