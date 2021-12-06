@@ -1,18 +1,33 @@
 @testset "DrainingAbcIsotache" begin
+
+    Δz = 1.0
+    t = 1.0
+    σ′ = 10000.0
+    γ_wet = 15000.0
+    γ_dry = 15000.0
+    c_d = 2
+    c_v = 0.006912
+    U = 1.0
+    a = 0.01737
+    b = 0.1303
+    c = 0.008686
+    τ = 1.0
+    consolidation = 0.0
+
     cell = Atlans.DrainingAbcIsotache(
-        1.0,
-        1.0,
-        10000.0,
-        15000.0,
-        15000.0,
-        2,
-        0.006912,
-        1.0,
-        0.01737,
-        0.1303,
-        0.008686,
-        1,#\tau
-        0.0,
+        Δz,
+        t,
+        σ′,
+        γ_wet,
+        γ_dry,
+        c_d,
+        c_v,
+        U,
+        a,
+        b,
+        c,
+        τ,
+        consolidation,
     )
 
     @testset "Initialization" begin
@@ -27,15 +42,15 @@
     end
 
     @testset "compress_γ_wet" begin
-        consolidation = 0.1
-        actual = Atlans.compress_γ_wet(cell, consolidation)
-        expected = 8720.0
+        cell = @set cell.consolidation = 0.1
+        actual = Atlans.compress_γ_wet(cell)
+        expected = 15576.666666666666
         @test actual ≈ expected
     end
 
     @testset "compress_γ_dry" begin
-        consolidation = 0.01
-        actual = Atlans.compress_γ_dry(cell, consolidation)
+        cell = @set cell.consolidation = 0.01
+        actual = Atlans.compress_γ_dry(cell)
         expected = 15151.515151515152
         @test actual ≈ expected
     end
@@ -50,9 +65,9 @@
     @testset "consolidate" begin
         σ′ = 10000.0
         Δt = 1.0
-        actual, new_cell = Atlans.consolidate(cell, σ′, Δt)
-        expected = 0
-        @test actual ≈ expected
+        new_cell = Atlans.consolidate(cell, σ′, Δt)
+        expected = 0.0
+        @test new_cell.consolidation ≈ expected
         @test typeof(new_cell) == Atlans.DrainingAbcIsotache
     end
 

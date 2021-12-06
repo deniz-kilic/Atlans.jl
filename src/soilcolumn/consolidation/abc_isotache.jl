@@ -1,6 +1,3 @@
-const τ_ref = 1.0
-const γ_water = 9810.0
-
 abstract type AbcIsotache <: ConsolidationProcess end
 
 struct DrainingAbcIsotache <: AbcIsotache
@@ -36,41 +33,35 @@ function τ_intermediate(abc::ABC where {ABC<:AbcIsotache}, loadstep::Float64)
     return abc.τ * σ_term^abc_term
 end
 
-function U(abc::ABC where {ABC<:AbcIsotache}, t)
-    T = abc.c_v * t / abc.Δz
-    U = (T^3 / (T^3 + 0.5))^(1 / 6)
-    return U
+"""
+Water-filled porespace is reduced as the water is pushed out and the soil
+becomes denser.
+"""
+function compress_γ_wet(abc::ABC where {ABC<:AbcIsotache})
+    return (abc.γ_wet * abc.Δz - abc.consolidation * γ_water) / (abc.Δz - abc.consolidation)
 end
 
-function compress_γ_wet(abc::ABC where {ABC<:AbcIsotache}, consolidation)
-    return (abc.γ_wet * abc.Δz - consolidation * γ_water) / (abc.Δz - consolidation)
+function compress_γ_dry(abc::ABC where {ABC<:AbcIsotache})
+    return (abc.γ_dry * abc.Δz) / (abc.Δz - abc.consolidation)
 end
 
-function compress_γ_dry(abc::ABC where {ABC<:AbcIsotache}, consolidation)
-    return (abc.γ_dry * abc.Δz) / (abc.Δz - consolidation)
-end
-
-function consolidate(
-    abc::DrainingAbcIsotache,
-    σ′::Float,
-    Δt::Float,
-)::Tuple{Float,DrainingAbcIsotache}
+function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     t = abc.t + Δt
     # Degree of consolidation changes
-    U = U(abc, t)
-    ΔU = U - abc.U #??abc.U??
+    Unew = U(abc, t)
+    ΔU = Unew - abc.U #??abc.U??
     # Effective stress changes
     Δσ′ = σ′ - abc.σ′
-    σ′ = abc.σ′ + U * Δσ′
+    σ′ = abc.σ′ + Unew * Δσ′
     loadstep = ΔU * Δσ′
     # τ changes
     τ_intm = τ_intermediate(abc, loadstep)
     τ = τ_intm + Δt
     # consolidation
     strain = abc.c * log(abc.τ / τ_intm) + log(σ′ / (σ′ - loadstep))
-    consolidation = min(Δz, strain * abc.Δz)
-    γ_wet = compress_γ_wet(abc, consolidation)
-    γ_dry = compress_γ_dry(abc, consolidation)
+    consolidation = min(abc.Δz, strain * abc.Δz)
+    γ_wet = compress_γ_wet(abc)
+    γ_dry = compress_γ_dry(abc)
     # return new state
     return DrainingAbcIsotache(
         abc.Δz - consolidation,  # new
@@ -80,7 +71,7 @@ function consolidate(
         γ_dry,  # new
         abc.c_d,
         abc.c_v,
-        U,  # new
+        Unew,  # new
         abc.a,
         abc.b,
         abc.c,
