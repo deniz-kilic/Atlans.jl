@@ -84,7 +84,7 @@ function columnsplit!(cc::ConsolidationColumn, index, newlength, lowerΔz, upper
     cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
     push!(cc.σ, NaN)
     push!(cc.σ′, NaN)
-    push!(cc.u, NaN)
+    push!(cc.p, NaN)
 end
 
 function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)

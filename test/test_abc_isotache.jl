@@ -41,26 +41,6 @@
         @test actual ≈ expected
     end
 
-    @testset "compress_γ_wet" begin
-        cell = @set cell.consolidation = 0.1
-        actual = Atlans.compress_γ_wet(cell)
-        expected = 15576.666666666666
-        @test actual ≈ expected
-    end
-
-    @testset "compress_γ_dry" begin
-        cell = @set cell.consolidation = 0.01
-        actual = Atlans.compress_γ_dry(cell)
-        expected = 15151.515151515152
-        @test actual ≈ expected
-    end
-
-    @testset "degree of consolidation" begin
-        t = 0.01
-        actual = Atlans.U(cell, t)
-        expected = 5.7916576227323684e-15
-        @test actual ≈ expected
-    end
 
     @testset "consolidate" begin
         σ′ = 10000.0

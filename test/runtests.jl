@@ -12,3 +12,7 @@ end
 @testset "AbcIsotache" begin
     include("test_abc_isotache.jl")
 end
+
+@testset "ConsolidationColumn" begin
+    include("test_consolidation_column.jl")
+end

@@ -6,12 +6,12 @@
     z = ztop .- (0.5 .* Δz)
     boundary = Int[1, 8]
     boundary_ϕ = Float64[1.0, 0.0]
+    confined = fill(true, nlayer)
     dry = fill(false, nlayer)
     ϕ = fill(NaN, nlayer)
     p = fill(NaN, nlayer)
-    γ_water = 9.81 * 1_000.0
 
-    ig = Atlans.InterpolatedGroundwater(z, Δz, boundary, boundary_ϕ, dry, ϕ, p, γ_water)
+    ig = Atlans.InterpolatedGroundwater(z, Δz, boundary, boundary_ϕ, confined, dry, ϕ, p)
 
     expected1 = Float64[
         1.0,

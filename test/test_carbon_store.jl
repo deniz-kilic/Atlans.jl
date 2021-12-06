@@ -16,10 +16,8 @@
 
     @testset "oxidate" begin
         Δt = 1.0
-        actual, new_cell = Atlans.oxidate(cell, Δt)
-        expected = 1.0e-7
-        # @test actual == expected
-        @test actual ≈ expected
+        new_cell = Atlans.oxidate(cell, Δt)
         @test typeof(new_cell) == Atlans.CarbonStore
+        @test new_cell.oxidation ≈ 1.0e-7
     end
 end

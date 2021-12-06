@@ -45,7 +45,7 @@ function volume_organic(f_organic, ρb)
     end
 end
 
-function oxidate(cs::CarbonStore, Δt::Float)::Tuple{Float,CarbonStore}
+function oxidate(cs::CarbonStore, Δt::Float)
     if cs.α == 0
         return 0.0, cs
     end

@@ -6,6 +6,7 @@ struct InterpolatedGroundwater <: GroundwaterColumn
     Δz::Vector{Float}  # cell height [m]
     boundary::Vector{Int}  # location of head boundaries
     boundary_ϕ::Vector{Float}  # head of boundaries
+    confined::Vector{Bool}
     dry::Vector{Bool}
     ϕ::Vector{Float}
     p::Vector{Float}

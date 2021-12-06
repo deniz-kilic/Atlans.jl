@@ -5,11 +5,12 @@ struct DarcyColumn <: GroundwaterColumn
     k::Vector  # vertical conductivity [m/d]
     z::Vector  # vertical coordinate [m]
     Δz::Vector  # cell height [m]
-    dry::Vector{Bool}  # unsaturated flag
     SS::Vector  # specific storage(?) [m/m]
     S_ske::Vector  # skeletal storage [m/m]
     boundary::Vector{Int}  # location of head boundaries
     boundary_ϕ::Vector  # head of boundaries
+    confined::Vector{Bool}
+    dry::Vector{Bool}
     # Intermediate
     conductance::Vector{Float}  # [m/d]
     ϕ::Vector{Float}  # average head [m]
