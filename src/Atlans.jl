@@ -29,15 +29,10 @@ include("soilcolumn/consolidation/abc_isotache.jl")
 
 include("soilcolumn/oxidation/oxidation.jl")
 include("soilcolumn/oxidation/carbonstore.jl")
+include("soilcolumn/oxidation/constant_rate.jl")
 
 include("soilcolumn/column.jl")
 include("soilcolumn/split.jl")
-include("soilcolumn/groundwater.jl")
-include("soilcolumn/consolidation.jl")
-include("soilcolumn/koppejan.jl")
-include("soilcolumn/abc_isotache.jl")
-include("soilcolumn/carbonstore.jl")
-include("soilcolumn/constant_rate.jl")
 
 include("drainage_unit.jl")
 
