@@ -1,7 +1,7 @@
 
 abstract type Koppejan <: ConsolidationProcess end
 
-struct DrainingKoppejan
+struct DrainingKoppejan <: Koppejan
     Δz::Float
     t::Float
     σ′::Float  # effective stress
@@ -25,7 +25,7 @@ function consolidate(
 )::Tuple{Float,DrainingKoppejan}
     t = kpj.t + Δt
     # Degree of consolidation changes
-    U = U(kpj, t)
+    U = Atlans.U(kpj, t)
     ΔU = U - kpj.U
     # Effective stress changes
     Δσ′ = σ′ - kpj.σ′
@@ -63,9 +63,9 @@ function consolidate(
         end
     end
     # consolidation changes
-    consolidation = min(Δz, strain * kpj.Δz)
-    γ_wet = Atlans.compress_γ_wet(kpj, consolidation)
-    γ_dry = Atlans.compress_γ_dry(kpj, consolidation)
+    consolidation = min(kpj.Δz, strain * kpj.Δz)
+    γ_w = Atlans.compress_γ_wet(kpj, consolidation)
+    γ_d = Atlans.compress_γ_dry(kpj, consolidation)
     # return new state
     return DrainingKoppejan(
         kpj.Δz - consolidation,  # new
