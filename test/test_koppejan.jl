@@ -1,18 +1,19 @@
 @testset "DrainingKoppejan" begin
     cell = Atlans.DrainingKoppejan(
-        1.0,
-        1.0,
-        10_000.0,
-        15_000.0,
-        15_000.0,
-        2,
-        1.0e-5,
-        1.753846950483396e-17,
-        20.0,
-        80.0,
-        5.0,
-        20.0,
-        10_000.0,
+        Δz=1.0,
+        t=1.0,
+        σ′=10_000.0,
+        γ_wet=15_000.0,
+        γ_dry=15_000.0,
+        c_d=2,
+        c_v=1.0e-5,
+        U=1.753846950483396e-17,
+        Cp=20.0,
+        Cs=80.0,
+        Cp′=5.0,
+        Cs′=20.0,
+        σ′pre=10_000.0,
+        consolidation=0.0,
     )
     
     @testset "Initialization" begin
@@ -43,9 +44,9 @@
     @testset "consolidate" begin
         σ′ = 10_000.0
         Δt = 1.0
-        actual, new_cell = Atlans.consolidate(cell, σ′, Δt)
+        new_cell = Atlans.consolidate(cell, σ′, Δt)
         expected = 0
-        @test actual ≈ expected atol=1e-6
+        @test new_cell.consolidation ≈ expected atol=1e-6
         @test typeof(new_cell) == Atlans.DrainingKoppejan
     end
 
