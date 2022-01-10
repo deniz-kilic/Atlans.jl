@@ -2,6 +2,7 @@ abstract type AbcIsotache <: ConsolidationProcess end
 
 struct DrainingAbcIsotache <: AbcIsotache
     Δz::Float
+    Δz_0::Float
     t::Float
     σ′::Float  # effective stress
     γ_wet::Float  # wet specific mass
@@ -65,6 +66,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     # return new state
     return DrainingAbcIsotache(
         abc.Δz - consolidation,  # new
+        abc.Δz_0,
         t,  # new
         σ′, # new
         γ_wet,  # new
@@ -99,6 +101,7 @@ function draining_abc_isotache_column(
     for i = 1:nlayer
         cell = DrainingAbcIsotache(
             Δz[i],
+            Δz_0[i],
             0.0,  # t
             0.0,  # σ′
             γ_wet[i],

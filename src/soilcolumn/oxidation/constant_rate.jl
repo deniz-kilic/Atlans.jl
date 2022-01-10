@@ -10,7 +10,7 @@ function oxidate(cr::ConstantRate, Δt::Float64)
     Δz = cr.Δz - oxidation
     return ConstantRate(
         Δz, #new
-        cr.α
+        cr.α,
         oxidation,  #new
     )
 end

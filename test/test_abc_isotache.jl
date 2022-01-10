@@ -16,6 +16,7 @@
 
     cell = Atlans.DrainingAbcIsotache(
         Δz,
+        Δz,
         t,
         σ′,
         γ_wet,

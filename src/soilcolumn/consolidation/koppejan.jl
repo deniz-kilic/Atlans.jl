@@ -3,6 +3,7 @@ abstract type Koppejan <: ConsolidationProcess end
 
 struct DrainingKoppejan <: Koppejan
     Δz::Float
+    Δz_0::Float
     t::Float
     σ′::Float  # effective stress
     γ_wet::Float  # wet specific mass
@@ -18,11 +19,7 @@ struct DrainingKoppejan <: Koppejan
     consolidation::Float
 end
 
-function consolidate(
-    kpj::DrainingKoppejan,
-    σ′::Float,
-    Δt::Float,
-)::Tuple{Float,DrainingKoppejan}
+function consolidate(kpj::DrainingKoppejan, σ′::Float, Δt::Float)::DrainingKoppejan
     t = kpj.t + Δt
     # Degree of consolidation changes
     U = Atlans.U(kpj, t)
@@ -34,6 +31,7 @@ function consolidate(
         consolidation = 0.0
         return DrainingKoppejan(
             kpj.Δz,  # no change
+            kpj.Δz_0,  # no change
             t,  # new
             σ′, # new
             kpj.γ_wet,
@@ -50,25 +48,24 @@ function consolidate(
         )
     end
 
-    # pre-consolidation
-    strain = ΔU / kpj.Cp
-    if kpj.Cs > 0
-        strain += (1.0 / kpj.Cs) * log10(t / kpj.t) * log(σ′ / kpj.σ′)
+    log10time = log10((1.0 + t) / (1.0 + kpj.t))
+    if σ′ <= kpj.σ′pre
+        strain = ((ΔU / kpj.Cp) + (1.0 / kpj.Cs) * log10time) * log(σ′ / kpj.σ′)
+    else
+        strain = (
+            ((ΔU / kpj.Cp) + (1.0 / Cs) * log10time) * log(σ′pre / kpj.σ′) +
+            ((ΔU / kpj.Cp′) + (1.0 / Cs′) * log10time) * log(σ′ / kpj.σ′pre)
+        )
     end
-    # post-consolidation
-    if σ′ > kpj.σ′pre
-        strain += ΔU / kpj.Cp′
-        if kpj.Cs′ > 0
-            strain += (1.0 / kpj.Cs′) * log10(t / kpj.t) * log(σ′ / kpj.σ′pre)
-        end
-    end
+
     # consolidation changes
-    consolidation = min(kpj.Δz, strain * kpj.Δz)
-    γ_w = Atlans.compress_γ_wet(kpj, consolidation)
-    γ_d = Atlans.compress_γ_dry(kpj, consolidation)
+    consolidation = strain * kpj.Δz  # natural strain
+    γ_wet = Atlans.compress_γ_wet(kpj, consolidation)
+    γ_dry = Atlans.compress_γ_dry(kpj, consolidation)
     # return new state
     return DrainingKoppejan(
         kpj.Δz - consolidation,  # new
+        kpj.Δz_0,  # no change
         t,  # new
         σ′, # new
         γ_wet,  # new

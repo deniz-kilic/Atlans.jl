@@ -24,4 +24,4 @@ end
 @testset "ConsolidationColumn" begin
     include("test_consolidation_column.jl")
 end
-                                               
+

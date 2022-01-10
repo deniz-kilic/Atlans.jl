@@ -6,85 +6,96 @@ struct DarcyColumn <: GroundwaterColumn
     z::Vector  # vertical coordinate [m]
     Δz::Vector  # cell height [m]
     SS::Vector  # specific storage(?) [m/m]
-    S_ske::Vector  # skeletal storage [m/m]
     boundary::Vector{Int}  # location of head boundaries
     boundary_ϕ::Vector  # head of boundaries
     confined::Vector{Bool}
     dry::Vector{Bool}
     # Intermediate
     conductance::Vector{Float}  # [m/d]
-    ϕ::Vector{Float}  # average head [m]
+    ϕ::Vector{Float}  # head [m]
+    ϕ_old::Vector{Float}  # head of previous timestep [m]
     p::Vector{Float}  # pore pressure [m]
     # Numerics
     A::SymTridiagonal
-    constant::Vector{Bool}
     rhs::Vector
 end
 
+"""Internodal conductance"""
 function harmonicmean_conductance(k1, k2, Δz1, Δz2)
-    csum = Δz1 / k1 + Δz2 / k2
+    csum = (0.5 * Δz1) / k1 + (0.5 * Δz2) / k2
     return 1.0 / csum
 end
 
 function conductance!(column::DarcyColumn)
-    k1 = column.kv[1]
-    Δz1 = column.Δz[1]
-    for i = 2:size(column.ϕ)
-        k2 = column.kv[i]
-        Δz2 = column.Δz[i]
-        column.conductance[i-1] = harmonicmean_conductance(k1, k2, Δz1, Δz2)
+    for i = 1:(length(column.ϕ)-1)
+        column.conductance[i] = harmonicmean_conductance(
+            column.k[i],
+            column.k[i+1],
+            column.Δz[i],
+            column.Δz[i+1],
+        )
     end
     return
 end
 
-function update_boundaries!(column::DarcyColumn, boundary::Vector{Int}, ϕ::Vector{Int})
-    column.boundary = boundary
-    column.boundary_ϕ = ϕ
-    column.constant .= false
-    for i in boundary
-        column.constant[i] = true
-    end
+function update_boundaries!(column::DarcyColumn, boundary::Vector{Int}, ϕ::Vector{Float})
+    column.boundary .= boundary
+    column.boundary_ϕ .= ϕ
     return
 end
 
-function formulate!(column::DarcyColumn)
-    # A is a symmetric tridiagonal matrix, with attributes
-    # d: diagonal
-    # ev: super-diagonal
-    for i = 1:length(column.ϕ)-1
-        if column.constant[i]
-            column.A.d[i] = 1.0
-            column.rhs[i] = column.ϕ[i]
-        end
-        j = i + 1
-        i_constant = column.constant[i]
-        j_constant = column.constant[j]
-        conductance = column.conductance[i]
-        if i_constant & j_constant
-            continue
-        elseif j_constant
-            column.A.d[i] -= conductance
-            column.rhs[i] -= conductance * column.ϕ[j+1]
-        elseif i_constant
-            column.A.d[j] -= conductance
-            column.rhs[j] -= conductance * column.ϕ[i+1]
-        else
-            column.A.d[i] -= conductance
-            column.A.d[j] += conductance
-        end
-    end
-    return
-end
 
-function solve!(column::DarcyColumn)
+"""
+Central in space, backward in time
+"""
+function formulate!(column::DarcyColumn, Δt::Float)
+    column.rhs .= 0.0
+    # dv is diagonal value
+    column.A.dv[1] = -column.conductance[1]
+    column.A.dv[2:end-1] .= -2 * column.conductance[2:end]
+    column.A.dv[end] = -column.conductance[1]
+    # ev is off-diagonal value
+    column.A.ev .= column.conductance
+
+    # Add storage component
+    # SS: storage coefficient for entire cell
+    if Δt > 0.0
+        column.A.dv .-= (column.SS / Δt)
+        column.rhs .-= (column.SS .* column.ϕ_old / Δt)
+    end
+
+    # Set boundary conditions 
+    n = length(column.ϕ)
     for (i, ϕ) in zip(column.boundary, column.boundary_ϕ)
-        column.ϕ[i] = ϕ
+
+        # Fix head in cell
+        column.A.dv[i] = 1.0
+        column.rhs[i] = ϕ
+
+        # Disconnect neighbor and add to rhs; conductance has already included
+        # in diagonal above.
+        if i > 1
+            column.A.ev[i-1] = 0.0
+            column.rhs[i-1] -= column.conductance[i-1] * ϕ
+        end
+        if i < n
+            column.A.ev[i] = 0.0
+            column.rhs[i+1] -= column.conductance[i] * ϕ
+        end
+
     end
+    return
+end
+
+
+function linearsolve!(column::DarcyColumn)
     ldiv!(column.ϕ, column.A, column.rhs)
     return
 end
 
+
 function flow!(column::DarcyColumn, Δt::Float)
-    formulate!(column)
-    solve!(column)
+    column.ϕ_old .= column.ϕ
+    formulate!(column, Δt)
+    linearsolve!(column)
 end

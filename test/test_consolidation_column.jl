@@ -1,3 +1,5 @@
+using Accessors
+
 @testset "ConsolidationColumn" begin
 
     Δz = 1.0
@@ -15,6 +17,7 @@
     consolidation = 0.0
 
     cell = Atlans.DrainingAbcIsotache(
+        Δz,
         Δz,
         t,
         σ′,
