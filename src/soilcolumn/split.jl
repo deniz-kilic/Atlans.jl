@@ -65,16 +65,9 @@ function zsplit!(z, Δz, index, newlength, lowerΔz, upperΔz)
     return
 end
 
-function columnsplit!(ig::InterpolatedGroundwater, index, newlength, lowerΔz, upperΔz)
-    zsplit!(ig.z, ig.Δz, index, newlength, lowerΔz, upperΔz)
-    # If split, another cell is introduced at the the index.
-    # This means that any index equal or higher should be incremented by one.
-    for (i, boundary_index) in enumerate(ig.boundary)
-        if boundary_index >= index
-            ig.boundary[i] = boundary_index + 1
-        end
-    end
+function columnsplit!(hg::HydrostaticGroundwater, index, newlength, lowerΔz, upperΔz)
     push!(ig.dry, true)
+    push!(ig.ϕ, NaN)
     push!(ig.p, NaN)
     return
 end
@@ -92,30 +85,17 @@ function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)
     cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
 end
 
-function split!(c::SoilColumn, level::Float)
-    index, lowerΔz, upperΔz = find_split_index(c.z, c.Δz, level)
+
+function split!(
+    sc::SoilColumn,
+    level,
+)
+    index, lowerΔz, upperΔz = find_split_index(sc.z, sc.Δz, level)
     newlength = length(c.z) + 1
     if index != 0
-        # insert new split cell
-        # push existing cells "upward"
         columnsplit!(c.groundwater, index, newlength, lowerΔz, upperΔz)
         columnsplit!(c.consolidation, index, newlength, lowerΔz, upperΔz)
         columnsplit!(c.oxidation, index, newlength, lowerΔz, upperΔz)
     end
     return
 end
-
-function split!(
-    c::Union{GroundwaterColumn,ConsolidationColumn,OxidationColumn},
-    level::Float,
-)
-    index, lowerΔz, upperΔz = find_split_index(c.z, c.Δz, level)
-    newlength = length(c.z) + 1
-    if index != 0
-        columnsplit!(column, index, newlength, lowerΔz, upperΔz)
-    end
-    return
-end
-
-# 2022
-function columnsplit!(column::DarcyColumn, index, newlength) end

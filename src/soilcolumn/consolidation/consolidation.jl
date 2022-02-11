@@ -1,22 +1,73 @@
+struct PreOverburdenPressure <: Preconsolidation
+    pressure::Vector{Float}
+end
 
-struct ConsolidationColumn
-    cells::Vector{C} where {C<:ConsolidationProcess}
+struct OverConsolidationRatio <: Preconsolidation
+    ratio::Vector{Float}
+end
+
+struct ConsolidationColumn{C,P}
+    cells::Vector{C}
     z::Vector{Float}  # cell center
     Δz::Vector{Float}  # cell height
     σ::Vector{Float}  # Total stress in Pa
     σ′::Vector{Float}  # Effective stress in Pa
     p::Vector{Float}  # Pore pressure in Pa
+    preconsolidation::P
+    result::Vector{Float}
 end
 
-function plot(column::ConsolidationColumn)
-    plot(column.σ, column.z, color = :gray, label = "σ")
-    plot!(column.p, column.z, color = :blue, label = "p")
-    plot!(column.σ′, column.z, color = :red, label = "σ′")
-    ybot = column.z .- 0.5 .* column.Δz
-    ytop = column.z[end] + 0.5 * column.Δz[end]
-    hline!(ybot, color = :black, label = "")  # bottom
-    hline!([ytop], color = :black, label = "") # top
+function ConsolidationColumn(cells, z, Δz, preconsolidation)
+    n = length(cells)
+    return ConsolidationColumn(
+        cells,
+        z,
+        Δz,
+        fill(NaN, n),
+        fill(NaN, n),
+        fill(NaN, n),
+        preconsolidation,
+        fill(NaN, n),
+    )
 end
+
+function apply_preconsolidation!(column::ConsolidationColumn{ABC, OverConsolidationRatio} where {ABC <: AbstractAbcIsotache})
+    for (i, cell) in enumerate(column.cells)
+        column.cells[i] = set_τ0_ocr(cell, column.preconsolidation.ratio[i])
+    end
+    return
+end
+
+function apply_preconsolidation!(column::ConsolidationColumn{ABC, PreOverburdenPressure} where {ABC <: AbstractAbcIsotache})
+    for (i, cell) in enumerate(column.cells)
+        column.cells[i] = set_τ0_pop(cell, column.preconsolidation.pressure[i])
+    end
+    return
+end
+
+#function apply_preconsolidation!(column::ConsolidationColumn{DrainingKoppejan, OverConsolidationRatio})
+#    for (i, cell) in enumerate column.cells 
+#        column.cells[i] = set_σ′pre_ocr(cell, column.preconsolidation.ratio[i])
+#    end
+#    return
+#end
+#
+#function apply_preconsolidation!(column::ConsolidationColumn{DrainingKoppejan, PreOverburdenPressure})
+#    for (i, cell) in enumerate column.cells 
+#        column.cells[i] = set_σ′pre_pop(cell, column.preconsolidation.pressure[i])
+#    end
+#    return
+#end
+#
+#function plot(column::ConsolidationColumn)
+#    plot(column.σ, column.z, color = :gray, label = "σ")
+#    plot!(column.p, column.z, color = :blue, label = "p")
+#    plot!(column.σ′, column.z, color = :red, label = "σ′")
+#    ybot = column.z .- 0.5 .* column.Δz
+#    ytop = column.z[end] + 0.5 * column.Δz[end]
+#    hline!(ybot, color = :black, label = "")  # bottom
+#    hline!([ytop], color = :black, label = "") # top
+#end
 
 """
 Consolidation reduces pore space, pushes out the water.
@@ -36,9 +87,9 @@ end
 Terzaghi, degree of consolidation
 """
 function U(cell::C where {C<:ConsolidationProcess}, t::Float)
-    t_factor = cell.c_v * t / (cell.Δz * cell.c_d)^2
+    t_factor = (cell.c_v * t) / (cell.Δz_0 * cell.c_d)^2
     t_pow3 = t_factor^3
-    return (t_pow3) / (t_pow3 + 0.5)^(1.0 / 6.0)
+    return (t_pow3 / (t_pow3 + 0.5))^(1.0 / 6.0)
 end
 
 """
@@ -90,5 +141,44 @@ Compute effective stress for entire column
 function effective_stress!(column::ConsolidationColumn)
     @. column.σ′ = column.σ - column.p
     column.σ′[column.σ′.<0.0] .= 0
+    return
+end
+
+"""
+Transfer computed stress to the cells of the ConsolidationColumn.
+"""
+function transfer_stress!(column::ConsolidationColumn)
+    for (i, cell) in enumerate(column.cells)
+        newcell = @set cell.σ′ = column.σ′[i]
+        column.cells[i] = newcell
+    end
+end
+
+
+prepare_forcingperiod!(_) = nothing
+
+function consolidate!(cc::ConsolidationColumn, phreatic_level, Δt)
+    # Compute the new effective stress.
+    total_stress!(cc, phreatic_level)
+    # Pore pressure has been computed by the groundwater column.
+    effective_stress!(cc)
+    # Using the change in effective stress, compute consolidation.
+    for (index, cell) in enumerate(cc.cells)
+        σ′ = cc.σ′[index]
+        cc.cells[index] = consolidate(cell, σ′, Δt)
+    end
+end
+
+function result!(column::ConsolidationColumn)
+    for (i, cell) in enumerate(columns.cells)
+        column.result[i] = cell.consolidation
+    end
+    return column.result
+end
+
+function synchronize!(column::ConsolidationColumn, Δz)
+    for i=1:length(column.cells)
+        @set column.cells[i].Δz = Δz[i]
+    end
     return
 end

@@ -1,121 +1,133 @@
-abstract type AbcIsotache <: ConsolidationProcess end
-
-struct DrainingAbcIsotache <: AbcIsotache
-    Δz::Float
-    Δz_0::Float
-    t::Float
-    σ′::Float  # effective stress
-    γ_wet::Float  # wet specific mass
-    γ_dry::Float  # dry specific mass
-    # Degree of consolidation
-    c_d::Int  # drainage coefficient
-    c_v::Float  # drainage coefficient
-    U::Float
-    # Isotache parameters
-    a::Float
-    b::Float
-    c::Float
-    τ::Float
-    consolidation::Float  # Computed consolidation
-end
 
 # compute intrinsic time (τ)
-function τ_intrinsic(abc::ABC where {ABC<:AbcIsotache}, ocr::Float)
+function set_τ0_ocr(abc::ABC where {ABC<:AbstractAbcIsotache}, ocr::Float)
     if abc.c < 1.0e-4
-        return 1.0e-9
+        τ = 1.0e-9
     else
-        return τ_ref * ocr^((abc.b - abc.a) / abc.c)
+        τ = τ_ref * ocr^((abc.b - abc.a) / abc.c)
     end
+    return @set abc.τ = τ
 end
 
-function τ_intermediate(abc::ABC where {ABC<:AbcIsotache}, loadstep::Float64)
-    σ_term = (abc.σ′ - loadstep) / abc.σ′
-    abc_term = (abc.b - abc.a) / abc.c
-    return abc.τ * σ_term^abc_term
+function set_τ0_pop(abc::ABC where {ABC<:AbstractAbcIsotache}, pop::Float)
+    ocr = (abc.σ′ + pop * 1.0e3) / abc.σ′
+    return set_τ0_ocr(abc, ocr)
 end
 
 """
 Water-filled porespace is reduced as the water is pushed out and the soil
 becomes denser.
 """
-function compress_γ_wet(abc::ABC where {ABC<:AbcIsotache})
+function compress_γ_wet(abc::ABC where {ABC<:AbstractAbcIsotache})
     return (abc.γ_wet * abc.Δz - abc.consolidation * γ_water) / (abc.Δz - abc.consolidation)
 end
 
-function compress_γ_dry(abc::ABC where {ABC<:AbcIsotache})
+function compress_γ_dry(abc::ABC where {ABC<:AbstractAbcIsotache})
     return (abc.γ_dry * abc.Δz) / (abc.Δz - abc.consolidation)
 end
 
-function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
+struct AbcIsotache <: AbstractAbcIsotache
+    Δz::Float
+    Δz_0::Float
+    t::Float
+    σ′::Float  # effective stress
+    γ_wet::Float  # wet specific mass
+    γ_dry::Float  # dry specific mass
+    # Isotache parameters
+    a::Float
+    b::Float
+    c::Float
+    τ::Float
+end
+
+function AbcIsotache(
+    Δz,
+    γ_wet,
+    γ_dry,
+    a,
+    b,
+    c,
+)
+    return AbcIsotache(
+        Δz,
+        Δz,
+        0.0,
+        NaN,
+        γ_wet,
+        γ_dry,
+        a,
+        b,
+        c,
+        NaN,
+    )
+end
+
+function consolidate!(abc::AbcIsotache, σ′::Float, Δt::Float)
     t = abc.t + Δt
-    # Degree of consolidation changes
-    Unew = U(abc, t)
-    ΔU = Unew - abc.U #??abc.U??
     # Effective stress changes
     Δσ′ = σ′ - abc.σ′
-    σ′ = abc.σ′ + Unew * Δσ′
-    loadstep = ΔU * Δσ′
     # τ changes
-    τ_intm = τ_intermediate(abc, loadstep)
-    τ = τ_intm + Δt
+    τ = τ⃰ + Δt
     # consolidation
-    strain = abc.c * log(abc.τ / τ_intm) + log(σ′ / (σ′ - loadstep))
+    strain = abc.c * log(abc.τ / τ⃰) + log(σ′ / (σ′ - loadstep))
+    # Thickness should not go below 0
     consolidation = min(abc.Δz, strain * abc.Δz)
     γ_wet = compress_γ_wet(abc)
     γ_dry = compress_γ_dry(abc)
     # return new state
-    return DrainingAbcIsotache(
-        abc.Δz - consolidation,  # new
+    return AbcIsotache(
+        abc.Δz,
         abc.Δz_0,
         t,  # new
         σ′, # new
         γ_wet,  # new
         γ_dry,  # new
-        abc.c_d,
-        abc.c_v,
-        Unew,  # new
         abc.a,
         abc.b,
         abc.c,
         τ,  # new
-        consolidation,  # new
     )
 end
 
 
+# 2.5x faster power method
+"Faster method for exponentiation"
+pow(x, y) = exp(y * log(x))
+
 """
-Turn a collection of vectors into a collection of DrainingAbcIsotache cells.
+Derivative of Qcreep with respect to head.
 """
-function draining_abc_isotache_column(
-    Δz,
-    γ_wet,
-    γ_dry,
-    c_d,
-    c_v,
-    a,
-    b,
-    c,
-)::Vector{DrainingAbcIsotache}
-    nlayer = length(Δz)
-    consolidation = Vector{DrainingAbcIsotache}(undef, nlayer)
-    for i = 1:nlayer
-        cell = DrainingAbcIsotache(
-            Δz[i],
-            Δz_0[i],
-            0.0,  # t
-            0.0,  # σ′
-            γ_wet[i],
-            γ_dry[i],
-            c_d[i],
-            c_v[i],
-            0.0,  # U
-            a[i],
-            b[i],
-            c[i],
-            0.0,  # τ
-            0.0,  # consolidation
-        )
-        consolidation[i] = cell
-    end
-    return consolidation
+function Qcreep_derivative(abc::AbcIsotache, σ′::Float, Δt::Float)
+    exponent = (abc.b - abc.a) / abc.c
+    numerator = γ_water * (abc.b - abc.a) 
+    denominator = -σ′ * (1.0 + abc.τ / Δt * pow((abc.σ′ / σ′), exponent))
+    return numerator / denominator
 end
+
+
+function Qcreep(abc::AbcIsotache, σ′::Float, Δt)
+    exponent = (abc.b - abc.a) / abc.c 
+    τ⃰ = abc.τ * pow(abc.σ / σ′, exponent)
+    return abc.c * log((τ⃰ + Δt) / τ⃰)
+end
+
+
+#function Qcreep(abc::AbcIsotache, σ′::Float, Δt::Float)
+#    exponent = (a - b) / c
+#    return abc.c * log(pow(1.0 + Δt / abc.τ * abc.σ′ / σ′, exponent))
+#end
+
+
+"""
+First term of Taylor expansion
+
+f(x) ~= f(a) + f′(a) * (x - a)
+"""
+function formulate(abc::AbcIsotache, ϕ::Float, z::Float, σ::Float, Δt::Float)
+    σ′ = σ - γ_water * (ϕ - z)
+    deriv = Qcreep_derivative(abc, σ′, Δt)
+    hcofterm = deriv
+    rhsterm = Qcreep(abc, σ′, Δt) - deriv * ϕ
+    return hcofterm, rhsterm
+end
+

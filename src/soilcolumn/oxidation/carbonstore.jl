@@ -67,3 +67,30 @@ function oxidate(cs::CarbonStore, Δt::Float)
     )
 end
 
+
+function initialize(::CarbonStore, domain, reader, I)
+    use = domain.use 
+    lithology = domain.lithology
+    geology = domain.geology
+    
+    f_organic = @view fetch_field(reader, :f_organic, I, lithology, geology)[use]
+ 
+    cells = Vector{CarbonStore}()
+    for (i, Δz) in zip(domain.index, domain.Δz)
+        cell = CarbonStore(
+            Δz,
+            f_organic[i],
+            NaN,
+            NaN,
+            m_minimum_organic[i],
+            α[i],
+            NaN,
+            0.0,
+        )
+        push!(cells, cell)
+    end
+    
+    column = OxidationColumn(cells, domain.z, domain.Δz)
+    return column
+end
+

@@ -1,12 +1,12 @@
 """
 Linearly interpolated heads.
 """
+
 struct InterpolatedGroundwater <: GroundwaterColumn
     z::Vector{Float}  # vertical midpoint coordinate [m]
     Δz::Vector{Float}  # cell height [m]
-    boundary::Vector{Int}  # location of head boundaries
-    boundary_ϕ::Vector{Float}  # head of boundaries
-    confined::Vector{Bool}
+    phreatic::Float
+    aquifer::Float
     dry::Vector{Bool}
     ϕ::Vector{Float}
     p::Vector{Float}
@@ -15,70 +15,65 @@ end
 function InterpolatedGroundwater(
     z::Vector{Float},  # vertical midpoint coordinate [m]
     Δz::Vector{Float},  # cell height [m]
-    boundary::Vector{Int},  # location of head boundaries
-    boundary_ϕ::Vector{Float},  # head of boundaries
+    phreatic_level,
+    aquifer_head,
 )
-    # TODO: check length of other arrays?
-    nlayer = length(z)
-    dry = fill(false, nlayer)
-    ϕ = fill(NaN, nlayer)
-    p = fill(NaN, nlayer)
-    return InterpolatedGroundwater(z, Δz, boundary, boundary_ϕ, dry, ϕ, p)
+    n = length(z)
+    return InterpolatedGroundwater(
+        z,
+        Δz,
+        phreatic_level,
+        aquifer_head,
+        dry = fill(false, n),
+        ϕ = fill(NaN, n),
+        p = fill(NaN, n),
+    )
 end
 
 function interpolate_head!(ig::InterpolatedGroundwater)
-    nlayer = length(ig.Δz)
-    nbound = length(ig.boundary)
-    z1 = ig.z[ig.boundary[1]]
-    z2 = ig.z[ig.boundary[2]]
-    ϕ1 = ig.boundary_ϕ[1]
-    ϕ2 = ig.boundary_ϕ[2]
-    Δz = z2 - z1
-    Δϕ = ϕ2 - ϕ1
-    j = 2
-    z2 = ig.z[ig.boundary[j]]
-    ϕ2 = ig.boundary_ϕ[j]
-    i = 1
-    while i < nlayer
-        zi = ig.z[i]
-        if zi <= z1
-            ig.ϕ[i] = ϕ1
-            i += 1
-        elseif zi <= z2
-            w = (zi - z1) / Δz
-            ig.ϕ[i] = ϕ1 + w * Δϕ
-            i += 1
-        elseif j < nbound
-            j += 1
-            z1 = z2
-            ϕ1 = ϕ2
-            z2 = ig.z[ig.boundary[j]]
-            ϕ2 = ig.boundary_ϕ[j]
-        else
-            break
-        end
-    end
-    ig.ϕ[i:end] .= ϕ2
+    Δϕ = ig.phreatic.ϕ - ig.ϕaquifer.ϕ
+    Δz = ig.phreatic.ϕ - ig.z[i]
+    ig.ϕ .= ig.ϕ_aquifer + min.(ig.z .- ig.z[1] ./ Δz, 1.0) * Δϕ
+    ig.dry .= ig.z > ϕ_top 
     return
 end
-
-function set_phreatic_level!(ig::InterpolatedGroundwater, level::Float)
-    for index in eachindex(ig.z)
-        zbot = ig.z[index] - 0.5 * ig.Δz[index]
-        if level > zbot
-            ig.boundary[end] = index
-            ig.ϕ[end] = level
-        end
-        break
-    end
-end
-
+    
 function flow!(ig::InterpolatedGroundwater, Δt::Float)
-    if all(ig.boundary_ϕ == first(ig.boundary_ϕ))
-        ig.ϕ .= first(ig.boundary_ϕ)
-        return
-    else
-        interpolate_head!(ig)
-    end
+    interpolate_head!(ig)
     return
 end
+
+function set_aquifer_difference!(ig::InterpolatedGroundwater, Δϕ)
+    @set ig.aquifer.ϕ = ig.aquifer.ϕ + Δϕ
+    return
+end
+
+function set_phreatic_difference!(ig::InterpolatedGroundwater, Δϕ)
+    @set ig.phreatic.ϕ = ig.phreatic.ϕ + Δϕ
+    return
+end
+
+function set_aquifer!(ig::InterpolatedGroundwater, ϕ)
+    @set ig.aquifer.ϕ = ϕ
+    return
+end
+
+function set_phreatic!(ig::InterpolatedGroundwater, ϕ)
+    @set ig.phreatic.ϕ = ϕ
+    return
+end
+
+
+function initialize(::InterpolatedGroundwater, domain, reader, I)::InterpolatedGroundwater
+    return InterpolatedGroundwater(
+        domain.z,
+        domain.Δz,
+        ncread2d(reader, :phreatic_level, I),
+        ncread2d(reader, :aquifer_head, I),
+        fill(false, domain.n),
+        fill(NaN, domain.n)
+        fill(NaN, domain.n)
+    )
+end
+
+phreatic_level(ig::InterpolatedGroundwater) = ig.phreatic.ϕ::Float

@@ -8,16 +8,18 @@ struct DrainingKoppejan <: Koppejan
     σ′::Float  # effective stress
     γ_wet::Float  # wet specific mass
     γ_dry::Float  # dry specific mass
-    c_d::Float  # drainage coefficient
+    c_d::Float  # drainage factor
     c_v::Float  # drainage coefficient
     U::Float
     Cp::Float
     Cs::Float
     Cp′::Float
     Cs′::Float
-    σ′pre::Float
-    consolidation::Float
+    σ′_pre::Float
 end
+
+set_σ′pre_ocr(kpj::DrainingKoppejan, ocr) = @set kpj.σ′_pre = kpj.σ′ * ocr
+set_σ′pre_pop(kpj::DrainingKoppejan, pop) = @set kpj.σ′_pre = kpj.σ′ + pop
 
 function consolidate(kpj::DrainingKoppejan, σ′::Float, Δt::Float)::DrainingKoppejan
     t = kpj.t + Δt
@@ -43,23 +45,22 @@ function consolidate(kpj::DrainingKoppejan, σ′::Float, Δt::Float)::DrainingK
             kpj.Cs,
             kpj.Cp′,
             kpj.Cs′,
-            kpj.σ′pre,
-            consolidation,
+            kpj.σ′_pre,
         )
     end
 
     log10time = log10((1.0 + t) / (1.0 + kpj.t))
-    if σ′ <= kpj.σ′pre
+    if σ′ <= kpj.σ′_pre
         strain = ((ΔU / kpj.Cp) + (1.0 / kpj.Cs) * log10time) * log(σ′ / kpj.σ′)
     else
         strain = (
-            ((ΔU / kpj.Cp) + (1.0 / Cs) * log10time) * log(σ′pre / kpj.σ′) +
-            ((ΔU / kpj.Cp′) + (1.0 / Cs′) * log10time) * log(σ′ / kpj.σ′pre)
+            ((ΔU / kpj.Cp) + (1.0 / Cs) * log10time) * log(σ′_pre / kpj.σ′) +
+            ((ΔU / kpj.Cp′) + (1.0 / Cs′) * log10time) * log(σ′ / kpj.σ′_pre)
         )
     end
 
-    # consolidation changes
-    consolidation = strain * kpj.Δz  # natural strain
+    # consolidation changes: thickness should not go below 0
+    consolidation = min(kpj.Δz, strain * kpj.Δz)
     γ_wet = Atlans.compress_γ_wet(kpj, consolidation)
     γ_dry = Atlans.compress_γ_dry(kpj, consolidation)
     # return new state
@@ -77,7 +78,6 @@ function consolidate(kpj::DrainingKoppejan, σ′::Float, Δt::Float)::DrainingK
         kpj.Cs,
         kpj.Cp′,
         kpj.Cs′,
-        kpj.σ′pre,
-        consolidation,  # new
+        kpj.σ′_pre,
     )
 end

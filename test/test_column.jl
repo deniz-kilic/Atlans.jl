@@ -15,7 +15,7 @@
     σ′ = fill(0, nlayer)
     γ_wet = fill(18_000.0, nlayer)
     γ_dry = fill(13_000.0, nlayer)
-    c_d = fill(2, nlayer)
+    c_d = fill(2.0, nlayer)
     c_v = fill(1.0e-5, nlayer)
     a = fill(1.0e-6, nlayer)
     b = fill(1.0e-6, nlayer)
