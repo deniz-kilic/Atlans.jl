@@ -9,7 +9,7 @@ end
 """
 x, y, z are all midpoints.
 """
-struct SoilColumn{G,C,O}
+struct SoilColumn{G,C,P,O}
     base::Base
     surface::Surface
     x::Float
@@ -17,15 +17,41 @@ struct SoilColumn{G,C,O}
     z::Vector{Float}
     Δz::Vector{Float}
     groundwater::G
-    consolidation::ConsolidationColumn{C}
+    consolidation::ConsolidationColumn{C,P}
     oxidation::OxidationColumn{O}
     subsidence::Vector{Float}
 end
 
+function SoilColumn(
+    base::Float,
+    surface::Float,
+    x,
+    y,
+    z,
+    Δz,
+    groundwater,
+    consolidation,
+    oxidation,
+)
+    return SoilColumn(
+        Base(base),
+        Surface(surface),
+        x,
+        y,
+        z,
+        Δz,
+        groundwater,
+        consolidation,
+        oxidation,
+        fill(NaN, length(z)),
+    )
+end
+
 function initial_stress!(column)
     flow!(column.groundwater, 0.0)
-    pore_pressure!(column.grondwater)
+    pore_pressure!(column.groundwater)
     exchange_pore_pressure!(column)
+    total_stress!(column.consolidation, phreatic_level(column.groundwater))
     effective_stress!(column.consolidation)
     transfer_stress!(column.consolidation)
     return
@@ -60,6 +86,7 @@ function set_deep_subsidence!(
     subsidence::Float,
 )
     column.base.z -= subsidence
+    update_z!(column)
 end
 
 function set_aquifer!(
@@ -103,7 +130,8 @@ end
 """
     prepare_timestep!(column)
     
-Prepare a single timestep.
+Prepare a single timestep. This updates stresses in the column and accounts for
+e.g. drowning of the column.
 
 This computes:
 
@@ -131,8 +159,8 @@ This:
     * Reset U and t for DrainingConsolidation processes.
 """
 function prepare_forcingperiod!(column::SoilColumn)
-    level = oxidation_depth(column.oxidation)
-    split!(column, level)
+    #level = oxidation_depth(column.oxidation)
+    #split!(column, level)
     
     initial_stress!(column)
 
@@ -147,7 +175,7 @@ end
 Compute new midpoints and surface level.
 """
 function update_z!(column::SoilColumn)
-    @. column.z = column.base.z + cumsum(column.Δz) - 0.5 * column.Δz
+    column.z .= column.base.z .+ cumsum(column.Δz) .- 0.5 .* column.Δz
     column.surface.z = column.base.z + sum(column.Δz)
 end
 
@@ -158,7 +186,7 @@ Apply consolidation and oxidation to thickness
 """
 function subside!(column::SoilColumn)
     # Δz should not become negative
-    column.subsidence .= min.(result!(column.consolidation) .+ result!(column.oxidation), column.Δz)
+    column.subsidence .= min.((column.consolidation.result .+ column.oxidation.result), column.Δz)
     column.Δz .-= column.subsidence
     synchronize!(column.groundwater, column.Δz)
     synchronize!(column.consolidation, column.Δz)
@@ -182,8 +210,8 @@ Finally, thickness and elevation are updated.
 """
 function advance_timestep!(c::SoilColumn, Δt::Float)
     flow!(c.groundwater, Δt)
-    exchange_pore_pressure!(column)
-    consolidate!(c.consolidation, Δt)
+    exchange_pore_pressure!(c)
+    consolidate!(c.consolidation, phreatic_level(c.groundwater), Δt)
     oxidate!(c.oxidation, Δt)
     subside!(c)
     return sum(c.subsidence), sum(c.consolidation.result), sum(c.oxidation.result)

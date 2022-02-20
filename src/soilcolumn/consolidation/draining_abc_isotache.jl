@@ -51,8 +51,6 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     # Degree of consolidation changes
     Unew = U(abc, t)
     ΔU = Unew - abc.U
-    @show abc.U
-    @show Unew
 
     # Effective stress changes
     load = σ′ - abc.σ′
@@ -64,13 +62,15 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     τ = τ⃰ + Δt
 
     # consolidation
-    strain = abc.a * log(σ′ / (σ′ - loadstep)) + abc.c * log(abc.τ / τ⃰)
+    elastoplastic = abc.a * log(σ′ / (σ′ - loadstep))
+    creep = abc.c * log(τ / τ⃰)
+    strain = elastoplastic + creep
 
     # Thickness should not go below 0
     consolidation = min(abc.Δz, strain * abc.Δz)
     γ_wet = compress_γ_wet(abc, consolidation)
     γ_dry = compress_γ_dry(abc, consolidation)
-
+    
     # return new state
     return DrainingAbcIsotache(
         abc.Δz - consolidation,  # new
@@ -85,7 +85,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
         abc.a,
         abc.b,
         abc.c,
-        τ,  # new
+        τ,  # new,
         consolidation,  # new
     )
 end
@@ -172,10 +172,11 @@ end
 Reset degree of consolidation and time.
 """
 function prepare_forcingperiod!(column::ConsolidationColumn{DrainingAbcIsotache,P} where {P <: Preconsolidation})
-    for (i, cell) in column.cells
-        cell = @set cell.t = 0   
-        cell = @set cell.U = 0   
-        columns.cells[i] = cell
+    for (i, cell) in enumerate(column.cells)
+        cell = @set cell.t = 0.0  
+        cell = @set cell.U = 0.0 
+        cell = @set cell.Δz_0 = cell.Δz   
+        column.cells[i] = cell
     end
     return
 end

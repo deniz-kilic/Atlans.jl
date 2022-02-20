@@ -40,6 +40,7 @@ end
     
 function flow!(ig::InterpolatedGroundwater, Δt::Float)
     interpolate_head!(ig)
+    pore_pressure!(ig)
     return
 end
 

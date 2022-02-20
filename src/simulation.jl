@@ -23,7 +23,7 @@ struct Output
 end
 
 struct Model{T}
-    columns::SoilColumn
+    columns::Vector{SoilColumn}
     index::Vector{CartesianIndex}
     timestepper::T
     output::Output

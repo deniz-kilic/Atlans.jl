@@ -2,52 +2,11 @@ using Setfield
 
 @testset "ConsolidationColumn" begin
 
-    Δz = 1.0
-    t = 0.0
-    σ′ = 10000.0
-    γ_wet = 15000.0
-    γ_dry = 10000.0
-    c_d = 2.0
-    c_v = 0.006912
-    U = 0.0
-    a = 0.01737
-    b = 0.1303
-    c = 0.008686
-    τ = 1.0
-    consolidation = 0.0
+    cell = AtlansFixtures.draining_abc_isotache()
+    column = AtlansFixtures.draining_abc_isotache_column()
     
-    cell = Atlans.DrainingAbcIsotache(
-        Δz,
-        Δz,
-        t,
-        σ′,
-        γ_wet,
-        γ_dry,
-        c_d,
-        c_v,
-        U,
-        a,
-        b,
-        c,
-        τ,
-        consolidation,
-    )
-
-    cells = fill(cell, 4)
-    z = collect(0.5:1.0:4.0)
-    Δz = fill(1.0, 4)
-    σ = fill(NaN, 4)
-    σ′ = fill(NaN, 4)
-    p = fill(NaN, 4)
-    result = fill(NaN, 4)
-    preconsolidation = Atlans.OverConsolidationRatio(fill(2.15, 4))
-    column = Atlans.ConsolidationColumn(cells, z, Δz, σ, σ′, p, preconsolidation, result)
-
-    @testset "ConsolidationColumn constructor" begin
+    @testset "constructor" begin
         @test typeof(column) == Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, Atlans.OverConsolidationRatio}
-        
-        column2 = Atlans.ConsolidationColumn(cells, z, Δz, preconsolidation)
-        @test typeof(column2) == Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, Atlans.OverConsolidationRatio}
     end
 
     @testset "compress_γ_wet" begin
@@ -67,8 +26,12 @@ using Setfield
     @testset "degree of consolidation" begin
         t = 0.01
         actual = Atlans.U(cell, t)
-        expected = 5.7916576227323684e-15
+        expected = 0.004665987113375191
         @test actual ≈ expected
+        
+        t = 1.0e6
+        actual = Atlans.U(cell, t)
+        @test actual ≈ 1.0
     end
 
     @testset "cellweight" begin
@@ -109,14 +72,24 @@ using Setfield
         expected = [35000.0, 25000.0, 15000.0, 5000.0]
         @test all(column.σ .≈ expected)
 
+        phreatic_level = 1.2
+        Atlans.total_stress!(column, phreatic_level)
+        expected = [38500.0, 25000.0, 15000.0, 5000.0]
+        @test all(column.σ .≈ expected)
+
         phreatic_level = 1.5
         Atlans.total_stress!(column, phreatic_level)
-        expected = [42500.0, 25000.0, 15000.0, 5000.0]
+        expected = [40000.0, 25000.0, 15000.0, 5000.0]
+        @test all(column.σ .≈ expected)
+
+        phreatic_level = 1.7
+        Atlans.total_stress!(column, phreatic_level)
+        expected = [41000.0, 26000.0, 15000.0, 5000.0]
         @test all(column.σ .≈ expected)
 
         phreatic_level = 2.0
         Atlans.total_stress!(column, phreatic_level)
-        expected = [45000.0, 30000.0, 15000.0, 5000.0]
+        expected = [42500.0, 27500.0, 15000.0, 5000.0]
         @test all(column.σ .≈ expected)
 
         phreatic_level = 5.0
@@ -150,20 +123,29 @@ using Setfield
     end
         
     @testset "consolidate" begin
+        # Set the phreatic level at 3.0 m
+        phreatic_level = 3.0
+        Atlans.total_stress!(column, phreatic_level)
+        column.p .= [2.5, 1.5, 0.5, 0.0] .* Atlans.γ_water
         Atlans.apply_preconsolidation!(column)
+
         # Now lower watertable by 0.2
         column.p .= [2.3, 1.3, 0.3, 0.0] .* Atlans.γ_water
         phreatic_level = 2.8
-        Δt = 700.0
+        Δt = 3650.0
         Atlans.consolidate!(column, phreatic_level, Δt)
-        @show column.cells[1]
-        @show column.cells[2]
-        @show column.cells[3]
-        @show column.cells[4]
+        
+        # the top [4] cell also experiences creep
+        @test all(cell.consolidation > 0.0 for cell in column.cells)
+        @test all(cell.Δz < 1.0 for cell in column.cells)
     end
     
-    @testset "U -> 1.0" begin
-        
+    @testset "prepare_forcingperiod" begin
+        Atlans.prepare_forcingperiod!(column)
+        for cell in column.cells
+            @test cell.t == 0.0
+            @test cell.U == 0.0
+            @test cell.Δz_0 == cell.Δz
+        end
     end
-
 end

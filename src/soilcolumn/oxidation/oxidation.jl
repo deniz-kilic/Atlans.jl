@@ -5,17 +5,13 @@ struct OxidationColumn{O}
     result::Vector{Float}
 end
 
-function oxidate!(oc::OxidationColumn, Δt::Float)
-    for (index, cell) in enumerate(oc.cells)
-        oc.oxidation[index] = oxidate(cell, Δt)
+function oxidate!(column::OxidationColumn, Δt::Float)
+    for (index, cell) in enumerate(column.cells)
+        newcell = oxidate(cell, Δt)
+        column.cells[index] = newcell
+        column.result[index] = newcell.oxidation
     end
-end
-
-function result!(column::OxidationColumn)
-    for (i, cell) in enumerate(column.cells)
-        result[i] = cell.oxidation
-    end
-    return result
+    return
 end
 
 function synchronize!(column::OxidationColumn, Δz)

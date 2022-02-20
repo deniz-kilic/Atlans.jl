@@ -39,8 +39,7 @@
         σ′ = 10000.0
         Δt = 1.0
         new_cell = Atlans.consolidate(cell, σ′, Δt)
-        expected = 0.0
-        @test new_cell.consolidation ≈ expected
+        @test new_cell.consolidation > 0.0
         @test typeof(new_cell) == Atlans.DrainingAbcIsotache
     end
 

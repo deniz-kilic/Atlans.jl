@@ -152,6 +152,8 @@ function flow!(column::DarcyColumn, Δt::Float)
     column.ϕ_old .= column.ϕ
     formulate!(column, Δt)
     linearsolve!(column)
+    pore_pressure!(column)
+    return
 end
 
 

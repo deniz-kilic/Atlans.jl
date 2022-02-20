@@ -20,8 +20,8 @@ function create_timesteps(timestepper::ExponentialTimeStepper, duration)
         remainder -= Δt
         Δt = Δt * timestepper.multiplier
     end
+    push!(steps, remainder)
 
-    push!(timestepper.Δt, remainder)
     return steps
 end
 

@@ -126,12 +126,13 @@ function total_stress!(column::ConsolidationColumn, phreatic_level)
     for index in reverse(eachindex(column.cells))
         cell = column.cells[index]
         zmid = column.z[index]
+        zbot = zmid - 0.5 * cell.Δz
         midweight = weight(phreatic_level, zmid, 0.5 * cell.Δz, cell.γ_wet, cell.γ_dry)
 
         column.σ[index] = cumulative_weight + midweight
 
         cumulative_weight +=
-            weight(phreatic_level, zmid - cell.Δz, cell.Δz, cell.γ_wet, cell.γ_dry)
+            weight(phreatic_level, zbot, cell.Δz, cell.γ_wet, cell.γ_dry)
     end
 end
 
@@ -157,23 +158,18 @@ end
 
 prepare_forcingperiod!(_) = nothing
 
-function consolidate!(cc::ConsolidationColumn, phreatic_level, Δt)
+function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
     # Compute the new effective stress.
-    total_stress!(cc, phreatic_level)
+    total_stress!(column, phreatic_level)
     # Pore pressure has been computed by the groundwater column.
-    effective_stress!(cc)
+    effective_stress!(column)
     # Using the change in effective stress, compute consolidation.
-    for (index, cell) in enumerate(cc.cells)
-        σ′ = cc.σ′[index]
-        cc.cells[index] = consolidate(cell, σ′, Δt)
+    for (index, cell) in enumerate(column.cells)
+        σ′ = column.σ′[index]
+        newcell = consolidate(cell, σ′, Δt)
+        column.cells[index] = newcell
+        column.result[index] = newcell.consolidation
     end
-end
-
-function result!(column::ConsolidationColumn)
-    for (i, cell) in enumerate(columns.cells)
-        column.result[i] = cell.consolidation
-    end
-    return column.result
 end
 
 function synchronize!(column::ConsolidationColumn, Δz)

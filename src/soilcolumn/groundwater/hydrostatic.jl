@@ -38,7 +38,7 @@ function pore_pressure!(hg::HydrostaticGroundwater)
 end
 
 
-function intialize(::HydrostaticGroundwater, domain, reader, I)::HydrostaticGroundwater
+function initialize(::HydrostaticGroundwater, domain, reader, I)::HydrostaticGroundwater
     return InterpolatedGroundwater(
         Phreatic(ncread2d(reader, :phreatic_level, I)),
         fill(false, domain.n),
@@ -47,5 +47,5 @@ function intialize(::HydrostaticGroundwater, domain, reader, I)::HydrostaticGrou
     )
 end
 
-flow!(::HydrostaticGroundwater, _) = nothing
+flow!(hg::HydrostaticGroundwater, _) = pore_pressure!(hg)
 phreatic_level(ig::HydrostaticGroundwater) = ig.phreatic.ϕ

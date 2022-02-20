@@ -14,6 +14,4 @@ end
 #    hline!([ytop], color = :black, label = "") # top
 #end
 
-function synchronize!(gw::GW where {GW<:GroundwaterColumn}, Δz)
-    return
-end
+synchronize!(_::GW where {GW<:GroundwaterColumn}, _) = nothing
