@@ -126,6 +126,9 @@
               column.oxidation.z ===
               column.groundwater.z
         @test column.Δz === column.consolidation.Δz === column.oxidation.Δz
+
+        @show column.consolidation.result
+        @show column.oxidation.result
     end
 
     @testset "Compute: different forcing, same output" begin
@@ -135,7 +138,7 @@
 
         @test c1 ≈ c2 ≈ c3  # same consolidation
         @test o1 ≈ o2 ≈ o3  # same oxidation
-        @test s1 ≈ s2 ≈ s3  #same subsidence
+        @test s1 ≈ s2 ≈ s3  # same subsidence
     end
 
 end

@@ -2,8 +2,10 @@ using Revise
 using Test
 using Atlans
 
+
 include("fixtures.jl")
 
+include("test_io.jl")
 include("test_hydrostatic_groundwater.jl")
 include("test_carbon_store.jl")
 #    include("test_constant_rate.jl")

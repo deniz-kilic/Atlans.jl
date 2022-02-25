@@ -1,6 +1,9 @@
 module AtlansFixtures
 
 using Atlans
+using NCDatasets
+using DataFrames
+using CSV
 
 function draining_abc_isotache()
     Δz = 1.0
@@ -105,6 +108,82 @@ function soil_column_hg_abc_cs()
         Atlans.HydrostaticGroundwater(z, Atlans.Phreatic(3.0), fill(false, 4), fill(NaN, 4))
 
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc)
+end
+
+function subsoil_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c") 
+    defDim(ds, "x", 2)
+    defDim(ds, "y", 3)
+    defDim(ds, "layer", 4)
+
+    geology = defVar(ds, "geology", Int, ("layer", "x", "y"))
+    lithology = defVar(ds, "lithology", Int, ("layer", "x", "y"))
+    geology[:] .= 1
+    lithology[:] .= 2
+    return filename
+end
+
+function create_xcoord!(ds, x)
+    defVar(
+        ds,
+        "x",
+        x,
+        ("x",),
+        attrib = [
+            "units" => "m",
+            "standard_name" => "projection_x_coordinate",
+            "axis" => "X",
+        ],
+    )
+end
+
+function create_ycoord!(ds, y)
+    defVar(
+        ds,
+        "y",
+        y,
+        ("y",),
+        attrib = [
+            "units" => "m",
+            "standard_name" => "projection_y_coordinate",
+            "axis" => "Y",
+        ],
+    )
+end
+
+function lowering_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c") do ds
+        defDim(ds, "x", 2)
+        defDim(ds, "y", 3)
+        defDim(ds, "time", 2)
+        create_xcoord!(ds, [12.5, 37.5])
+        create_ycoord!(ds, [87.5, 62.5])
+
+        difference = defVar(ds, "phreatic_difference", Int, ("x", "y", "time"))
+        difference[:] .= -0.1
+    end
+    return filename
+end
+
+function params_table()
+    filename = tempname()
+    df = DataFrame(
+        geology_name = ["NAWA"],
+        lithology_name = ["sand"],
+        geology = [1],
+        lithology = [2],
+        γ_wet = [15000.0],
+        γ_dry = [10000.0],
+        c_d = [2.0],
+        c_v = [0.006912],
+        a = [0.01737],
+        b = [0.1303],
+        c = [0.008686],
+    )
+    CSV.write(filename, df)
+    return filename
 end
 
 end # module

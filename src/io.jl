@@ -1,5 +1,17 @@
 # Reading
 # -------
+function prepare_subsoil_reader(path_nc, path_csv)
+    ds = Dataset(path_nc, "r")
+    df = read_params_table(path_csv)
+    tables = build_lookup_tables(df)
+    return SubsoilReader(ds, tables, Dict(key => Symbol(key) for key in keys(ds)))
+end
+
+function prepare_reader(path)
+    ds = Dataset(path, "r")
+    times = ds["time"][:]
+    return Reader(ds, Dict(key => Symbol(key) for key in keys(ds)), times)
+end
 
 function ncread(R::Reader, param::Symbol)
     varname = R.params[param]
@@ -43,9 +55,9 @@ end
 function build_lookup_tables(df)
     geology = df[:, :geology]
     lithology = df[:, :lithology]
-    tables = Dict{:symbol,Dict{Tuple{Int,Int},Float}}
+    tables = Dict{Symbol,Dict{Tuple{Int,Int},Float}}()
     for name in names(df, Float)
-        tables[name] = Dict(
+        tables[Symbol(name)] = Dict(
             (geo, lit) => val for (geo, lit, val) in zip(geology, lithology, df[:, name])
         )
     end
@@ -59,19 +71,6 @@ function lookup(table, geology, lithology)
         found[i] = table[(geology[i], lithology[i])]
     end
     return found
-end
-
-function prepare_subsoil_reader(path_nc, path_csv)
-    ds = Dataset(path_nc, "r")
-    df = read_params_table(path_csv)
-    tables = build_lookup_tables(df)
-    return SubsoilReader(ds, tables, Dict(key => Symbol(key) for key in keys(ds)))
-end
-
-function prepare_reader(path)
-    ds = Dataset(path, "r")
-    times = ds["time"][:]
-    return Reader(ds, Dict(key => Symbol(key) for key in keys(ds)), times)
 end
 
 function fetch_field(reader, field, I, lithology, geology)

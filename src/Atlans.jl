@@ -1,13 +1,13 @@
 module Atlans
 
+using CSV
 using Setfield
 using CFTime
 using Dates
 using LinearAlgebra
+using DataFrames
 using NCDatasets
 using StatsBase
-
-import RecipesBase.plot
 
 const Float = Float64
 const OptionalFloat = Union{Float,Missing}
