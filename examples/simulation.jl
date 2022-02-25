@@ -22,11 +22,7 @@ model = atlans.Model(
     Δzmax,
 )
 
-simulation = atlans.Simulation(
-    model,
-    "output.nc",
-    DateTime("2020-01-01"),
-)
+simulation = atlans.Simulation(model, "output.nc", DateTime("2020-01-01"))
 
 deep_subsidence = atlans.DeepSubsidence("deep-subsidence.nc")
 stage_change = atlans.StageChange("stage-change.nc")

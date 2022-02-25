@@ -11,12 +11,7 @@ end
 
 function HydrostaticGroundwater(z, phreatic_level)
     n = length(z)
-    return HydrostaticGroundwater(
-        z,
-        Phreatic(phreatic_level),
-        fill(false, n),
-        fill(NaN, n),
-    )
+    return HydrostaticGroundwater(z, Phreatic(phreatic_level), fill(false, n), fill(NaN, n))
 end
 
 function set_phreatic_difference!(hg::HydrostaticGroundwater, Δϕ)
@@ -38,14 +33,10 @@ function pore_pressure!(hg::HydrostaticGroundwater)
 end
 
 
-function initialize(::HydrostaticGroundwater, domain, reader, I)::HydrostaticGroundwater
-    return InterpolatedGroundwater(
-        Phreatic(ncread2d(reader, :phreatic_level, I)),
-        fill(false, domain.n),
-        fill(NaN, domain.n),
-        fill(NaN, domain.n),
-    )
-end
-
 flow!(hg::HydrostaticGroundwater, _) = pore_pressure!(hg)
-phreatic_level(ig::HydrostaticGroundwater) = ig.phreatic.ϕ
+phreatic_level(hg::HydrostaticGroundwater) = hg.phreatic.ϕ
+
+
+function initialize(::HydrostaticGroundwater, domain, reader, I)::HydrostaticGroundwater
+    return HydrostaticGroundwater(domain.z, ncread2d(reader, :phreatic_level, I))
+end

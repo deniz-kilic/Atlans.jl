@@ -86,10 +86,7 @@ function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)
 end
 
 
-function split!(
-    sc::SoilColumn,
-    level,
-)
+function split!(sc::SoilColumn, level)
     index, lowerΔz, upperΔz = find_split_index(sc.z, sc.Δz, level)
     newlength = length(c.z) + 1
     if index != 0

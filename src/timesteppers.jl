@@ -15,7 +15,7 @@ function create_timesteps(timestepper::ExponentialTimeStepper, duration)
     remainder = duration
 
     steps = Vector{Float}()
-    while remainder > Δt 
+    while remainder > Δt
         push!(steps, Δt)
         remainder -= Δt
         Δt = Δt * timestepper.multiplier
@@ -50,5 +50,5 @@ end
 Compute duration of forcing period from current time.
 """
 function periodduration(clock)
-    return clock.times[clock.iteration + 1] - clock.times[clock.iteration]
+    return clock.times[clock.iteration+1] - clock.times[clock.iteration]
 end

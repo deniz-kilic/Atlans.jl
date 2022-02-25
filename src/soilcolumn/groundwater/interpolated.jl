@@ -34,10 +34,10 @@ function interpolate_head!(ig::InterpolatedGroundwater)
     Δϕ = ig.phreatic.ϕ - ig.ϕaquifer.ϕ
     Δz = ig.phreatic.ϕ - ig.z[i]
     ig.ϕ .= ig.ϕ_aquifer + min.(ig.z .- ig.z[1] ./ Δz, 1.0) * Δϕ
-    ig.dry .= ig.z > ϕ_top 
+    ig.dry .= ig.z > ϕ_top
     return
 end
-    
+
 function flow!(ig::InterpolatedGroundwater, Δt::Float)
     interpolate_head!(ig)
     pore_pressure!(ig)
@@ -72,8 +72,7 @@ function initialize(::InterpolatedGroundwater, domain, reader, I)::InterpolatedG
         ncread2d(reader, :phreatic_level, I),
         ncread2d(reader, :aquifer_head, I),
         fill(false, domain.n),
-        fill(NaN, domain.n)
-        fill(NaN, domain.n)
+        fill(NaN, domain.n)fill(NaN, domain.n),
     )
 end
 

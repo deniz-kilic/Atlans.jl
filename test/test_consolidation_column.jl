@@ -4,9 +4,16 @@ using Setfield
 
     cell = AtlansFixtures.draining_abc_isotache()
     column = AtlansFixtures.draining_abc_isotache_column()
-    
+
     @testset "constructor" begin
-        @test typeof(column) == Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, Atlans.OverConsolidationRatio}
+        @test typeof(column) == Atlans.ConsolidationColumn{
+            Atlans.DrainingAbcIsotache,
+            Atlans.OverConsolidationRatio,
+        }
+    end
+
+    @testset "surface_level" begin
+        @test Atlans.surface_level(column) ≈ 4.0
     end
 
     @testset "compress_γ_wet" begin
@@ -28,7 +35,7 @@ using Setfield
         actual = Atlans.U(cell, t)
         expected = 0.004665987113375191
         @test actual ≈ expected
-        
+
         t = 1.0e6
         actual = Atlans.U(cell, t)
         @test actual ≈ 1.0
@@ -108,20 +115,20 @@ using Setfield
         Atlans.effective_stress!(column)
         @test column.σ′[4] == 0.0
     end
-    
+
     @testset "set_stress" begin
         # phreatic_level at 3.0 m; hydrostatic head.
         phreatic_level = 3.0
         column.p .= [2.5, 1.5, 0.5, 0.0] .* Atlans.γ_water
-        
+
         Atlans.total_stress!(column, phreatic_level)
         Atlans.effective_stress!(column)
         # Transfer stress to cells
         Atlans.transfer_stress!(column)
-        
-        @test all([cell.σ′ for cell in column.cells]  .== column.σ′)
+
+        @test all([cell.σ′ for cell in column.cells] .== column.σ′)
     end
-        
+
     @testset "consolidate" begin
         # Set the phreatic level at 3.0 m
         phreatic_level = 3.0
@@ -134,12 +141,12 @@ using Setfield
         phreatic_level = 2.8
         Δt = 3650.0
         Atlans.consolidate!(column, phreatic_level, Δt)
-        
+
         # the top [4] cell also experiences creep
         @test all(cell.consolidation > 0.0 for cell in column.cells)
         @test all(cell.Δz < 1.0 for cell in column.cells)
     end
-    
+
     @testset "prepare_forcingperiod" begin
         Atlans.prepare_forcingperiod!(column)
         for cell in column.cells

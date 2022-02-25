@@ -31,14 +31,21 @@ function ConsolidationColumn(cells, z, Δz, preconsolidation)
     )
 end
 
-function apply_preconsolidation!(column::ConsolidationColumn{ABC, OverConsolidationRatio} where {ABC <: AbstractAbcIsotache})
+function apply_preconsolidation!(
+    column::ConsolidationColumn{
+        ABC,
+        OverConsolidationRatio,
+    } where {ABC<:AbstractAbcIsotache},
+)
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_ocr(cell, column.preconsolidation.ratio[i])
     end
     return
 end
 
-function apply_preconsolidation!(column::ConsolidationColumn{ABC, PreOverburdenPressure} where {ABC <: AbstractAbcIsotache})
+function apply_preconsolidation!(
+    column::ConsolidationColumn{ABC,PreOverburdenPressure} where {ABC<:AbstractAbcIsotache},
+)
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_pop(cell, column.preconsolidation.pressure[i])
     end
@@ -131,8 +138,7 @@ function total_stress!(column::ConsolidationColumn, phreatic_level)
 
         column.σ[index] = cumulative_weight + midweight
 
-        cumulative_weight +=
-            weight(phreatic_level, zbot, cell.Δz, cell.γ_wet, cell.γ_dry)
+        cumulative_weight += weight(phreatic_level, zbot, cell.Δz, cell.γ_wet, cell.γ_dry)
     end
 end
 
@@ -173,7 +179,7 @@ function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
 end
 
 function synchronize!(column::ConsolidationColumn, Δz)
-    for i=1:length(column.cells)
+    for i = 1:length(column.cells)
         @set column.cells[i].Δz = Δz[i]
     end
     return

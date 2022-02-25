@@ -40,26 +40,8 @@ struct AbcIsotache <: AbstractAbcIsotache
     τ::Float
 end
 
-function AbcIsotache(
-    Δz,
-    γ_wet,
-    γ_dry,
-    a,
-    b,
-    c,
-)
-    return AbcIsotache(
-        Δz,
-        Δz,
-        0.0,
-        NaN,
-        γ_wet,
-        γ_dry,
-        a,
-        b,
-        c,
-        NaN,
-    )
+function AbcIsotache(Δz, γ_wet, γ_dry, a, b, c)
+    return AbcIsotache(Δz, Δz, 0.0, NaN, γ_wet, γ_dry, a, b, c, NaN)
 end
 
 function consolidate!(abc::AbcIsotache, σ′::Float, Δt::Float)
@@ -99,14 +81,14 @@ Derivative of Qcreep with respect to head.
 """
 function Qcreep_derivative(abc::AbcIsotache, σ′::Float, Δt::Float)
     exponent = (abc.b - abc.a) / abc.c
-    numerator = γ_water * (abc.b - abc.a) 
+    numerator = γ_water * (abc.b - abc.a)
     denominator = -σ′ * (1.0 + abc.τ / Δt * pow((abc.σ′ / σ′), exponent))
     return numerator / denominator
 end
 
 
 function Qcreep(abc::AbcIsotache, σ′::Float, Δt)
-    exponent = (abc.b - abc.a) / abc.c 
+    exponent = (abc.b - abc.a) / abc.c
     τ⃰ = abc.τ * pow(abc.σ / σ′, exponent)
     return abc.c * log((τ⃰ + Δt) / τ⃰)
 end

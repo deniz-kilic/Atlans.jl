@@ -1,4 +1,4 @@
-module AtlansFixtures 
+module AtlansFixtures
 
 using Atlans
 
@@ -16,7 +16,7 @@ function draining_abc_isotache()
     c = 0.008686
     τ = 1.0
     consolidation = 0.0
-    
+
     return Atlans.DrainingAbcIsotache(
         Δz,
         Δz,
@@ -71,7 +71,7 @@ function carbon_store_column()
     z = collect(0.5:1.0:4.0)
     Δz = fill(1.0, 4)
     result = fill(NaN, 4)
-    
+
     return Atlans.OxidationColumn(cells, z, Δz, result)
 end
 
@@ -80,7 +80,7 @@ function hydrostatic_groundwater()
     phreatic = Atlans.Phreatic(3.0)
     dry = fill(false, 4)
     p = fill(NaN, 4)
-    
+
     return Atlans.HydrostaticGroundwater(z, phreatic, dry, p)
 end
 
@@ -99,31 +99,12 @@ function soil_column_hg_abc_cs()
         fill(NaN, 4), # result
     )
 
-    oc = Atlans.OxidationColumn(
-        fill(carbon_store(), 4),
-        z, 
-        Δz,
-        fill(NaN, 4),
-    )
-    
-    gw = Atlans.HydrostaticGroundwater(
-        z,
-        Atlans.Phreatic(3.0),
-        fill(false, 4),
-        fill(NaN, 4),
-    )
-    
-    return Atlans.SoilColumn(
-        0.0,
-        4.0,
-        0.0,
-        0.0,
-        z,
-        Δz,
-        gw,
-        cc,
-        oc,
-    )
+    oc = Atlans.OxidationColumn(fill(carbon_store(), 4), z, Δz, fill(NaN, 4), 1.0)
+
+    gw =
+        Atlans.HydrostaticGroundwater(z, Atlans.Phreatic(3.0), fill(false, 4), fill(NaN, 4))
+
+    return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc)
 end
 
 end # module

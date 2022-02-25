@@ -17,16 +17,7 @@ struct DrainingAbcIsotache <: AbstractAbcIsotache
     consolidation::Float  # Computed consolidation
 end
 
-function DrainingAbcIsotache(
-    Δz,
-    γ_wet,
-    γ_dry,
-    c_d,
-    c_v,
-    a,
-    b,
-    c,
-)
+function DrainingAbcIsotache(Δz, γ_wet, γ_dry, c_d, c_v, a, b, c)
     return DrainingAbcIsotache(
         Δz,
         Δz,
@@ -58,7 +49,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     loadstep = ΔU * load
 
     # τ changes
-    τ⃰ = abc.τ * ((abc.σ′ - loadstep) / abc.σ′) ^ ((abc.b - abc.a) / abc.c)
+    τ⃰ = abc.τ * ((abc.σ′ - loadstep) / abc.σ′)^((abc.b - abc.a) / abc.c)
     τ = τ⃰ + Δt
 
     # consolidation
@@ -70,7 +61,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     consolidation = min(abc.Δz, strain * abc.Δz)
     γ_wet = compress_γ_wet(abc, consolidation)
     γ_dry = compress_γ_dry(abc, consolidation)
-    
+
     # return new state
     return DrainingAbcIsotache(
         abc.Δz - consolidation,  # new
@@ -127,7 +118,13 @@ function draining_abc_isotache_column(
     return consolidation
 end
 
-function initialize(::DrainingAbcIsotache, preconsolidation::Type, domain, reader, I)::ConsolidationColumn{DrainingAbcIsotache}
+function initialize(
+    ::DrainingAbcIsotache,
+    preconsolidation::Type,
+    domain,
+    reader,
+    I,
+)::ConsolidationColumn{DrainingAbcIsotache}
     use = domain.use
     lithology = domain.lithology
     geology = domain.geology
@@ -139,43 +136,27 @@ function initialize(::DrainingAbcIsotache, preconsolidation::Type, domain, reade
     a = @view fetch_field(reader, :a, I, lithology, geology)[use]
     b = @view fetch_field(reader, :b, I, lithology, geology)[use]
     c = @view fetch_field(reader, :c, I, lithology, geology)[use]
-    precon = @view fetch_field(reader, preconsolidation, I, lithology, geology)[use] 
-    
+    precon = @view fetch_field(reader, preconsolidation, I, lithology, geology)[use]
+
     cells = Vector{DrainingAbcIsotache}()
     for (i, Δz) in zip(domain.index, domain.Δz)
-        cell = DrainingAbcIsotache(
-            Δz,
-            γ_wet[i],
-            γ_dry[i],
-            c_d[i],
-            c_v[i],
-            a[i],
-            b[i],
-            c[i],
-        )
+        cell = DrainingAbcIsotache(Δz, γ_wet[i], γ_dry[i], c_d[i], c_v[i], a[i], b[i], c[i])
         push!(cells, cell)
     end
-    
-    return ConsolidationColumn(
-        cells,
-        z,
-        Δz,
-        σ,
-        σ′,
-        p,
-        precon,
-        result,
-    )
+
+    return ConsolidationColumn(cells, z, Δz, σ, σ′, p, precon, result)
 end
 
 """
 Reset degree of consolidation and time.
 """
-function prepare_forcingperiod!(column::ConsolidationColumn{DrainingAbcIsotache,P} where {P <: Preconsolidation})
+function prepare_forcingperiod!(
+    column::ConsolidationColumn{DrainingAbcIsotache,P} where {P<:Preconsolidation},
+)
     for (i, cell) in enumerate(column.cells)
-        cell = @set cell.t = 0.0  
-        cell = @set cell.U = 0.0 
-        cell = @set cell.Δz_0 = cell.Δz   
+        cell = @set cell.t = 0.0
+        cell = @set cell.U = 0.0
+        cell = @set cell.Δz_0 = cell.Δz
         column.cells[i] = cell
     end
     return

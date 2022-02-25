@@ -15,7 +15,7 @@ struct StageChange <: Forcing
     reader::Reader
 end
 
-struct AquiferHead <:Forcing
+struct AquiferHead <: Forcing
     head::Array{OptionalFloat}
     reader::Reader
 end
@@ -42,36 +42,22 @@ end
 function DeepSubsidence(path)
     reader = prepare_reader(path)
     size = xy_size(reader)
-    return DeepSubsidence(
-        Array{OptionalFloat}(missing, size),
-        reader,
-    )
+    return DeepSubsidence(Array{OptionalFloat}(missing, size), reader)
 end
 
 function StageChange(path)
     reader = prepare_reader(path)
     size = xy_size(reader)
-    return StageChange(
-        Array{OptionalFloat}(missing, size),
-        reader,
-    )
+    return StageChange(Array{OptionalFloat}(missing, size), reader)
 end
 
 function AquiferHead(path)
     reader = prepare_reader(path)
     size = xy_size(reader)
-    return AquiferHead(
-        Array{OptionalFloat}(missing, size),
-        reader,
-    )
+    return AquiferHead(Array{OptionalFloat}(missing, size), reader)
 end
 
-function Surcharge(
-    path,
-    groundwater::Type,
-    consolidation::Type,
-    oxidation::Type,
-)
+function Surcharge(path, groundwater::Type, consolidation::Type, oxidation::Type)
     error("Not implemented")
 end
 
@@ -79,8 +65,8 @@ end
 
 function read_forcing!(si::StageIndexation, time)
     if time in forcing.reader.times
-        si.weir_area .= ncread(si.reader, :weir_area, time) 
-        si.change .= ncread(si.reader, :change, time) 
+        si.weir_area .= ncread(si.reader, :weir_area, time)
+        si.change .= ncread(si.reader, :change, time)
         return true
     end
     return false
@@ -88,7 +74,7 @@ end
 
 function read_forcing!(ds::DeepSubsidence, time)
     if time in forcing.reader.times
-        ds.subsidence = ncread(ds.reader, :subsidence, time) 
+        ds.subsidence = ncread(ds.reader, :subsidence, time)
         return true
     end
     return false
@@ -96,7 +82,7 @@ end
 
 function read_forcing!(sc::StageChange, time)
     if time in forcing.reader.times
-        sc.weir_area .= ncread(sc.reader, :change, time) 
+        sc.weir_area .= ncread(sc.reader, :change, time)
         return true
     end
     return false
@@ -104,7 +90,7 @@ end
 
 function read_forcing!(ah::AquiferHead, time)
     if time in forcing.reader.times
-        ah.weir_area .= ncread(ah.reader, :change, time) 
+        ah.weir_area .= ncread(ah.reader, :change, time)
         return true
     end
     return false
@@ -130,7 +116,7 @@ end
 function apply_forcing!(si::StageIndexation, column, I)
     change = si.change[I]
     change == 0.0 && return
-    
+
     set_phreatic_difference!(column, change)
     return
 end
@@ -138,7 +124,7 @@ end
 function apply_forcing!(ds::DeepSubsidence, column, I)
     subsidence = ds.subsidence[I]
     isnothing(subsidence) && return
-    
+
     set_deep_subsidence!(column, subsidence)
     return
 end
@@ -146,7 +132,7 @@ end
 function apply_forcing!(si::StageChange, column, I)
     change = si.change[I]
     change == 0.0 && return
-    
+
     set_phreatic_difference!(column, change)
     return
 end
@@ -154,7 +140,7 @@ end
 function apply_forcing!(ah::AquiferHead, column, I)
     head = ah.head[I]
     isnothing(head) && return
-    
+
     set_aquifer(column, head)
     return
 end

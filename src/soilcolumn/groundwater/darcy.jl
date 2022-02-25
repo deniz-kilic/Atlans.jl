@@ -104,11 +104,11 @@ Formulate system of equations for abc-isotache.
 Contains a (linear) storage term, and a (linearized) creep flux.
 """
 function formulate!(column::ConsolidationColumn, solution::NumericalSolution, Δt::Float)
-    for i=1:length(column.cells)
-       cell = column.cells[i] 
-       hcof, rhs = formulate(cell, solution.ϕ[i], column.z[i], column.σ[i], Δt)
-       solution.A.dv[i] += hcof
-       solution.rhs[i] -= rhs 
+    for i = 1:length(column.cells)
+        cell = column.cells[i]
+        hcof, rhs = formulate(cell, solution.ϕ[i], column.z[i], column.σ[i], Δt)
+        solution.A.dv[i] += hcof
+        solution.rhs[i] -= rhs
     end
 end
 
@@ -117,8 +117,8 @@ end
 Formulate system of equations for abc-isotache.
 """
 function formulate__!(column::ConsolidationColumn, solution::NumericalSolution, Δt::Float)
-    for i=1:length(column.cells)
-        cell = column.cells[i] 
+    for i = 1:length(column.cells)
+        cell = column.cells[i]
         σ′ = column.σ[i] - γ_water * (solution.ϕ[i] - column.z[i])
         solution.rhs[i] -= cell.Δz * Qcreep(cell, σ′, Δt)
     end
@@ -141,7 +141,7 @@ function solve!(column::SoilColumn, solution::NumericalSolution, Δt::Float)
         formulate!(column.groundwater, solution, Δt)
         formulate__!(column.consolidation, solution, Δt)
         linearsolve!(solution)
-        Δϕmax = max(abs.(solution.ϕ - solution.ϕ_previous)) 
+        Δϕmax = max(abs.(solution.ϕ - solution.ϕ_previous))
         iter += 1
     end
     return
@@ -161,15 +161,10 @@ function initialize(::DarcyColumn, reader, I)
     use = domain.use
     lithology = ncread3d(reader, :lithology, I)
     geology = ncread3d(reader, :geology, I)
-    
+
     k = @view fetch_field(reader, :conductivity, I, lithology, geology)[use]
     SS = @view fetch_field(reader, :specific_storage, I, lithology, geology)[use]
     confined = @view fetch_field(reader, :confined, I, lithology, geology)[use]
-    
-    column = DarcyColumn(
-        k[domain.index],
-        domain.z,
-        domain.Δz,
-        SS[domain.index],
-    )
+
+    column = DarcyColumn(k[domain.index], domain.z, domain.Δz, SS[domain.index])
 end

@@ -36,22 +36,18 @@ function column_type(_, name)
 end
 
 function read_params_table(path)
-    df = CSV.read(
-        path,
-        DataFrame;
-        delim=",",
-        stringtype=String,
-        types=column_type,
-    )
+    df = CSV.read(path, DataFrame; delim = ",", stringtype = String, types = column_type)
     return df
 end
 
 function build_lookup_tables(df)
     geology = df[:, :geology]
     lithology = df[:, :lithology]
-    tables = Dict{:symbol, Dict{Tuple{Int, Int},Float}}
+    tables = Dict{:symbol,Dict{Tuple{Int,Int},Float}}
     for name in names(df, Float)
-        tables[name] = Dict((geo, lit) => val for (geo, lit, val) in zip(geology, lithology, df[:, name]))
+        tables[name] = Dict(
+            (geo, lit) => val for (geo, lit, val) in zip(geology, lithology, df[:, name])
+        )
     end
     return tables
 end
@@ -59,35 +55,27 @@ end
 function lookup(table, geology, lithology)
     n = length(geology)
     found = Vector{Float}(undef, n)
-    for i=1:n
+    for i = 1:n
         found[i] = table[(geology[i], lithology[i])]
     end
-    return found 
+    return found
 end
 
 function prepare_subsoil_reader(path_nc, path_csv)
     ds = Dataset(path_nc, "r")
     df = read_params_table(path_csv)
     tables = build_lookup_tables(df)
-    return SubsoilReader(
-        ds,
-        tables,
-        Dict(key => Symbol(key) for key in keys(ds)),
-    )
+    return SubsoilReader(ds, tables, Dict(key => Symbol(key) for key in keys(ds)))
 end
 
 function prepare_reader(path)
     ds = Dataset(path, "r")
     times = ds["time"][:]
-    return Reader(
-        ds,
-        Dict(key => Symbol(key) for key in keys(ds)),
-        times,
-    )
+    return Reader(ds, Dict(key => Symbol(key) for key in keys(ds)), times)
 end
 
 function fetch_field(reader, field, I, lithology, geology)
-    if haskey(reader.params, field) 
+    if haskey(reader.params, field)
         values = ncread3d(reader, field, I)
     elseif haskey(reader.tables, field)
         values = lookup(tables[field], geology, lithology)
@@ -96,8 +84,10 @@ function fetch_field(reader, field, I, lithology, geology)
     end
 end
 
-fetch_field(reader, ::PreOverburdenPressure, I, lithology, geology) = fetch_field(reader, :pop, I, lithology, geology)
-fetch_field(reader, ::OverConsolidationRatio, I, lithology, geology) = fetch_field(reader, :ocr, I, lithology, geology)
+fetch_field(reader, ::PreOverburdenPressure, I, lithology, geology) =
+    fetch_field(reader, :pop, I, lithology, geology)
+fetch_field(reader, ::OverConsolidationRatio, I, lithology, geology) =
+    fetch_field(reader, :ocr, I, lithology, geology)
 
 function xy_size(reader)
     xsize = size(reader.ds["x"])
@@ -143,7 +133,7 @@ function prepare_writer(path)::Writer
             :consolidation => "consolidation",
             :oxidation => "oxidation",
             :subsidence => "subsidence",
-        )
+        ),
     )
 end
 
