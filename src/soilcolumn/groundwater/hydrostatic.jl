@@ -37,6 +37,11 @@ flow!(hg::HydrostaticGroundwater, _) = pore_pressure!(hg)
 phreatic_level(hg::HydrostaticGroundwater) = hg.phreatic.ϕ
 
 
-function initialize(::HydrostaticGroundwater, domain, reader, I)::HydrostaticGroundwater
+function initialize(
+    ::Type{HydrostaticGroundwater},
+    domain,
+    reader,
+    I,
+)::HydrostaticGroundwater
     return HydrostaticGroundwater(domain.z, ncread2d(reader, :phreatic_level, I))
 end

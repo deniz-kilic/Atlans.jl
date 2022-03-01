@@ -65,7 +65,12 @@ function set_phreatic!(ig::InterpolatedGroundwater, ϕ)
 end
 
 
-function initialize(::InterpolatedGroundwater, domain, reader, I)::InterpolatedGroundwater
+function initialize(
+    ::Type{InterpolatedGroundwater},
+    domain,
+    reader,
+    I,
+)::InterpolatedGroundwater
     return InterpolatedGroundwater(
         domain.z,
         domain.Δz,

@@ -126,9 +126,6 @@
               column.oxidation.z ===
               column.groundwater.z
         @test column.Δz === column.consolidation.Δz === column.oxidation.Δz
-
-        @show column.consolidation.result
-        @show column.oxidation.result
     end
 
     @testset "Compute: different forcing, same output" begin

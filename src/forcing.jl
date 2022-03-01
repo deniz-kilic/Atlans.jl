@@ -5,7 +5,7 @@ struct StageIndexation <: Forcing
     reader::Reader
 end
 
-struct DeepSubsidence
+struct DeepSubsidence <: Forcing
     subsidence::Array{OptionalFloat}
     reader::Reader
 end
@@ -20,11 +20,11 @@ struct AquiferHead <: Forcing
     reader::Reader
 end
 
-struct Surcharge{G,C,O} <: Forcing
-    surcharge_index::Array{OptionalInt}
-    surcharge::Vector{ColumnSurcharge{G,C,O}}
-    reader::Reader
-end
+#struct Surcharge{G,C,O} <: Forcing
+#    surcharge_index::Array{OptionalInt}
+#    surcharge::Vector{ColumnSurcharge{G,C,O}}
+#    reader::Reader
+#end
 
 # Initializing
 
@@ -73,24 +73,24 @@ function read_forcing!(si::StageIndexation, time)
 end
 
 function read_forcing!(ds::DeepSubsidence, time)
-    if time in forcing.reader.times
-        ds.subsidence = ncread(ds.reader, :subsidence, time)
+    if time in ds.reader.times
+        ds.subsidence .= ncread(ds.reader, :subsidence, time)
         return true
     end
     return false
 end
 
 function read_forcing!(sc::StageChange, time)
-    if time in forcing.reader.times
-        sc.weir_area .= ncread(sc.reader, :change, time)
+    if time in sc.reader.times
+        sc.change .= ncread(sc.reader, :stage_change, time)
         return true
     end
     return false
 end
 
 function read_forcing!(ah::AquiferHead, time)
-    if time in forcing.reader.times
-        ah.weir_area .= ncread(ah.reader, :change, time)
+    if time in ah.reader.times
+        ah.weir_area .= ncread(ah.reader, :aquifer_change, time)
         return true
     end
     return false
@@ -115,7 +115,7 @@ end
 
 function apply_forcing!(si::StageIndexation, column, I)
     change = si.change[I]
-    change == 0.0 && return
+    (ismissing(change) || change == 0.0) && return
 
     set_phreatic_difference!(column, change)
     return
@@ -123,7 +123,7 @@ end
 
 function apply_forcing!(ds::DeepSubsidence, column, I)
     subsidence = ds.subsidence[I]
-    isnothing(subsidence) && return
+    ismissing(subsidence) && return
 
     set_deep_subsidence!(column, subsidence)
     return
@@ -131,7 +131,7 @@ end
 
 function apply_forcing!(si::StageChange, column, I)
     change = si.change[I]
-    change == 0.0 && return
+    (ismissing(change) || change == 0.0) && return
 
     set_phreatic_difference!(column, change)
     return
@@ -139,14 +139,15 @@ end
 
 function apply_forcing!(ah::AquiferHead, column, I)
     head = ah.head[I]
-    isnothing(head) && return
+    ismissing(head) && return
 
     set_aquifer(column, head)
     return
 end
 
 
-function apply_forcing!(sc::Surcharge, column, I)
-    error("Not implemented")
-    return
-end
+#function apply_forcing!(sc::Surcharge, column, I)
+#    error("Not implemented")
+#    return
+#end
+#

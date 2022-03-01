@@ -41,7 +41,7 @@ function initial_stress!(column)
     return
 end
 
-function apply_preconsolidation!(column::SoilColumn)
+function apply_preconsolidation!(column)
     initial_stress!(column)
     apply_preconsolidation!(column.consolidation)
 end
@@ -200,8 +200,8 @@ function advance_forcingperiod!(c::SoilColumn, timesteps::Vector{Float})
     for Δt in timesteps
         Δs, Δc, Δo = advance_timestep!(c, Δt)
         subsidence += Δs
-        consolidation += Δo
-        oxidation += Δc
+        consolidation += Δc
+        oxidation += Δo
     end
     return subsidence, consolidation, oxidation
 end

@@ -44,6 +44,7 @@ include("soilcolumn/split.jl")
 
 include("timesteppers.jl")
 include("simulation.jl")
+include("forcing.jl")
 include("io.jl")
 
 end # module

@@ -119,7 +119,7 @@ function draining_abc_isotache_column(
 end
 
 function initialize(
-    ::DrainingAbcIsotache,
+    ::Type{DrainingAbcIsotache},
     preconsolidation::Type,
     domain,
     reader,
@@ -129,20 +129,28 @@ function initialize(
     lithology = domain.lithology
     geology = domain.geology
 
-    γ_wet = @view fetch_field(reader, :γ_wet, I, lithology, geology)[use]
-    γ_dry = @view fetch_field(reader, :γ_dry, I, lithology, geology)[use]
-    c_d = @view fetch_field(reader, :c_d, I, lithology, geology)[use]
-    c_v = @view fetch_field(reader, :c_v, I, lithology, geology)[use]
-    a = @view fetch_field(reader, :a, I, lithology, geology)[use]
-    b = @view fetch_field(reader, :b, I, lithology, geology)[use]
-    c = @view fetch_field(reader, :c, I, lithology, geology)[use]
-    precon = @view fetch_field(reader, preconsolidation, I, lithology, geology)[use]
+    γ_wet = @view fetch_field(reader, :γ_wet, I, geology, lithology)[use]
+    γ_dry = @view fetch_field(reader, :γ_dry, I, geology, lithology)[use]
+    c_d = @view fetch_field(reader, :c_d, I, geology, lithology)[use]
+    c_v = @view fetch_field(reader, :c_v, I, geology, lithology)[use]
+    a = @view fetch_field(reader, :a, I, geology, lithology)[use]
+    b = @view fetch_field(reader, :b, I, geology, lithology)[use]
+    c = @view fetch_field(reader, :c, I, geology, lithology)[use]
+    precon_values = @view fetch_field(reader, preconsolidation, I, geology, lithology)[use]
+    precon = preconsolidation(precon_values)
 
     cells = Vector{DrainingAbcIsotache}()
     for (i, Δz) in zip(domain.index, domain.Δz)
         cell = DrainingAbcIsotache(Δz, γ_wet[i], γ_dry[i], c_d[i], c_v[i], a[i], b[i], c[i])
         push!(cells, cell)
     end
+
+    z = domain.z
+    Δz = domain.Δz
+    σ = similar(z)
+    σ′ = similar(z)
+    p = similar(z)
+    result = similar(z)
 
     return ConsolidationColumn(cells, z, Δz, σ, σ′, p, precon, result)
 end

@@ -28,7 +28,7 @@ end
 mutable struct Clock
     times::Vector{DateTime}
     iteration::Int
-    stop_time::Vector{DateTime}
+    stop_time::DateTime
 end
 
 """
@@ -50,5 +50,6 @@ end
 Compute duration of forcing period from current time.
 """
 function periodduration(clock)
-    return clock.times[clock.iteration+1] - clock.times[clock.iteration]
+    dt_milliseconds = clock.times[clock.iteration+1] - clock.times[clock.iteration]
+    return Dates.value(dt_milliseconds) / (24 * 3600 * 1000)
 end

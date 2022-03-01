@@ -1,4 +1,6 @@
 @testset "Input-Output" begin
+    using NCDatasets
+    using Dates
     using DataFrames
 
     @testset "read_params_table" begin
@@ -16,17 +18,169 @@
         df = Atlans.read_params_table(filename)
         tables = Atlans.build_lookup_tables(df)
         @test typeof(tables) == Dict{Symbol,Dict{Tuple{Int,Int},Float64}}
-        @test collect(keys(tables)) == [:a, :b, :c, :γ_dry, :c_v, :γ_wet, :c_d]
-        @test tables[:a][(1,2)] == 0.01737
-        
+        @test issetequal(
+            keys(tables),
+            [
+                :a,
+                :b,
+                :c,
+                :γ_dry,
+                :c_v,
+                :γ_wet,
+                :c_d,
+                :ocr,
+                :f_organic,
+                :m_minimum_organic,
+                :oxidation_rate,
+                :rho_bulk,
+            ],
+        )
+        @test tables[:a][(1, 2)] == 0.01737
+
         @test Atlans.lookup(tables[:a], [1, 1], [2, 2]) == [0.01737, 0.01737]
     end
-    
-    @testset "prepare_subsoil_reader" begin
+
+    @testset "subsoil_reader" begin
         path_csv = AtlansFixtures.params_table()
         path_nc = AtlansFixtures.subsoil_netcdf()
-        @show path_nc
-        #reader = Atlans.prepare_subsoil_reader(path_nc, path_csv)
+        reader = Atlans.prepare_subsoil_reader(path_nc, path_csv)
+
+        @test typeof(reader) == Atlans.SubsoilReader
+        @test typeof(reader.dataset) == NCDatasets.NCDataset{Nothing}
+        @test issetequal(
+            keys(reader.params),
+            [
+                :x,
+                :y,
+                :base,
+                :domainbase,
+                :geology,
+                :lithology,
+                :phreatic_level,
+                :thickness,
+                :max_oxidation_depth,
+            ],
+        )
+        @test issetequal(
+            values(reader.params),
+            [
+                "x",
+                "y",
+                "base",
+                "domainbase",
+                "geology",
+                "lithology",
+                "phreatic_level",
+                "thickness",
+                "max_oxidation_depth",
+            ],
+        )
+        @test Atlans.lookup(reader.tables[:a], [1, 1], [2, 2]) == [0.01737, 0.01737]
+
+        lithology = Atlans.ncread3d(reader, :lithology, CartesianIndex(1, 1))
+        @test typeof(lithology) == Array{Int,1}
+        @test length(lithology) == 4
+        phreatic = Atlans.ncread2d(reader, :phreatic_level, CartesianIndex(1, 1))
+        @test typeof(phreatic) == Float64
+
+        geology = fill(1, 4)
+        lithology = fill(2, 4)
+        a = Atlans.fetch_field(reader, :a, CartesianIndex(1, 1), geology, lithology)
+        @test typeof(a) == Array{Float64,1}
+        @test length(a) == 4
+
+        Δz =
+            Atlans.fetch_field(reader, :thickness, CartesianIndex(1, 1), geology, lithology)
+        @test typeof(Δz) == Array{Float64,1}
+        @test length(Δz) == 4
+        @test all(Δz .== 0.25)
+
+        @test Atlans.xy_size(reader) == (2, 3)
     end
 
+    @testset "reader" begin
+        path_nc = AtlansFixtures.stage_change_netcdf()
+        reader = Atlans.prepare_reader(path_nc)
+
+        @test typeof(reader) == Atlans.Reader
+        @test typeof(reader.dataset) == NCDatasets.NCDataset{Nothing}
+        @test all(reader.times .== DateTime.(["2020-01-01", "2020-02-01"]))
+
+        diff = Atlans.ncread(reader, :stage_change)
+        @test typeof(diff) == Array{Float64,3}
+
+        diff = Atlans.ncread(reader, :stage_change, DateTime("2020-01-01"))
+        @test typeof(diff) == Array{Float64,2}
+    end
+
+    @testset "output_netcdf" begin
+        path = tempname()
+        x = [12.5, 37.5]
+        y = [87.5, 62.5, 37.5]
+        ds = Atlans.setup_output_netcdf(path, x, y)
+
+        @test typeof(ds) == NCDatasets.NCDataset{Nothing}
+        @test issetequal(
+            keys(ds),
+            [
+                "time",
+                "y",
+                "x",
+                "phreatic_level",
+                "consolidation",
+                "oxidation",
+                "subsidence",
+            ],
+        )
+        @test dimsize(ds["subsidence"]) == (x = 2, y = 3, time = 0)
+    end
+
+    @testset "output_writer" begin
+        path = tempname()
+        x = [12.5, 37.5]
+        y = [87.5, 62.5, 37.5]
+        writer = Atlans.prepare_writer(path, x, y)
+
+        @test typeof(writer) == Atlans.Writer
+        @test typeof(writer.dataset) == NCDatasets.NCDataset{Nothing}
+
+        index = Atlans.add_time(writer.dataset, DateTime("2020-01-01"))
+        @test index == 1
+
+        values = fill(1.0, (2, 3))
+        Atlans.ncwrite(writer, :subsidence, values, index)
+
+        index = Atlans.add_time(writer.dataset, DateTime("2020-02-01"))
+        @test index == 2
+
+        values = fill(-1.0, (2, 3))
+        Atlans.ncwrite(writer, :phreatic_level, values, index)
+
+        @test dimsize(writer.dataset["subsidence"]) == (x = 2, y = 3, time = 2)
+        @test dimsize(writer.dataset["phreatic_level"]) == (x = 2, y = 3, time = 2)
+    end
+
+    @testset "stage change" begin
+        path = AtlansFixtures.stage_change_netcdf()
+        forcing = Atlans.StageChange(path)
+
+        @test typeof(forcing) == Atlans.StageChange
+        @test all(ismissing.(forcing.change))
+        Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
+        @test all(forcing.change .≈ -0.1)
+
+        Atlans.prepare_forcingperiod!(forcing, nothing)
+    end
+
+    @testset "deep subsidence" begin
+        path = AtlansFixtures.deep_subsidence_netcdf()
+        forcing = Atlans.DeepSubsidence(path)
+
+        @test typeof(forcing) == Atlans.DeepSubsidence
+        @test all(ismissing.(forcing.subsidence))
+        Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
+        @test all(forcing.subsidence .≈ -0.05)
+
+        Atlans.prepare_forcingperiod!(forcing, nothing)
+    end
 end

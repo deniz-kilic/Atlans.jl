@@ -1,6 +1,7 @@
 module AtlansFixtures
 
 using Atlans
+using Dates
 using NCDatasets
 using DataFrames
 using CSV
@@ -110,31 +111,13 @@ function soil_column_hg_abc_cs()
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc)
 end
 
-function subsoil_netcdf()
-    filename = tempname()
-    ds = NCDatasets.Dataset(filename, "c") 
-    defDim(ds, "x", 2)
-    defDim(ds, "y", 3)
-    defDim(ds, "layer", 4)
-
-    geology = defVar(ds, "geology", Int, ("layer", "x", "y"))
-    lithology = defVar(ds, "lithology", Int, ("layer", "x", "y"))
-    geology[:] .= 1
-    lithology[:] .= 2
-    return filename
-end
-
 function create_xcoord!(ds, x)
     defVar(
         ds,
         "x",
         x,
         ("x",),
-        attrib = [
-            "units" => "m",
-            "standard_name" => "projection_x_coordinate",
-            "axis" => "X",
-        ],
+        attrib = ["standard_name" => "projection_x_coordinate", "axis" => "X"],
     )
 end
 
@@ -144,28 +127,66 @@ function create_ycoord!(ds, y)
         "y",
         y,
         ("y",),
-        attrib = [
-            "units" => "m",
-            "standard_name" => "projection_y_coordinate",
-            "axis" => "Y",
-        ],
+        attrib = ["standard_name" => "projection_y_coordinate", "axis" => "Y"],
     )
 end
 
-function lowering_netcdf()
+function subsoil_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c")
+    defDim(ds, "x", 2)
+    defDim(ds, "y", 3)
+    defDim(ds, "layer", 4)
+    create_xcoord!(ds, [12.5, 37.5])
+    create_ycoord!(ds, [87.5, 62.5, 37.5])
+
+    geology = defVar(ds, "geology", Int, ("layer", "x", "y"))
+    lithology = defVar(ds, "lithology", Int, ("layer", "x", "y"))
+    thickness = defVar(ds, "thickness", Float64, ("layer", "x", "y"))
+    phreatic = defVar(ds, "phreatic_level", Float64, ("x", "y"))
+    base = defVar(ds, "base", Float64, ("x", "y"))
+    domainbase = defVar(ds, "domainbase", Float64, ("x", "y"))
+    max_oxidation_depth = defVar(ds, "max_oxidation_depth", Float64, ("x", "y"))
+    geology[:] .= 1
+    lithology[:] .= 2
+    phreatic[:] .= 0.5
+    thickness[:] .= 0.25
+    base[:] .= 0.0
+    domainbase[:] .= 0.0
+    max_oxidation_depth .= 1.2
+    return filename
+end
+
+function stage_change_netcdf()
     filename = tempname()
     ds = NCDatasets.Dataset(filename, "c") do ds
         defDim(ds, "x", 2)
         defDim(ds, "y", 3)
         defDim(ds, "time", 2)
         create_xcoord!(ds, [12.5, 37.5])
-        create_ycoord!(ds, [87.5, 62.5])
-
-        difference = defVar(ds, "phreatic_difference", Int, ("x", "y", "time"))
+        create_ycoord!(ds, [87.5, 62.5, 37.5])
+        defVar(ds, "time", DateTime.(["2020-01-01", "2020-02-01"]), ("time",))
+        difference = defVar(ds, "stage_change", Float64, ("x", "y", "time"))
         difference[:] .= -0.1
     end
     return filename
 end
+
+function deep_subsidence_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c") do ds
+        defDim(ds, "x", 2)
+        defDim(ds, "y", 3)
+        defDim(ds, "time", 2)
+        create_xcoord!(ds, [12.5, 37.5])
+        create_ycoord!(ds, [87.5, 62.5, 37.5])
+        defVar(ds, "time", DateTime.(["2020-01-01", "2020-02-01"]), ("time",))
+        difference = defVar(ds, "subsidence", Float64, ("x", "y", "time"))
+        difference[:] .= -0.05
+    end
+    return filename
+end
+
 
 function params_table()
     filename = tempname()
@@ -181,6 +202,11 @@ function params_table()
         a = [0.01737],
         b = [0.1303],
         c = [0.008686],
+        ocr = [2.15],
+        f_organic = [0.2],
+        m_minimum_organic = [0.05],
+        oxidation_rate = [0.001],
+        rho_bulk = [1000.0],
     )
     CSV.write(filename, df)
     return filename

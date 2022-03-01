@@ -4,37 +4,36 @@ function prepare_subsoil_reader(path_nc, path_csv)
     ds = Dataset(path_nc, "r")
     df = read_params_table(path_csv)
     tables = build_lookup_tables(df)
-    return SubsoilReader(ds, tables, Dict(key => Symbol(key) for key in keys(ds)))
+    return SubsoilReader(ds, tables, Dict(Symbol(key) => key for key in keys(ds)))
 end
 
 function prepare_reader(path)
     ds = Dataset(path, "r")
     times = ds["time"][:]
-    return Reader(ds, Dict(key => Symbol(key) for key in keys(ds)), times)
+    return Reader(ds, Dict(Symbol(key) => key for key in keys(ds)), times)
 end
 
-function ncread(R::Reader, param::Symbol)
-    varname = R.params[param]
-    return R.dataset[varname][:]
+function ncread(reader, param::Symbol)
+    varname = reader.params[param]
+    return reader.dataset[varname][:]
 end
 
-function ncread(R::Reader, param::Symbol, t::TimeType)
-    varname = R.params[param]
-    times = R.times
-    # this behaves like a forward fill interpolation
-    i = searchsortedfirst(==(t), times)
+function ncread(reader, param::Symbol, t::TimeType)
+    varname = reader.params[param]
+    times = reader.times
+    i = searchsortedfirst(times, t)
     i === nothing && throw(DomainError("time $t not in dataset times $(times)"))
-    return R.dataset[varname][:, i]
+    return reader.dataset[varname][:, :, i]
 end
 
-function ncread2d(R::Reader, param::Symbol, index::CartesianIndex)
-    varname = R.params[param]
-    return R.dataset[varname][index]
+function ncread2d(reader, param::Symbol, index)
+    varname = reader.params[param]
+    return reader.dataset[varname][index]
 end
 
-function ncread3d(R::Reader, param::Symbol, index::CartesianIndex)
-    varname = R.params[param]
-    return R.dataset[varname][:, index]
+function ncread3d(reader, param::Symbol, index)
+    varname = reader.params[param]
+    return reader.dataset[varname][:, index]
 end
 
 function column_type(_, name)
@@ -73,37 +72,33 @@ function lookup(table, geology, lithology)
     return found
 end
 
-function fetch_field(reader, field, I, lithology, geology)
+function fetch_field(reader, field, I, geology, lithology)
     if haskey(reader.params, field)
         values = ncread3d(reader, field, I)
     elseif haskey(reader.tables, field)
-        values = lookup(tables[field], geology, lithology)
+        values = lookup(reader.tables[field], geology, lithology)
     else
-        error("Mandatory field not in netCDF or table")
+        error("Mandatory field not in netCDF or table: $field")
     end
 end
 
-fetch_field(reader, ::PreOverburdenPressure, I, lithology, geology) =
-    fetch_field(reader, :pop, I, lithology, geology)
-fetch_field(reader, ::OverConsolidationRatio, I, lithology, geology) =
-    fetch_field(reader, :ocr, I, lithology, geology)
+fetch_field(reader, ::Type{PreOverburdenPressure}, I, geology, lithology) =
+    fetch_field(reader, :pop, I, geology, lithology)
+fetch_field(reader, ::Type{OverConsolidationRatio}, I, geology, lithology) =
+    fetch_field(reader, :ocr, I, geology, lithology)
 
 function xy_size(reader)
-    xsize = size(reader.ds["x"])
-    ysize = size(reader.ds["y"])
-    return (xsize, ysize)
+    size_x = length(reader.dataset["x"])
+    size_y = length(reader.dataset["y"])
+    return (size_x, size_y)
 end
 
 # Writing
 # -------
-"Add a new time to the unlimited time dimension, and return the index"
-function add_time(ds, time)
-    i = length(ds["time"]) + 1
-    ds["time"][i] = time
-    return i
-end
+function setup_output_netcdf(path, x, y)::NCDataset
+    time_units = "days since 1900-01-01 00:00:00"
+    calendar = "proleptic_gregorian"
 
-function setup_output_netcdf(path)::NCDataset
     ds = NCDatasets.NCDataset(path, "c")
     defDim(ds, "time", Inf)  # unlimited dimension
     defVar(
@@ -111,10 +106,22 @@ function setup_output_netcdf(path)::NCDataset
         "time",
         Float,
         ("time",),
-        #attrib = ["units" => time_units, "calendar" => calendar],
+        attrib = ["units" => time_units, "calendar" => calendar],
     )
-    defVar(ds, "x", Float, ("x",))
-    defVar(ds, "y", Float, ("y",))
+    defVar(
+        ds,
+        "x",
+        x,
+        ("x",),
+        attrib = ["standard_name" => "projection_x_coordinate", "axis" => "X"],
+    )
+    defVar(
+        ds,
+        "y",
+        y,
+        ("y",),
+        attrib = ["standard_name" => "projection_y_coordinate", "axis" => "Y"],
+    )
 
     defVar(ds, "phreatic_level", Float, ("x", "y", "time"))
     defVar(ds, "consolidation", Float, ("x", "y", "time"))
@@ -123,8 +130,15 @@ function setup_output_netcdf(path)::NCDataset
     return ds
 end
 
-function prepare_writer(path)::Writer
-    ds = setup_output_netcdf(path)
+"Add a new time to the unlimited time dimension, and return the index"
+function add_time(ds, time)
+    i = length(ds["time"]) + 1
+    ds["time"][i] = time
+    return i
+end
+
+function prepare_writer(path, x, y)
+    ds = setup_output_netcdf(path, x, y)
     return Writer(
         ds,
         Dict(
@@ -137,13 +151,13 @@ function prepare_writer(path)::Writer
 end
 
 function ncwrite(writer::Writer, param, values, time_index)
-    varname = R.params[param]
+    varname = writer.params[param]
     writer.dataset[varname][:, :, time_index] .= values
     return
 end
 
 function write(writer, clock, output)
-    add_time(writer.ds, clock.time)
+    add_time(writer.dataset, currenttime(clock))
     ncwrite(writer, :phreatic_level, output.phreatic_level, clock.iteration)
     ncwrite(writer, :subsidence, output.subsidence, clock.iteration)
     ncwrite(writer, :consolidation, output.consolidation, clock.iteration)
