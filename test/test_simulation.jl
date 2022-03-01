@@ -1,4 +1,5 @@
 @testset "Simulation" begin
+
     function fill_optional_float(v, n)
         array = Vector{Union{Float64,Missing}}(undef, n)
         fill!(array, v)
@@ -9,6 +10,26 @@
         array = Vector{Union{Int,Missing}}(undef, n)
         fill!(array, v)
         return array
+    end
+    
+    function testing_simulation()
+        path_csv = AtlansFixtures.params_table()
+        path_nc = AtlansFixtures.subsoil_netcdf()
+        timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
+        Δzmax = 0.25
+
+        model = Atlans.Model(
+            Atlans.HydrostaticGroundwater,
+            Atlans.DrainingAbcIsotache,
+            Atlans.CarbonStore,
+            Atlans.OverConsolidationRatio,
+            timestepper,
+            path_nc,
+            path_csv,
+            Δzmax,
+        )
+        simulation = Atlans.Simulation(model, tempname(), DateTime("2020-03-01"))
+        return simulation
     end
 
     @testset "repeat" begin
@@ -110,27 +131,11 @@
     end
 
     @testset "simulation" begin
-        path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
-        path_csv = AtlansFixtures.params_table()
-        path_nc = AtlansFixtures.subsoil_netcdf()
-        timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
-        Δzmax = 0.25
-
-        model = Atlans.Model(
-            Atlans.HydrostaticGroundwater,
-            Atlans.DrainingAbcIsotache,
-            Atlans.CarbonStore,
-            Atlans.OverConsolidationRatio,
-            timestepper,
-            path_nc,
-            path_csv,
-            Δzmax,
-        )
-
-        simulation = Atlans.Simulation(model, tempname(), DateTime("2020-03-01"))
+        simulation = testing_simulation()
 
         @test typeof(simulation) == Atlans.Simulation
 
+        path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
         deep_subsidence = Atlans.DeepSubsidence(path_deep_subsidence)
         push!(simulation.forcing, deep_subsidence)
 
@@ -141,8 +146,22 @@
         @test simulation.clock.iteration == 1
         @test simulation.clock.stop_time == DateTime("2020-03-01")
 
-        @code_warntype Atlans.advance_forcingperiod!(simulation)
-        @show simulation.model.output.consolidation
-        @show simulation.model.output.oxidation
+        Atlans.advance_forcingperiod!(simulation)
+    end
+
+    @testset "simulation run" begin
+        simulation = testing_simulation()
+
+        path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
+        deep_subsidence = Atlans.DeepSubsidence(path_deep_subsidence)
+        push!(simulation.forcing, deep_subsidence)
+        
+        path_stage_change = AtlansFixtures.stage_change_netcdf()
+        stage_change = Atlans.StageChange(path_stage_change)
+        push!(simulation.forcing, stage_change)
+
+        Atlans.set_periods!(simulation)
+        
+        Atlans.run!(simulation)
     end
 end

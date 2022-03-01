@@ -207,6 +207,7 @@ function advance_forcingperiod!(simulation)
     time = currenttime(clock)
     duration = periodduration(clock)
 
+    forcings = []
     for forcing in simulation.forcing
         # Check whether the current date is found in the forcing
         active = read_forcing!(forcing, time)
@@ -214,10 +215,11 @@ function advance_forcingperiod!(simulation)
         @show active
         if active
             prepare_forcingperiod!(forcing, simulation.model)
+            push!(forcings, forcing)
         end
     end
 
-    advance_forcingperiod!(simulation.model, simulation.forcing, duration)
+    advance_forcingperiod!(simulation.model, forcings, duration)
 
     write(simulation.writer, clock, simulation.model.output)
     advance!(clock)
@@ -247,7 +249,7 @@ Run all forcing periods of the simulation.
 """
 function run!(simulation)
     clock = simulation.clock
-    while time(clock) < clock.stop_time
+    while currenttime(clock) < clock.stop_time
         advance_forcingperiod!(simulation)
     end
     return
