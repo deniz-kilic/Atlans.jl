@@ -21,13 +21,9 @@ model = atlans.Model(
     "parameters.csv",
     Δzmax,
 )
-
-simulation = atlans.Simulation(model, "output.nc", DateTime("2020-01-01"))
-
-deep_subsidence = atlans.DeepSubsidence("deep-subsidence.nc")
-stage_change = atlans.StageChange("stage-change.nc")
-set_forcing!(simulation, deep_subsidenc)
-set_forcing!(simulation, stage_change)
-set_periods!(simulation)
-
+forcing = (
+    deep_subsidence = Atlans.DeepSubsidence("deep-subsidence.nc"),
+    stage_change = Atlans.StageChange("stage-change.nc"),
+)
+simulation = Atlans.Simulation(model, "output.nc", DateTime("2020-01-01"), forcing)
 run!(simulation)

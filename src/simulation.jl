@@ -31,11 +31,33 @@ struct Model{G,C,P,O,T}
     output::Output
 end
 
-struct Simulation
+struct StageIndexation
+    percentile::Int
+    weir_area::Array{OptionalInt}
+    change::Array{OptionalFloat}
+    reader::Reader
+end
+
+struct DeepSubsidence
+    subsidence::Array{OptionalFloat}
+    reader::Reader
+end
+
+struct StageChange
+    change::Array{OptionalFloat}
+    reader::Reader
+end
+
+struct AquiferHead
+    head::Array{OptionalFloat}
+    reader::Reader
+end
+
+struct Simulation{F}
     model::Model
     clock::Clock
-    forcing::Vector{Any}
     writer::Writer
+    forcing::F
 end
 
 # Initialization
@@ -164,12 +186,12 @@ end
     
 Setup a simulation from an initialized model.
 """
-function Simulation(model, path_output, stop_time)
+function Simulation(model::Model, path_output::String, stop_time::DateTime, forcing)
     writer = prepare_writer(path_output, model.output.x, model.output.y)
-    forcings = []
     clock = Clock(DateTime[], 1, stop_time)
-
-    return Simulation(model, clock, forcings, writer)
+    simulation = Simulation(model, clock, writer, forcing)
+    set_periods!(simulation)
+    return simulation
 end
 
 """
@@ -177,13 +199,21 @@ Advance a single stress period for all columns.
 
 Timesteps are determined by the total duration and the chosen timestepper.
 """
-function advance_forcingperiod!(model, forcings, duration)
+function advance_forcingperiod!(
+    model,
+    duration;
+    deep_subsidence = nothing,
+    stage_indexation = nothing,
+    stage_change = nothing,
+    aquifer_head = nothing,
+)
     timesteps = create_timesteps(model.timestepper, duration)
     for (I, column) in zip(model.index, model.columns)
-        # Compute pre-loading stresses &c
+        # Compute pre-loading stresses, set t to 0, etc.
         prepare_forcingperiod!(column)
         # Apply changes
-        for forcing in forcings
+        for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head)
+            isnothing(forcing) && continue
             apply_forcing!(forcing, column, I)
         end
         # Compute
@@ -197,6 +227,18 @@ function advance_forcingperiod!(model, forcings, duration)
     return
 end
 
+function load_forcing!(forcing, key, time, model)
+    !haskey(forcing, key) && return nothing
+    input = getfield(forcing, key)
+    active = read_forcing!(input, time)
+    if active
+        prepare_forcingperiod!(input, model)
+        return input
+    else
+        return nothing
+    end
+end
+
 
 """
 Advance the simulation by a single forcing period.
@@ -206,20 +248,17 @@ function advance_forcingperiod!(simulation)
     clock = simulation.clock
     time = currenttime(clock)
     duration = periodduration(clock)
+    forcing = simulation.forcing
+    model = simulation.model
 
-    forcings = []
-    for forcing in simulation.forcing
-        # Check whether the current date is found in the forcing
-        active = read_forcing!(forcing, time)
-        # Only if found, is the forcing active
-        @show active
-        if active
-            prepare_forcingperiod!(forcing, simulation.model)
-            push!(forcings, forcing)
-        end
-    end
-
-    advance_forcingperiod!(simulation.model, forcings, duration)
+    advance_forcingperiod!(
+        model,
+        duration;
+        deep_subsidence = load_forcing!(forcing, :deep_subsidence, time, model),
+        stage_indexation = load_forcing!(forcing, :stage_indexation, time, model),
+        stage_change = load_forcing!(forcing, :stage_change, time, model),
+        aquifer_head = load_forcing!(forcing, :aquifer_head, time, model),
+    )
 
     write(simulation.writer, clock, simulation.model.output)
     advance!(clock)

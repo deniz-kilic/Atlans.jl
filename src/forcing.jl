@@ -1,24 +1,4 @@
-struct StageIndexation <: Forcing
-    percentile::Int
-    weir_area::Array{OptionalInt}
-    change::Array{OptionalFloat}
-    reader::Reader
-end
 
-struct DeepSubsidence <: Forcing
-    subsidence::Array{OptionalFloat}
-    reader::Reader
-end
-
-struct StageChange <: Forcing
-    change::Array{OptionalFloat}
-    reader::Reader
-end
-
-struct AquiferHead <: Forcing
-    head::Array{OptionalFloat}
-    reader::Reader
-end
 
 #struct Surcharge{G,C,O} <: Forcing
 #    surcharge_index::Array{OptionalInt}
