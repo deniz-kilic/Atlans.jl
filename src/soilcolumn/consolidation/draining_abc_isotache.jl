@@ -49,8 +49,14 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
     loadstep = ΔU * load
 
     # τ changes
-    τ⃰ = abc.τ * ((abc.σ′ - loadstep) / abc.σ′)^((abc.b - abc.a) / abc.c)
-    τ = τ⃰ + Δt
+    # This also catches cases where c == 0 for non-creeping soils
+    if abc.c < 1.0e-4
+        τ⃰ = abc.τ
+        τ = τ⃰ + Δt
+    else
+        τ⃰ = abc.τ * ((abc.σ′ - loadstep) / abc.σ′)^((abc.b - abc.a) / abc.c)
+        τ = τ⃰ + Δt
+    end
 
     # consolidation
     elastoplastic = abc.a * log(σ′ / (σ′ - loadstep))
@@ -122,25 +128,21 @@ function initialize(
     ::Type{DrainingAbcIsotache},
     preconsolidation::Type,
     domain,
-    reader,
+    subsoil,
     I,
 )::ConsolidationColumn{DrainingAbcIsotache}
-    use = domain.use
-    lithology = domain.lithology
-    geology = domain.geology
-
-    γ_wet = @view fetch_field(reader, :γ_wet, I, geology, lithology)[use]
-    γ_dry = @view fetch_field(reader, :γ_dry, I, geology, lithology)[use]
-    c_d = @view fetch_field(reader, :c_d, I, geology, lithology)[use]
-    c_v = @view fetch_field(reader, :c_v, I, geology, lithology)[use]
-    a = @view fetch_field(reader, :a, I, geology, lithology)[use]
-    b = @view fetch_field(reader, :b, I, geology, lithology)[use]
-    c = @view fetch_field(reader, :c, I, geology, lithology)[use]
-    precon_values = @view fetch_field(reader, preconsolidation, I, geology, lithology)[use]
+    γ_wet = fetch_field(subsoil, :gamma_wet, I, domain)
+    γ_dry = fetch_field(subsoil, :gamma_dry, I, domain)
+    c_d = fetch_field(subsoil, :drainage_factor, I, domain)
+    c_v = fetch_field(subsoil, :c_v, I, domain)
+    a = fetch_field(subsoil, :a, I, domain)
+    b = fetch_field(subsoil, :b, I, domain)
+    c = fetch_field(subsoil, :c, I, domain)
+    precon_values = fetch_field(subsoil, preconsolidation, I, domain)
     precon = preconsolidation(precon_values)
 
     cells = Vector{DrainingAbcIsotache}()
-    for (i, Δz) in zip(domain.index, domain.Δz)
+    for (i, Δz) in enumerate(domain.Δz)
         cell = DrainingAbcIsotache(Δz, γ_wet[i], γ_dry[i], c_d[i], c_v[i], a[i], b[i], c[i])
         push!(cells, cell)
     end

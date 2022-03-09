@@ -157,14 +157,10 @@ function flow!(column::DarcyColumn, Δt::Float)
 end
 
 
-function initialize(::Type{DarcyColumn}, reader, I)
-    use = domain.use
-    lithology = ncread3d(reader, :lithology, I)
-    geology = ncread3d(reader, :geology, I)
+function initialize(::Type{DarcyColumn}, subsoil, I)
+    k = fetch_field(subsoil, :conductivity, domain)
+    SS = fetch_field(subsoil, :specific_storage, domain)
+    confined = fetch_field(subsoil, :confined, domain)
 
-    k = @view fetch_field(reader, :conductivity, I, geology, lithology)[use]
-    SS = @view fetch_field(reader, :specific_storage, I, geology, lithology)[use]
-    confined = @view fetch_field(reader, :confined, I, geology, lithology)[use]
-
-    column = DarcyColumn(k[domain.index], domain.z, domain.Δz, SS[domain.index])
+    column = DarcyColumn(k[domain.index], domain.z, domain.Δz, SS)
 end

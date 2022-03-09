@@ -8,6 +8,9 @@ using LinearAlgebra
 using DataFrames
 using NCDatasets
 using StatsBase
+using ProgressLogging
+using LoggingExtras
+using TerminalLoggers
 
 const Float = Float64
 const OptionalFloat = Union{Float,Missing}
@@ -18,7 +21,6 @@ const τ_ref = 1.0
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end
 abstract type GroundwaterColumn end
-abstract type SoilCell end
 
 abstract type Preconsolidation end
 abstract type AbstractAbcIsotache <: ConsolidationProcess end
@@ -45,5 +47,6 @@ include("timesteppers.jl")
 include("simulation.jl")
 include("forcing.jl")
 include("io.jl")
+include("logging.jl")
 
 end # module

@@ -68,26 +68,22 @@ function oxidate(cs::CarbonStore, Δt::Float)
 end
 
 
-function initialize(::Type{CarbonStore}, domain, reader, I)
-    use = domain.use
-    lithology = domain.lithology
-    geology = domain.geology
-
-    f_organic = @view fetch_field(reader, :f_organic, I, geology, lithology)[use]
-    m_minimum_organic =
-        @view fetch_field(reader, :m_minimum_organic, I, geology, lithology)[use]
-    α = @view fetch_field(reader, :oxidation_rate, I, geology, lithology)[use]
-    ρb = @view fetch_field(reader, :rho_bulk, I, geology, lithology)[use]
-    max_oxidation_depth = ncread2d(reader, :max_oxidation_depth, I)
+function initialize(::Type{CarbonStore}, domain, subsoil, I)
+    f_organic = fetch_field(subsoil, :mass_fraction_organic, I, domain)
+    f_minimum_organic = fetch_field(subsoil, :minimal_mass_fraction_organic, I, domain)
+    α = fetch_field(subsoil, :oxidation_rate, I, domain)
+    ρb = fetch_field(subsoil, :rho_bulk, I, domain)
+    max_oxidation_depth = subsoil.data[:max_oxidation_depth][I]
 
     cells = Vector{CarbonStore}()
-    for (i, Δz) in zip(domain.index, domain.Δz)
+    for (i, Δz) in enumerate(domain.Δz)
+        m_mineral = mass_mineral(f_organic[i], ρb[i], Δz)
         cell = CarbonStore(
             Δz,
             f_organic[i],
             mass_organic(f_organic[i], ρb[i], Δz),
-            mass_mineral(f_organic[i], ρb[i], Δz),
-            m_minimum_organic[i],
+            m_mineral,
+            mass_organic_minimal(m_mineral, f_minimum_organic[i]),
             α[i],
             ρb[i],
             0.0,

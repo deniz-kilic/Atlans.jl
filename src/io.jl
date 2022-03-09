@@ -1,10 +1,11 @@
 # Reading
 # -------
-function prepare_subsoil_reader(path_nc, path_csv)
+function prepare_subsoil_data(path_nc, path_csv)
     ds = Dataset(path_nc, "r")
     df = read_params_table(path_csv)
     tables = build_lookup_tables(df)
-    return SubsoilReader(ds, tables, Dict(Symbol(key) => key for key in keys(ds)))
+    data = Dict(Symbol(key) => ds[key][:] for key in keys(ds))
+    return SubsoilData(data, tables)
 end
 
 function prepare_reader(path)
@@ -72,20 +73,21 @@ function lookup(table, geology, lithology)
     return found
 end
 
-function fetch_field(reader, field, I, geology, lithology)
-    if haskey(reader.params, field)
-        values = ncread3d(reader, field, I)
-    elseif haskey(reader.tables, field)
-        values = lookup(reader.tables[field], geology, lithology)
+function fetch_field(subsoil, field, I, domain)
+    if haskey(subsoil.data, field)
+        values = subsoil.data[field][domain.index, I]
+    elseif haskey(subsoil.tables, field)
+        values = lookup(subsoil.tables[field], domain.geology, domain.lithology)
     else
         error("Mandatory field not in netCDF or table: $field")
     end
+    return values
 end
 
-fetch_field(reader, ::Type{PreOverburdenPressure}, I, geology, lithology) =
-    fetch_field(reader, :pop, I, geology, lithology)
-fetch_field(reader, ::Type{OverConsolidationRatio}, I, geology, lithology) =
-    fetch_field(reader, :ocr, I, geology, lithology)
+fetch_field(reader, ::Type{PreOverburdenPressure}, I, domain) =
+    fetch_field(reader, :pop, I, domain)
+fetch_field(reader, ::Type{OverConsolidationRatio}, I, domain) =
+    fetch_field(reader, :ocr, I, domain)
 
 function xy_size(reader)
     size_x = length(reader.dataset["x"])

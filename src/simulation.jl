@@ -4,10 +4,9 @@ struct Reader
     times::Vector{DateTime}
 end
 
-struct SubsoilReader
-    dataset::NCDataset
+struct SubsoilData
+    data::Dict{Symbol,Array}
     tables::Dict{Symbol,Dict{Tuple{Int,Int},Float}}
-    params::Dict{Symbol,String}
 end
 
 struct Writer
@@ -90,7 +89,6 @@ struct VerticalDomain
     Δz::Vector{Float}  # cell thickness
     geology::Vector{Int}  # cell geology id
     lithology::Vector{Int}  # cell lithology id
-    use::UnitRange{Int}  # which part of the column to include
     index::Vector{Int}  # which indices of included column (may contain repeats)
     n::Int  # Total number of cells
 end
@@ -98,24 +96,29 @@ end
 """
 Temporary structure used to create SoilColumns.
 """
-function VerticalDomain(domainbase, modelbase, thickness, Δzmax, geology, lithology)
+function prepare_domain(
+    domainbase,
+    modelbase,
+    surface,
+    thickness,
+    Δzmax,
+    geology,
+    lithology,
+)
     ztop = modelbase .+ cumsum(thickness)
     zbot = ztop .- thickness
     zmid = ztop .- 0.5 .* thickness
 
     base_index = findfirst(zmid .> domainbase)
-    top_index = findlast(.!ismissing.(geology))
-    use = base_index:top_index
+    top_index = findlast(zmid .< surface)
 
-    Δz = @view thickness[use]
-    lithology = @view lithology[use]
-    geology = @view geology[use]
-
+    Δz = thickness[base_index:top_index]
     index, ncells = discretize(Δz, Δzmax)
     Δz = (Δz./ncells)[index]
     z = zbot[base_index] .+ cumsum(Δz) .- 0.5 .* Δz
     n = sum(ncells)
-    return VerticalDomain(z, Δz, geology[index], lithology[index], use, index, n)
+    index .+= (base_index - 1)
+    return VerticalDomain(z, Δz, geology[index], lithology[index], index, n)
 end
 
 """
@@ -133,29 +136,36 @@ function Model(
     path_lookup,
     Δzmax,
 )
-    reader = prepare_subsoil_reader(path_subsoil, path_lookup)
+    subsoil = prepare_subsoil_data(path_subsoil, path_lookup)
 
-    x = ncread(reader, :x)
-    y = ncread(reader, :y)
-    base = ncread(reader, :base)
-    domainbase = ncread(reader, :domainbase)
+    x = subsoil.data[:x]
+    y = subsoil.data[:y]
+    base = subsoil.data[:zbase]
+    domainbase = subsoil.data[:domainbase]
+    surface = subsoil.data[:surface_level]
+    geology = subsoil.data[:geology]
+    lithology = subsoil.data[:lithology]
+    thickness = subsoil.data[:thickness]
 
     columntype = SoilColumn{groundwater,consolidation,preconsolidation,oxidation}
     columns = Vector{columntype}()
     index = Vector{CartesianIndex}()
 
     for I in CartesianIndices(domainbase)
-        ismissing(domainbase[I]) && continue
+        (ismissing(domainbase[I]) || ismissing(surface[I])) && continue
+        domain = prepare_domain(
+            domainbase[I],
+            base[I],
+            surface[I],
+            thickness[:, I],
+            Δzmax,
+            geology[:, I],
+            lithology[:, I],
+        )
 
-        geology = ncread3d(reader, :geology, I)
-        lithology = ncread3d(reader, :lithology, I)
-        thickness = ncread3d(reader, :thickness, I)
-
-        domain =
-            VerticalDomain(domainbase[I], base[I], thickness, Δzmax, geology, lithology)
-        g_column = initialize(groundwater, domain, reader, I)
-        c_column = initialize(consolidation, preconsolidation, domain, reader, I)
-        o_column = initialize(oxidation, domain, reader, I)
+        g_column = initialize(groundwater, domain, subsoil, I)
+        c_column = initialize(consolidation, preconsolidation, domain, subsoil, I)
+        o_column = initialize(oxidation, domain, subsoil, I)
 
         column = SoilColumn(
             domainbase[I],
@@ -208,7 +218,7 @@ function advance_forcingperiod!(
     aquifer_head = nothing,
 )
     timesteps = create_timesteps(model.timestepper, duration)
-    for (I, column) in zip(model.index, model.columns)
+    @progress for (I, column) in zip(model.index, model.columns)
         # Compute pre-loading stresses, set t to 0, etc.
         prepare_forcingperiod!(column)
         # Apply changes
@@ -220,6 +230,7 @@ function advance_forcingperiod!(
         subsidence, consolidation, oxidation = advance_forcingperiod!(column, timesteps)
         # Store result
         model.output.phreatic_level[I] = phreatic_level(column.groundwater)
+
         model.output.subsidence[I] = subsidence
         model.output.consolidation[I] = consolidation
         model.output.oxidation[I] = oxidation
@@ -288,8 +299,17 @@ Run all forcing periods of the simulation.
 """
 function run!(simulation)
     clock = simulation.clock
-    while currenttime(clock) < clock.stop_time
-        advance_forcingperiod!(simulation)
+
+    logger, logfile = init_logger("info", "atlans.log", false)
+    with_logger(logger) do
+        try
+            while currenttime(clock) < clock.stop_time
+                advance_forcingperiod!(simulation)
+            end
+        finally
+            close(logfile)
+        end
     end
+    close(simulation.writer.dataset)
     return
 end

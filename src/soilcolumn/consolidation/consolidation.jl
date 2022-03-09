@@ -80,14 +80,14 @@ end
 Consolidation reduces pore space, pushes out the water.
 """
 function compress_γ_wet(cell::C where {C<:ConsolidationProcess}, consolidation::Float)
-    return cell.γ_wet * cell.Δz - consolidation * cell.γ_wet / (cell.Δz - consolidation)
+    return (cell.γ_wet * cell.Δz - consolidation * cell.γ_wet) / (cell.Δz - consolidation)
 end
 
 """
 Consolidation reduces pore space, pushes out the air.
 """
 function compress_γ_dry(cell::C where {C<:ConsolidationProcess}, consolidation::Float)
-    return cell.γ_dry * cell.Δz / (cell.Δz - consolidation)
+    return (cell.γ_dry * cell.Δz) / (cell.Δz - consolidation)
 end
 
 """

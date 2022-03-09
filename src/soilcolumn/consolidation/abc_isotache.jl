@@ -14,18 +14,6 @@ function set_τ0_pop(abc::ABC where {ABC<:AbstractAbcIsotache}, pop::Float)
     return set_τ0_ocr(abc, ocr)
 end
 
-"""
-Water-filled porespace is reduced as the water is pushed out and the soil
-becomes denser.
-"""
-function compress_γ_wet(abc::ABC where {ABC<:AbstractAbcIsotache})
-    return (abc.γ_wet * abc.Δz - abc.consolidation * γ_water) / (abc.Δz - abc.consolidation)
-end
-
-function compress_γ_dry(abc::ABC where {ABC<:AbstractAbcIsotache})
-    return (abc.γ_dry * abc.Δz) / (abc.Δz - abc.consolidation)
-end
-
 struct AbcIsotache <: AbstractAbcIsotache
     Δz::Float
     Δz_0::Float

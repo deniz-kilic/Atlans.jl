@@ -64,7 +64,6 @@
         zmid = ztop .- 0.5 .* thickness
         base_index = findfirst(zmid .> domainbase)
         top_index = findlast(.!ismissing.(geology))
-        use = base_index:top_index
 
         domain = Atlans.VerticalDomain(
             domainbase,
@@ -80,8 +79,7 @@
         @test all(domain.Δz .≈ 0.25)
         @test all(domain.geology .== 1)
         @test all(domain.lithology .== 2)
-        @test domain.use == 11:30
-        @test domain.index == Atlans.repeat_elements(1:20, fill(2, 20))
+        @test domain.index == Atlans.repeat_elements(11:30, fill(2, 20))
         @test domain.n == 40
     end
 

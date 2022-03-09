@@ -40,8 +40,8 @@ phreatic_level(hg::HydrostaticGroundwater) = hg.phreatic.ϕ
 function initialize(
     ::Type{HydrostaticGroundwater},
     domain,
-    reader,
+    subsoil,
     I,
 )::HydrostaticGroundwater
-    return HydrostaticGroundwater(domain.z, ncread2d(reader, :phreatic_level, I))
+    return HydrostaticGroundwater(domain.z, subsoil.data[:phreatic_level][I])
 end
