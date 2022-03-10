@@ -17,15 +17,21 @@ using Setfield
     end
 
     @testset "compress_γ_wet" begin
-        cell = @set cell.consolidation = 0.1
-        actual = Atlans.compress_γ_wet(cell)
+        actual = Atlans.compress_γ_wet(cell, 0.0)
+        expected = 15000.0
+        @test actual ≈ expected
+
+        actual = Atlans.compress_γ_wet(cell, 0.1)
         expected = 15576.666666666666
         @test actual ≈ expected
     end
 
     @testset "compress_γ_dry" begin
-        cell = @set cell.consolidation = 0.01
-        actual = Atlans.compress_γ_dry(cell)
+        actual = Atlans.compress_γ_dry(cell, 0.0)
+        expected = 10000.0
+        @test actual ≈ expected
+
+        actual = Atlans.compress_γ_dry(cell, 0.01)
         expected = 10101.0101010101
         @test actual ≈ expected
     end

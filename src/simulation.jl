@@ -107,10 +107,10 @@ function prepare_domain(
 )
     ztop = modelbase .+ cumsum(thickness)
     zbot = ztop .- thickness
-    zmid = ztop .- 0.5 .* thickness
+    zmid = skipmissing(ztop .- 0.5 .* thickness)
 
-    base_index = findfirst(zmid .> domainbase)
-    top_index = findlast(zmid .< surface)
+    base_index = findfirst(domainbase .< zmid)
+    top_index = findlast(surface .> zmid)
 
     Δz = thickness[base_index:top_index]
     index, ncells = discretize(Δz, Δzmax)

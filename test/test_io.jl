@@ -21,16 +21,16 @@
         @test issetequal(
             keys(tables),
             [
+                :gamma_wet,
+                :gamma_dry,
+                :drainage_factor,
+                :c_v,
                 :a,
                 :b,
                 :c,
-                :γ_dry,
-                :c_v,
-                :γ_wet,
-                :c_d,
                 :ocr,
-                :f_organic,
-                :m_minimum_organic,
+                :mass_fraction_organic,
+                :minimal_mass_fraction_organic,
                 :oxidation_rate,
                 :rho_bulk,
             ],
@@ -40,62 +40,22 @@
         @test Atlans.lookup(tables[:a], [1, 1], [2, 2]) == [0.01737, 0.01737]
     end
 
-    @testset "subsoil_reader" begin
+    @testset "subsoil_data" begin
         path_csv = AtlansFixtures.params_table()
         path_nc = AtlansFixtures.subsoil_netcdf()
-        reader = Atlans.prepare_subsoil_reader(path_nc, path_csv)
+        subsoil = Atlans.prepare_subsoil_data(path_nc, path_csv)
 
-        @test typeof(reader) == Atlans.SubsoilReader
-        @test typeof(reader.dataset) == NCDatasets.NCDataset{Nothing}
-        @test issetequal(
-            keys(reader.params),
-            [
-                :x,
-                :y,
-                :base,
-                :domainbase,
-                :geology,
-                :lithology,
-                :phreatic_level,
-                :thickness,
-                :max_oxidation_depth,
-            ],
-        )
-        @test issetequal(
-            values(reader.params),
-            [
-                "x",
-                "y",
-                "base",
-                "domainbase",
-                "geology",
-                "lithology",
-                "phreatic_level",
-                "thickness",
-                "max_oxidation_depth",
-            ],
-        )
-        @test Atlans.lookup(reader.tables[:a], [1, 1], [2, 2]) == [0.01737, 0.01737]
+        @test typeof(subsoil) == Atlans.SubsoilData
+        @test typeof(subsoil.data) == Dict{Symbol,Array}
+        @test Atlans.lookup(subsoil.tables[:a], [1, 1], [2, 2]) == [0.01737, 0.01737]
 
-        lithology = Atlans.ncread3d(reader, :lithology, CartesianIndex(1, 1))
-        @test typeof(lithology) == Array{Int,1}
-        @test length(lithology) == 4
-        phreatic = Atlans.ncread2d(reader, :phreatic_level, CartesianIndex(1, 1))
-        @test typeof(phreatic) == Float64
+        lithology = subsoil.data[:lithology]
+        @test typeof(lithology) == Array{Int,3}
+        @test size(lithology) == (4, 2, 3)
 
-        geology = fill(1, 4)
-        lithology = fill(2, 4)
-        a = Atlans.fetch_field(reader, :a, CartesianIndex(1, 1), geology, lithology)
-        @test typeof(a) == Array{Float64,1}
-        @test length(a) == 4
 
-        Δz =
-            Atlans.fetch_field(reader, :thickness, CartesianIndex(1, 1), geology, lithology)
-        @test typeof(Δz) == Array{Float64,1}
-        @test length(Δz) == 4
-        @test all(Δz .== 0.25)
-
-        @test Atlans.xy_size(reader) == (2, 3)
+        phreatic = subsoil.data[:phreatic_level]
+        @test typeof(phreatic) == Array{Float64,2}
     end
 
     @testset "reader" begin

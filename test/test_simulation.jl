@@ -51,6 +51,7 @@
     @testset "vertical domain" begin
         domainbase = -5.0
         modelbase = -10.0
+        surface = 5.0
         Δzmax = 0.25
         thickness = fill_optional_float(0.5, 40)  # from -10.0 to +10.0
         geology = fill_optional_int(1, 40)
@@ -59,15 +60,10 @@
         geology[end-9:end] .= missing
         lithology[end-9:end] .= missing
 
-        ztop = modelbase .+ cumsum(thickness)
-        zbot = ztop .- thickness
-        zmid = ztop .- 0.5 .* thickness
-        base_index = findfirst(zmid .> domainbase)
-        top_index = findlast(.!ismissing.(geology))
-
-        domain = Atlans.VerticalDomain(
+        domain = Atlans.prepare_domain(
             domainbase,
             modelbase,
+            surface,
             thickness,
             Δzmax,
             geology,

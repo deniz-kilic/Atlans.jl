@@ -144,8 +144,9 @@ function subsoil_netcdf()
     lithology = defVar(ds, "lithology", Int, ("layer", "x", "y"))
     thickness = defVar(ds, "thickness", Float64, ("layer", "x", "y"))
     phreatic = defVar(ds, "phreatic_level", Float64, ("x", "y"))
-    base = defVar(ds, "base", Float64, ("x", "y"))
+    base = defVar(ds, "zbase", Float64, ("x", "y"))
     domainbase = defVar(ds, "domainbase", Float64, ("x", "y"))
+    surface_level = defVar(ds, "surface_level", Float64, ("x", "y"))
     max_oxidation_depth = defVar(ds, "max_oxidation_depth", Float64, ("x", "y"))
     geology[:] .= 1
     lithology[:] .= 2
@@ -153,6 +154,7 @@ function subsoil_netcdf()
     thickness[:] .= 0.25
     base[:] .= 0.0
     domainbase[:] .= 0.0
+    surface_level[:] .= 1.0
     max_oxidation_depth .= 1.2
     return filename
 end
@@ -195,16 +197,16 @@ function params_table()
         lithology_name = ["sand"],
         geology = [1],
         lithology = [2],
-        γ_wet = [15000.0],
-        γ_dry = [10000.0],
-        c_d = [2.0],
+        gamma_wet = [15000.0],
+        gamma_dry = [10000.0],
+        drainage_factor = [2.0],
         c_v = [0.006912],
         a = [0.01737],
         b = [0.1303],
         c = [0.008686],
         ocr = [2.15],
-        f_organic = [0.2],
-        m_minimum_organic = [0.05],
+        mass_fraction_organic = [0.2],
+        minimal_mass_fraction_organic = [0.05],
         oxidation_rate = [0.001],
         rho_bulk = [1000.0],
     )
