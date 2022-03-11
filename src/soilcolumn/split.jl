@@ -2,25 +2,35 @@
 Logic for splitting a column to accomodate for a moving phreatic level in
 combination with organic matter stores.
 """
+struct AdaptiveCellsize
+    Δzmax::Float
+    split_tolerance::Float
+end
 
-function find_split_index(z, Δz, level)
+function find_split_index(z, Δz, level, tolerance)
     for index in eachindex(z)
         zbot = z[index] - 0.5 * Δz[index]
         ztop = z[index] + 0.5 * Δz[index]
         if level < ztop && level > zbot
-            return index, level - zbot, ztop - level
+            lowerΔz = level - zbot
+            upperΔz = ztop - level
+            if (lowerΔz < tolerance) || (upperΔz < tolerance)
+                return nothing, NaN, NaN
+            else
+                return index, lowerΔz, upperΔz
+            end
         end
     end
-    return 0, NaN, NaN
+    return nothing, NaN, NaN
 end
 
 function shouldsplit(vector, newlength)
     if length(vector) == newlength
         return false
-    elseif length(vector) != (newlength - 1)
+    elseif (length(vector) + 1) == newlength
         return true
     else
-        error("vector is equal to newlength or newlength - 1")
+        error("vector is not equal to newlength or newlength - 1")
     end
 end
 
@@ -34,65 +44,52 @@ function cellsplit!(
     if shouldsplit(column.cells, newlength)
         # @set also creates a copy
         cell = column.cells[index]
-        @set cell.Δz = lowerΔz
-        lower = copy(cell)
-        @set lower.Δz = upperΔz
+        upper = @set cell.Δz = upperΔz
+        lower = @set cell.Δz = lowerΔz
         insert!(column.cells, index, lower)
+        column.cells[index+1] = upper
     end
     return
 end
 
-function insert_duplicate!(vector::Vector, index, newlength)
-    if shouldsplit(vector, newlength)
-        insert!(item, index, copy(item[index]))
-    end
-    return
-end
-
-function zsplit!(z, Δz, index, newlength, lowerΔz, upperΔz)
-    if shouldsplit(vector, newlength)
-        pop!(Δz, index)
-        insert!(Δz, index, upperΔz)
+function zsplit!(Δz, index, newlength, lowerΔz, upperΔz)
+    if shouldsplit(Δz, newlength)
         insert!(Δz, index, lowerΔz)
-
-        push!(z, NaN)
-        zbot = z[1] - 0.5 * Δz[1]
-        for index in eachindex(c.Δz)
-            z[index] = zbot + 0.5 * Δz[index]
-            zbot += Δz[index]
-        end
+        Δz[index+1] = upperΔz
     end
     return
 end
 
 function columnsplit!(hg::HydrostaticGroundwater, index, newlength, lowerΔz, upperΔz)
-    push!(ig.dry, true)
-    push!(ig.ϕ, NaN)
-    push!(ig.p, NaN)
-    return
+    push!(hg.dry, false)
+    push!(hg.p, NaN)
 end
 
 function columnsplit!(cc::ConsolidationColumn, index, newlength, lowerΔz, upperΔz)
-    zsplit!(cc.z, cc.Δz, index, newlength, lowerΔz, upperΔz)
     cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
     push!(cc.σ, NaN)
     push!(cc.σ′, NaN)
     push!(cc.p, NaN)
+    push!(cc.result, NaN)
 end
 
 function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)
-    zsplit!(oc.z, oc.Δz, index, newlength, lowerΔz, upperΔz)
-    cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
+    cellsplit!(oc, index, newlength, lowerΔz, upperΔz)
+    push!(oc.result, NaN)
 end
 
-
-function split!(sc::SoilColumn, level)
-    index, lowerΔz, upperΔz = find_split_index(sc.z, sc.Δz, level)
-    newlength = length(c.z) + 1
+function split!(sc::SoilColumn, level, tolerance)
+    index, lowerΔz, upperΔz = find_split_index(sc.z, sc.Δz, level, tolerance)
+    isnothing(index) && return
+    newlength = length(sc.z) + 1
     if index != 0
-        columnsplit!(c.groundwater, index, newlength, lowerΔz, upperΔz)
-        columnsplit!(c.consolidation, index, newlength, lowerΔz, upperΔz)
-        columnsplit!(c.oxidation, index, newlength, lowerΔz, upperΔz)
+        zsplit!(sc.Δz, index, newlength, lowerΔz, upperΔz)
+        push!(sc.z, NaN)
+        push!(sc.subsidence, NaN)
+        columnsplit!(sc.groundwater, index, newlength, lowerΔz, upperΔz)
+        columnsplit!(sc.consolidation, index, newlength, lowerΔz, upperΔz)
+        columnsplit!(sc.oxidation, index, newlength, lowerΔz, upperΔz)
     end
+    update_z!(sc)
     return
 end

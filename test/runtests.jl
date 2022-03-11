@@ -14,6 +14,7 @@ include("test_consolidation_column.jl")
 include("test_oxidation_column.jl")
 
 include("test_timesteppers.jl")
+include("test_split.jl")
 
 include("test_column.jl")
 

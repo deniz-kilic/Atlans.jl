@@ -5,7 +5,7 @@
         # Set initial τ
         Atlans.apply_preconsolidation!(column)
         # Prepare forcing period: store pre-load stress
-        Atlans.prepare_forcingperiod!(column)
+        Atlans.prepare_forcingperiod!(column, 10.0)
         return column
     end
 
@@ -88,7 +88,7 @@
         column = AtlansFixtures.soil_column_hg_abc_cs()
         cc = column.consolidation
 
-        Atlans.prepare_forcingperiod!(column)
+        Atlans.prepare_forcingperiod!(column, 10.0)
         test_initial_stress(column)
         @test all(cc.σ′ .≈ collect(cell.σ′ for cell in cc.cells))
         @test all((cell.t for cell in cc.cells) .== 0.0)
@@ -100,7 +100,7 @@
         # Set initial τ
         Atlans.apply_preconsolidation!(column)
         # Prepare forcing period: store pre-load stress
-        Atlans.prepare_forcingperiod!(column)
+        Atlans.prepare_forcingperiod!(column, 10.0)
         # Set a single timestep of 1 day.
         subsidence, consolidation, oxidation = Atlans.advance_timestep!(column, 1.0)
 

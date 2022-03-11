@@ -23,10 +23,12 @@ struct Output
     subsidence::Array{Float}
 end
 
-struct Model{G,C,P,O,T}
+
+struct Model{G,C,P,O,T,A}
     columns::Vector{SoilColumn{G,C,P,O}}
     index::Vector{CartesianIndex}
     timestepper::T
+    adaptive_cellsize::A
     output::Output
 end
 
@@ -131,10 +133,10 @@ function Model(
     consolidation::Type,
     oxidation::Type,
     preconsolidation::Type,
+    adaptive_cellsize,
     timestepper,
     path_subsoil,
     path_lookup,
-    Δzmax,
 )
     subsoil = prepare_subsoil_data(path_subsoil, path_lookup)
 
@@ -158,7 +160,7 @@ function Model(
             base[I],
             surface[I],
             thickness[:, I],
-            Δzmax,
+            adaptive_cellsize.Δzmax,
             geology[:, I],
             lithology[:, I],
         )
@@ -188,7 +190,7 @@ function Model(
     output =
         Output(x, y, fill(NaN, shape), fill(NaN, shape), fill(NaN, shape), fill(NaN, shape))
 
-    return Model(columns, index, timestepper, output)
+    return Model(columns, index, timestepper, adaptive_cellsize, output)
 end
 
 """
@@ -220,7 +222,7 @@ function advance_forcingperiod!(
     timesteps = create_timesteps(model.timestepper, duration)
     @progress for (I, column) in zip(model.index, model.columns)
         # Compute pre-loading stresses, set t to 0, etc.
-        prepare_forcingperiod!(column)
+        prepare_forcingperiod!(column, model.adaptive_cellsize.split_tolerance)
         # Apply changes
         for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head)
             isnothing(forcing) && continue

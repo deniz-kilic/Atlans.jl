@@ -83,14 +83,14 @@
         path_csv = AtlansFixtures.params_table()
         path_nc = AtlansFixtures.subsoil_netcdf()
         timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
-        Δzmax = 0.25
 
         model = Atlans.Model(
             Atlans.HydrostaticGroundwater,
             Atlans.DrainingAbcIsotache,
             Atlans.CarbonStore,
             Atlans.OverConsolidationRatio,
-            timestepper,
+            Atlans.AdaptiveCellsize(0.25, 0.01),
+            Atlans.ExponentialTimeStepper(1.0, 2),
             path_nc,
             path_csv,
             Δzmax,

@@ -118,7 +118,7 @@ function prepare_timestep!(column::SoilColumn)
 end
 
 """
-    prepare_forcingperiod!(column)
+    prepare_forcingperiod!(column, split_tolerance)
     
 Prepare a single forcing period.
 
@@ -129,12 +129,10 @@ This:
     * sets the effective stress in every consolidation cell
     * Reset U and t for DrainingConsolidation processes.
 """
-function prepare_forcingperiod!(column::SoilColumn)
-    #level = oxidation_depth(column.oxidation)
-    #split!(column, level)
-
+function prepare_forcingperiod!(column::SoilColumn, split_tolerance)
+    level = oxidation_depth(column.oxidation, phreatic_level(column.groundwater))
+    split!(column, level, split_tolerance)
     initial_stress!(column)
-
     prepare_forcingperiod!(column.consolidation)
     return
 end

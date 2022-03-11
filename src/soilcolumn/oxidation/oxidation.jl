@@ -6,6 +6,10 @@ struct OxidationColumn{O}
     max_oxidation_depth::Float
 end
 
+function oxidation_depth(column::OxidationColumn, phreatic_level)
+    return min(column.max_oxidation_depth, phreatic_level)
+end
+
 function oxidate!(column::OxidationColumn, phreatic_level::Float, Δt::Float)
     oxidation_z = max(phreatic_level, surface_level(column) - column.max_oxidation_depth)
     column.result .= 0.0
