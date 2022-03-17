@@ -15,18 +15,16 @@
     function testing_model()
         path_csv = AtlansFixtures.params_table()
         path_nc = AtlansFixtures.subsoil_netcdf()
-        timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
-        Δzmax = 0.25
 
         return Atlans.Model(
             Atlans.HydrostaticGroundwater,
             Atlans.DrainingAbcIsotache,
             Atlans.CarbonStore,
             Atlans.OverConsolidationRatio,
-            timestepper,
+            Atlans.AdaptiveCellsize(0.25, 0.01),
+            Atlans.ExponentialTimeStepper(1.0, 2),
             path_nc,
             path_csv,
-            Δzmax,
         )
     end
 
@@ -93,7 +91,6 @@
             Atlans.ExponentialTimeStepper(1.0, 2),
             path_nc,
             path_csv,
-            Δzmax,
         )
 
         @test typeof(model) == Atlans.Model{
@@ -102,6 +99,7 @@
             Atlans.OverConsolidationRatio,
             Atlans.CarbonStore,
             Atlans.ExponentialTimeStepper{Int},
+            Atlans.AdaptiveCellsize,
         }
 
         @test length(model.columns) == 6
@@ -125,8 +123,7 @@
     @testset "simulation" begin
         model = testing_model()
         path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
-        deep_subsidence = Atlans.DeepSubsidence(path_deep_subsidence)
-        forcing = (deep_subsidence = deep_subsidence,)
+        forcing = (deep_subsidence = Atlans.DeepSubsidence(path_deep_subsidence),)
         simulation = Atlans.Simulation(model, tempname(), DateTime("2020-03-01"), forcing)
 
         @test simulation.clock.times ==
