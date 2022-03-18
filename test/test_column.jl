@@ -138,4 +138,28 @@
         @test s1 ≈ s2 ≈ s3  # same subsidence
     end
 
+    @testset "NullOxidation" begin
+        column = AtlansFixtures.soil_column_hg_abc_null()
+        # Set initial τ
+        Atlans.apply_preconsolidation!(column)
+        # Prepare forcing period: store pre-load stress
+        Atlans.prepare_forcingperiod!(column, 10.0)
+
+        Atlans.set_phreatic!(column, 2.8)
+        subsidence, consolidation, oxidation = advance(column)
+
+        @test subsidence ≈ consolidation
+        @test oxidation == 0.0
+    end
+
+    @testset "NullConsolidation" begin
+        column = AtlansFixtures.soil_column_hg_null_cs()
+        Atlans.prepare_forcingperiod!(column, 10.0)
+
+        Atlans.set_phreatic!(column, 2.8)
+        subsidence, consolidation, oxidation = advance(column)
+
+        @test subsidence ≈ oxidation
+        @test consolidation == 0.0
+    end
 end

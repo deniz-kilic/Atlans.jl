@@ -111,6 +111,52 @@ function soil_column_hg_abc_cs()
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc)
 end
 
+function soil_column_hg_abc_null()
+    z = collect(0.5:1.0:4.0)
+    Δz = fill(1.0, 4)
+
+    cc = Atlans.ConsolidationColumn(
+        fill(draining_abc_isotache(), 4),
+        z,
+        Δz,
+        fill(NaN, 4), # σ
+        fill(NaN, 4), # σ′
+        fill(NaN, 4), # p
+        Atlans.OverConsolidationRatio(fill(2.15, 4)),
+        fill(NaN, 4), # result
+    )
+
+    oc = Atlans.OxidationColumn(fill(Atlans.NullOxidation(), 4), z, Δz, fill(0.0, 4), 1.0)
+
+    gw =
+        Atlans.HydrostaticGroundwater(z, Atlans.Phreatic(3.0), fill(false, 4), fill(NaN, 4))
+
+    return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc)
+end
+
+function soil_column_hg_null_cs()
+    z = collect(0.5:1.0:4.0)
+    Δz = fill(1.0, 4)
+
+    cc = Atlans.ConsolidationColumn(
+        fill(Atlans.NullConsolidation(), 4),
+        z,
+        Δz,
+        fill(NaN, 4), # σ
+        fill(NaN, 4), # σ′
+        fill(NaN, 4), # p
+        Atlans.OverConsolidationRatio(fill(NaN, 4)),
+        fill(0.0, 4), # result
+    )
+
+    oc = Atlans.OxidationColumn(fill(carbon_store(), 4), z, Δz, fill(NaN, 4), 1.0)
+
+    gw =
+        Atlans.HydrostaticGroundwater(z, Atlans.Phreatic(3.0), fill(false, 4), fill(NaN, 4))
+
+    return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc)
+end
+
 function create_xcoord!(ds, x)
     defVar(
         ds,

@@ -31,6 +31,15 @@ function ConsolidationColumn(cells, z, Δz, preconsolidation)
     )
 end
 
+apply_preconsolidation!(::ConsolidationColumn{NullConsolidation}) = nothing
+total_stress!(::ConsolidationColumn{NullConsolidation}, _) = nothing
+effective_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
+transfer_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
+prepare_forcingperiod!(::ConsolidationColumn{NullConsolidation}) = nothing
+consolidate!(::ConsolidationColumn{NullConsolidation}, _, _) = nothing
+synchronize!(::ConsolidationColumn{NullConsolidation}, _) = nothing
+
+
 function apply_preconsolidation!(
     column::ConsolidationColumn{
         ABC,
@@ -162,7 +171,6 @@ function transfer_stress!(column::ConsolidationColumn)
 end
 
 
-prepare_forcingperiod!(_) = nothing
 
 function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
     # Compute the new effective stress.

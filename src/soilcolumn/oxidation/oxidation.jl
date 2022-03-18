@@ -6,11 +6,23 @@ struct OxidationColumn{O}
     max_oxidation_depth::Float
 end
 
-function oxidation_depth(column::OxidationColumn, phreatic_level)
+oxidation_depth(column::OxidationColumn{NullOxidation}, _) = 0.0
+oxidate!(column::OxidationColumn{NullOxidation}, _, _) = nothing
+synchronize!(column::OxidationColumn{NullOxidation}, _) = nothing
+
+function oxidation_depth(
+    column::OxidationColumn{O},
+    phreatic_level,
+) where {O<:OxidationProcess}
     return min(column.max_oxidation_depth, phreatic_level)
 end
 
-function oxidate!(column::OxidationColumn, phreatic_level::Float, Δt::Float)
+
+function oxidate!(
+    column::OxidationColumn{O},
+    phreatic_level::Float,
+    Δt::Float,
+) where {O<:OxidationProcess}
     oxidation_z = max(phreatic_level, surface_level(column) - column.max_oxidation_depth)
     column.result .= 0.0
     for (index, cell) in enumerate(column.cells)
@@ -23,7 +35,7 @@ function oxidate!(column::OxidationColumn, phreatic_level::Float, Δt::Float)
     return
 end
 
-function synchronize!(column::OxidationColumn, Δz)
+function synchronize!(column::OxidationColumn{O}, Δz) where {O<:OxidationProcess}
     for i = 1:length(column.cells)
         @set column.cells[i].Δz = Δz[i]
     end

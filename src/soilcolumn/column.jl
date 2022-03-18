@@ -31,21 +31,6 @@ function SoilColumn(base::Float, x, y, z, Δz, groundwater, consolidation, oxida
     )
 end
 
-function initial_stress!(column)
-    flow!(column.groundwater, 0.0)
-    pore_pressure!(column.groundwater)
-    exchange_pore_pressure!(column)
-    total_stress!(column.consolidation, phreatic_level(column.groundwater))
-    effective_stress!(column.consolidation)
-    transfer_stress!(column.consolidation)
-    return
-end
-
-function apply_preconsolidation!(column)
-    initial_stress!(column)
-    apply_preconsolidation!(column.consolidation)
-end
-
 surface_level(column) = column.z[end] + 0.5 * column.Δz[end]
 
 # Forcing
@@ -97,7 +82,6 @@ function exchange_pore_pressure!(column::SoilColumn)
     column.consolidation.p .= column.groundwater.p * γ_water
 end
 
-
 """
     prepare_timestep!(column)
     
@@ -110,11 +94,23 @@ This computes:
     * Total stress
     * Effective stress
 """
-function prepare_timestep!(column::SoilColumn)
-    flow!(column.groundwater, 0.0)
+function prepare_timestep!(column::SoilColumn, Δt)
+    flow!(column.groundwater, Δt)
     exchange_pore_pressure!(column)
     total_stress!(column.consolidation, phreatic_level(column.groundwater))
     effective_stress!(column.consolidation)
+end
+
+function initial_stress!(column)
+    prepare_timestep!(column, 0.0)
+    effective_stress!(column.consolidation)
+    transfer_stress!(column.consolidation)
+    return
+end
+
+function apply_preconsolidation!(column)
+    initial_stress!(column)
+    apply_preconsolidation!(column.consolidation)
 end
 
 """
@@ -174,12 +170,13 @@ During a timestep the following states are computed:
     * pore pressure
     * total stress
     * effective stress
+    
+Then, consolidation and oxidation are computed.
 
 Finally, thickness and elevation are updated.
 """
 function advance_timestep!(c::SoilColumn, Δt::Float)
-    flow!(c.groundwater, Δt)
-    exchange_pore_pressure!(c)
+    prepare_timestep!(c, Δt)
     consolidate!(c.consolidation, phreatic_level(c.groundwater), Δt)
     oxidate!(c.oxidation, phreatic_level(c.groundwater), Δt)
     subside!(c)

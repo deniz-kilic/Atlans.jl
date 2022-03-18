@@ -36,7 +36,22 @@ function DrainingAbcIsotache(Δz, γ_wet, γ_dry, c_d, c_v, a, b, c)
     )
 end
 
-function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
+"""
+    consolidate(abc::DrainingAbcIsotache, σ′, Δt)
+    
+Compute consolidation for a single cell.
+
+The cell contains a state U for Terzaghi's degree of consolidation. This state
+is updated every consolidate step. During every Δt, a new U is computed.  The
+increase in U can be directly related to the pore pressure, and so the increase
+in effective stress is equal to the effective stress prior to loading (abc.σ′)
+and the new effective stress (σ′) reached when U becomes 1.0.
+
+The degree of consolidation plays only one role: it distributes the load (final
+σ′ - initial σ′) over time and as the column might be submerging, the increase
+in σ′ may become lower, providing a negative feedback mechanism.
+"""
+function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
     t = abc.t + Δt
 
     # Degree of consolidation changes
@@ -54,7 +69,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′::Float, Δt::Float)
         τ⃰ = abc.τ
         τ = τ⃰ + Δt
     else
-        τ⃰ = abc.τ * ((abc.σ′ - loadstep) / abc.σ′)^((abc.b - abc.a) / abc.c)
+        τ⃰ = abc.τ * ((σ′ - loadstep) / σ′)^((abc.b - abc.a) / abc.c)
         τ = τ⃰ + Δt
     end
 

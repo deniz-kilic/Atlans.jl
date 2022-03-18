@@ -22,6 +22,9 @@ abstract type ConsolidationProcess end
 abstract type OxidationProcess end
 abstract type GroundwaterColumn end
 
+struct NullConsolidation end
+struct NullOxidation end
+
 abstract type Preconsolidation end
 abstract type AbstractAbcIsotache <: ConsolidationProcess end
 
