@@ -1,5 +1,3 @@
-
-
 #struct Surcharge{G,C,O} <: Forcing
 #    surcharge_index::Array{OptionalInt}
 #    surcharge::Vector{ColumnSurcharge{G,C,O}}
@@ -92,6 +90,25 @@ function prepare_forcingperiod!(si::StageIndexation, model)
 end
 
 # Apply forcing to a column
+
+
+function get_elevation_shift(ds::DeepSubsidence, column, I)
+    subsidence = ds.subsidence[I]
+    ismissing(subsidence) && return 0.0
+    return subsidence
+end
+
+function get_elevation_shift(si::StageIndexation, column, I)
+    change = si.change[I]
+    (ismissing(change) || change == 0.0) && return 0.0
+    return change
+end
+
+function get_elevation_shift(si::StageChange, column, I)
+    change = si.change[I]
+    (ismissing(change) || change == 0.0) && return 0.0
+    return change
+end
 
 function apply_forcing!(si::StageIndexation, column, I)
     change = si.change[I]

@@ -222,7 +222,26 @@ function advance_forcingperiod!(
     timesteps = create_timesteps(model.timestepper, duration)
     @progress for (I, column) in zip(model.index, model.columns)
         # Compute pre-loading stresses, set t to 0, etc.
-        prepare_forcingperiod!(column, model.adaptive_cellsize.split_tolerance)
+        if !isnothing(deep_subsidence)
+            column_subsidence = get_elevation_shift(deep_subsidence, column, I)
+        else
+            column_subsidence = 0.0
+        end
+
+        if !isnothing(stage_change)
+            column_phreatic_change = get_elevation_shift(stage_change, column, I)
+        elseif !isnothing(stage_indexation)
+            column_phreatic_change = get_elevation_shift(stage_indexation, column, I)
+        else
+            column_phreatic_change = 0.0
+        end
+
+        prepare_forcingperiod!(
+            column,
+            model.adaptive_cellsize.split_tolerance,
+            column_subsidence,
+            column_phreatic_change,
+        )
         # Apply changes
         for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head)
             isnothing(forcing) && continue

@@ -52,6 +52,48 @@ function cellsplit!(
     return
 end
 
+"""
+For CarbonStore, organic and mineral mass should be split according to cell
+height (Δz).
+"""
+function cellsplit!(
+    column::OxidationColumn{CarbonStore},
+    index,
+    newlength,
+    lowerΔz,
+    upperΔz,
+)
+    if shouldsplit(column.cells, newlength)
+        # @set also creates a copy
+        cell = column.cells[index]
+        lower_fraction = lowerΔz / cell.Δz
+        upper_fraction = upperΔz / cell.Δz
+
+        lower = CarbonStore(
+            lowerΔz,
+            cell.f_organic,
+            cell.f_minimum_organic,
+            lower_fraction * cell.m_organic,
+            lower_fraction * cell.m_mineral,
+            cell.α,
+            NaN,
+        )
+        upper = CarbonStore(
+            upperΔz,
+            cell.f_organic,
+            cell.f_minimum_organic,
+            upper_fraction * cell.m_organic,
+            upper_fraction * cell.m_mineral,
+            cell.α,
+            NaN,
+        )
+
+        insert!(column.cells, index, lower)
+        column.cells[index+1] = upper
+    end
+    return
+end
+
 function zsplit!(Δz, index, newlength, lowerΔz, upperΔz)
     if shouldsplit(Δz, newlength)
         insert!(Δz, index, lowerΔz)

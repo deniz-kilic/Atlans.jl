@@ -1,12 +1,20 @@
 @testset "CarbonStore" begin
+    f_organic = 0.2
+    ρb = 1000.0
+    Δz = 1.0
+    f_minimum_organic = 0.05
+    α = 1.0e-3
+
     cell = Atlans.CarbonStore(
-        1.0,
-        0.2,
-        Atlans.mass_organic(0.2, 1000, 1),
-        Atlans.mass_mineral(0.2, 1000, 1),
-        Atlans.mass_organic_minimal(Atlans.mass_mineral(0.2, 1000, 1), 0.05),
-        1.0e-3,
-        1000,
+        Δz,
+        f_organic,
+        Atlans.mass_organic(f_organic, ρb, Δz),
+        Atlans.mass_mineral(f_organic, ρb, Δz),
+        Atlans.mass_organic_minimal(
+            Atlans.mass_mineral(f_organic, ρb, Δz),
+            f_minimum_organic,
+        ),
+        α,
         0.0,
     )
 

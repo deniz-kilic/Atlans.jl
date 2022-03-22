@@ -3,12 +3,17 @@ using SpecialFunctions: erf
 struct CarbonStore <: OxidationProcess
     Δz::Float  # cell thickness
     f_organic::Float  # mass fraction organic material
+    f_minimum_organic::Float  # no breakdown beyond this level
     m_organic::Float  # mass of organic material
     m_mineral::Float  # mass of mineral material
-    m_minimum_organic::Float  # no breakdown beyond this level
     α::Float  # oxidation rate
-    ρb::Float  # bulk density
     oxidation::Float  # computed oxidation
+end
+
+function CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
+    m_organic = mass_organic(f_organic, ρb, Δz)
+    m_mineral = mass_mineral(f_organic, ρb, Δz)
+    return CarbonStore(Δz, f_organic, f_minimum_organic, m_organic, m_mineral, α, NaN)
 end
 
 function mass_organic(f_organic, ρb, Δz)
@@ -17,10 +22,6 @@ end
 
 function mass_mineral(f_organic, ρb, Δz)
     return (1.0 - f_organic) * ρb * Δz
-end
-
-function mass_organic_minimal(m_mineral, f_minimum_organic)
-    return (m_mineral * f_minimum_organic / (1.0 - f_minimum_organic))
 end
 
 function ρ_bulk(m_organic, m_mineral, Δz)
@@ -41,7 +42,7 @@ function volume_organic(f_organic, ρb)
     if f_organic == 0
         return 0
     else
-        return 0.5 * (f_organic / ρb) * (1.0 + erf((f_organic - 0.2) / 0.1))
+        return 0.5 / (f_organic * ρb) * (1.0 + erf((f_organic - 0.2) / 0.1))
     end
 end
 
@@ -49,20 +50,23 @@ function oxidate(cs::CarbonStore, Δt::Float)
     if cs.α == 0
         return 0.0, cs
     end
-    Δm = min(cs.m_organic - cs.m_minimum_organic, cs.α * cs.Δz * Δt)
+    # Compute new bulk density: may be changed by consolidation
+    ρb = ρ_bulk(cs.m_organic, cs.m_mineral, cs.Δz)
+    m_minimum_organic = mass_organic(cs.f_minimum_organic, ρb, cs.Δz)
+    # Compute change of mass
+    Δm = min(cs.m_organic - m_minimum_organic, cs.α * cs.Δz * Δt)
     Δm = max(0, Δm)
     m_organic = cs.m_organic - Δm
-    oxidation = volume_organic(cs.f_organic, cs.ρb) * Δm
+    # Convert mass to volume for Δz
+    oxidation = volume_organic(cs.f_organic, ρb) * Δm
     f_organic = fraction_organic(m_organic, cs.m_mineral)
-    Δz = cs.Δz - oxidation
     return CarbonStore(
-        Δz,  # new
+        cs.Δz,
         f_organic,  # new
-        cs.m_mineral,
+        cs.f_minimum_organic,
         m_organic, # new
-        cs.m_minimum_organic,
+        cs.m_mineral,
         cs.α,
-        ρ_bulk(m_organic, cs.m_mineral, Δz),  # new
         oxidation,  # new
     )
 end
@@ -77,17 +81,7 @@ function initialize(::Type{CarbonStore}, domain, subsoil, I)
 
     cells = Vector{CarbonStore}()
     for (i, Δz) in enumerate(domain.Δz)
-        m_mineral = mass_mineral(f_organic[i], ρb[i], Δz)
-        cell = CarbonStore(
-            Δz,
-            f_organic[i],
-            mass_organic(f_organic[i], ρb[i], Δz),
-            m_mineral,
-            mass_organic_minimal(m_mineral, f_minimum_organic[i]),
-            α[i],
-            ρb[i],
-            0.0,
-        )
+        cell = CarbonStore(Δz, f_organic[i], f_minimum_organic[i], ρb[i], α[i])
         push!(cells, cell)
     end
 

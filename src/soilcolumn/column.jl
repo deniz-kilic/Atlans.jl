@@ -124,9 +124,25 @@ This:
     * computes pore pressure, total stress, effective stress prior to this stress periods loading
     * sets the effective stress in every consolidation cell
     * Reset U and t for DrainingConsolidation processes.
+    
+Note that splitting requires knowing where the phreatic level ends up after
+applying all forcings. This means that changes to phreatic level and deep
+subsidence must be accounted for. Furthermore, the split must be applied
+before applying the changes to compute the pre-loading effective stress.
 """
-function prepare_forcingperiod!(column::SoilColumn, split_tolerance)
-    level = oxidation_depth(column.oxidation, phreatic_level(column.groundwater))
+function prepare_forcingperiod!(
+    column::SoilColumn,
+    split_tolerance,
+    deep_subsidence,
+    phreatic_change,
+)
+    level = oxidation_depth(
+        column.oxidation,
+        phreatic_level(column.groundwater),
+        surface_level(column),
+        deep_subsidence,
+        phreatic_change,
+    )
     split!(column, level, split_tolerance)
     initial_stress!(column)
     prepare_forcingperiod!(column.consolidation)
@@ -187,6 +203,13 @@ end
     advance_forcingperiod!(column, timesteps)
     
 Advances a prepared column by a number of timesteps.
+
+Note, the correct order of execution is:
+
+* prepare a forcing period: compute pre-load stress
+* apply forcing: change load
+* advance forcing period
+
 """
 function advance_forcingperiod!(c::SoilColumn, timesteps::Vector{Float})
     subsidence = 0.0

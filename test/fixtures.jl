@@ -41,16 +41,12 @@ end
 
 
 function carbon_store()
-    return Atlans.CarbonStore(
-        1.0,
-        0.2,
-        Atlans.mass_organic(0.2, 1000, 1),
-        Atlans.mass_mineral(0.2, 1000, 1),
-        Atlans.mass_organic_minimal(Atlans.mass_mineral(0.2, 1000, 1), 0.05),
-        1.0e-3,
-        1000,
-        0.0,
-    )
+    f_organic = 0.2
+    ρb = 1000.0
+    Δz = 1.0
+    f_minimum_organic = 0.05
+    α = 1.0e-3
+    return Atlans.CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
 end
 
 function draining_abc_isotache_column()
