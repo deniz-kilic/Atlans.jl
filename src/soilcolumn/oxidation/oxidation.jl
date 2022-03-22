@@ -14,13 +14,14 @@ function oxidation_depth(
     column::OxidationColumn{O},
     surface_level,
     phreatic_level,
-    phreaticΔ,
-    deepΔ,
+    deep_subsidence,
+    phreatic_change,
 ) where {O<:OxidationProcess}
-    new_surface = surface_level - deepΔ
-    new_phreatic = phreatic_level - phreaticΔ
-    depth = new_surface - new_phreatic
-    return min(column.max_oxidation_depth, depth)
+    new_surface = surface_level - deep_subsidence
+    new_phreatic = phreatic_level + phreatic_change
+    depth = max(0.0, new_surface - new_phreatic)
+    depth = min(column.max_oxidation_depth, depth)
+    return surface_level - depth
 end
 
 function oxidate!(

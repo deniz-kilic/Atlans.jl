@@ -138,8 +138,8 @@ function prepare_forcingperiod!(
 )
     level = oxidation_depth(
         column.oxidation,
-        phreatic_level(column.groundwater),
         surface_level(column),
+        phreatic_level(column.groundwater),
         deep_subsidence,
         phreatic_change,
     )
