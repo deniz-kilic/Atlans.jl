@@ -47,8 +47,9 @@ function volume_organic(f_organic, ρb)
 end
 
 function oxidate(cs::CarbonStore, Δt::Float)
-    if cs.α == 0
-        return 0.0, cs
+    if cs.α == 0 || cs.Δz == 0.0
+        new = @set cs.oxidation = 0.0
+        return new
     end
     # Compute new bulk density: may be changed by consolidation
     ρb = ρ_bulk(cs.m_organic, cs.m_mineral, cs.Δz)

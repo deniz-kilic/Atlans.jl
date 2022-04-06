@@ -46,7 +46,9 @@ end
 
 function synchronize!(column::OxidationColumn{O}, Δz) where {O<:OxidationProcess}
     for i = 1:length(column.cells)
-        @set column.cells[i].Δz = Δz[i]
+        cell = column.cells[i]
+        newcell = @set cell.Δz = Δz[i]
+        column.cells[i] = newcell
     end
     return
 end

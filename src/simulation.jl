@@ -109,10 +109,9 @@ function prepare_domain(
 )
     ztop = modelbase .+ cumsum(thickness)
     zbot = ztop .- thickness
-    zmid = skipmissing(ztop .- 0.5 .* thickness)
 
-    base_index = findfirst(domainbase .< zmid)
-    top_index = findlast(surface .> zmid)
+    base_index = findfirst(domainbase .< skipmissing(ztop))
+    top_index = findlast(surface .> skipmissing(zbot))
 
     Δz = thickness[base_index:top_index]
     index, ncells = discretize(Δz, Δzmax)
@@ -155,6 +154,7 @@ function Model(
 
     for I in CartesianIndices(domainbase)
         (ismissing(domainbase[I]) || ismissing(surface[I])) && continue
+
         domain = prepare_domain(
             domainbase[I],
             base[I],
@@ -164,6 +164,7 @@ function Model(
             geology[:, I],
             lithology[:, I],
         )
+        length(domain.z) == 0 && continue
 
         g_column = initialize(groundwater, domain, subsoil, I)
         c_column = initialize(consolidation, preconsolidation, domain, subsoil, I)
@@ -198,11 +199,20 @@ end
     
 Setup a simulation from an initialized model.
 """
-function Simulation(model::Model, path_output::String, stop_time::DateTime, forcing)
+function Simulation(
+    model::Model,
+    path_output::String,
+    stop_time::DateTime,
+    forcing,
+    additional_times = nothing,
+)
+    if isnothing(additional_times)
+        additional_times = DateTime[]
+    end
     writer = prepare_writer(path_output, model.output.x, model.output.y)
     clock = Clock(DateTime[], 1, stop_time)
     simulation = Simulation(model, clock, writer, forcing)
-    set_periods!(simulation)
+    set_periods!(simulation, additional_times)
     return simulation
 end
 
@@ -300,18 +310,21 @@ end
 """
 Collect the period boundaries from the forcing input.
 """
-function set_periods!(simulation)
+function set_periods!(simulation, additional_times)
     clock = simulation.clock
     stop_time = clock.stop_time
 
-    alltimes = []
+    alltimes = DateTime[]
     for forcing in simulation.forcing
         times = forcing.reader.times
         append!(alltimes, times[times.<stop_time])
     end
+    for time in additional_times
+        time < stop_time && push!(alltimes, time)
+    end
     push!(alltimes, stop_time)
 
-    clock.times = unique(alltimes)
+    clock.times = sort(unique(alltimes))
     return
 end
 

@@ -52,6 +52,10 @@ The degree of consolidation plays only one role: it distributes the load (final
 in σ′ may become lower, providing a negative feedback mechanism.
 """
 function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
+    if abc.Δz == 0
+        new = @set abc.consolidation = 0.0
+        return new
+    end
     t = abc.t + Δt
 
     # Degree of consolidation changes

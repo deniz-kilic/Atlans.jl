@@ -186,9 +186,11 @@ function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
     end
 end
 
-function synchronize!(column::ConsolidationColumn, Δz)
+function synchronize!(column::ConsolidationColumn{C}, Δz) where {C<:ConsolidationProcess}
     for i = 1:length(column.cells)
-        @set column.cells[i].Δz = Δz[i]
+        cell = column.cells[i]
+        newcell = @set cell.Δz = Δz[i]
+        column.cells[i] = newcell
     end
     return
 end
