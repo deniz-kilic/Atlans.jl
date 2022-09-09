@@ -128,8 +128,6 @@
         @test all(ismissing.(forcing.change))
         Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
         @test all(forcing.change .≈ -0.1)
-
-        Atlans.prepare_forcingperiod!(forcing, nothing)
     end
 
     @testset "deep subsidence" begin
@@ -140,7 +138,5 @@
         @test all(ismissing.(forcing.subsidence))
         Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
         @test all(forcing.subsidence .≈ -0.05)
-
-        Atlans.prepare_forcingperiod!(forcing, nothing)
     end
 end

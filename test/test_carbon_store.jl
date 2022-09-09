@@ -5,18 +5,16 @@
     f_minimum_organic = 0.05
     α = 1.0e-3
 
-    cell = Atlans.CarbonStore(
-        Δz,
-        f_organic,
-        Atlans.mass_organic(f_organic, ρb, Δz),
-        Atlans.mass_mineral(f_organic, ρb, Δz),
-        Atlans.mass_organic_minimal(
-            Atlans.mass_mineral(f_organic, ρb, Δz),
+    m_minimum_organic =
+        cell = Atlans.CarbonStore(
+            Δz,
+            f_organic,
             f_minimum_organic,
-        ),
-        α,
-        0.0,
-    )
+            Atlans.mass_organic(f_organic, ρb, Δz),
+            Atlans.mass_mineral(f_organic, ρb, Δz),
+            α,
+            0.0,
+        )
 
     @testset "Initialization" begin
         @test typeof(cell) == Atlans.CarbonStore
@@ -26,6 +24,6 @@
         Δt = 1.0
         new_cell = Atlans.oxidate(cell, Δt)
         @test typeof(new_cell) == Atlans.CarbonStore
-        @test new_cell.oxidation ≈ 1.0e-7
+        @test new_cell.oxidation ≈ 2.5e-6
     end
 end

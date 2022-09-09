@@ -133,8 +133,8 @@ before applying the changes to compute the pre-loading effective stress.
 function prepare_forcingperiod!(
     column::SoilColumn,
     split_tolerance,
-    deep_subsidence,
-    phreatic_change,
+    deep_subsidence = 0.0,
+    phreatic_change = 0.0,
 )
     level = oxidation_depth(
         column.oxidation,

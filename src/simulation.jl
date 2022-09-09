@@ -1,3 +1,5 @@
+abstract type Forcing end
+
 struct Reader
     dataset::NCDataset
     params::Dict{Symbol,String}
@@ -32,24 +34,24 @@ struct Model{G,C,P,O,T,A}
     output::Output
 end
 
-struct StageIndexation
+struct StageIndexation <: Forcing
     percentile::Int
     weir_area::Array{OptionalInt}
     change::Array{OptionalFloat}
     reader::Reader
 end
 
-struct DeepSubsidence
+struct DeepSubsidence <: Forcing
     subsidence::Array{OptionalFloat}
     reader::Reader
 end
 
-struct StageChange
+struct StageChange <: Forcing
     change::Array{OptionalFloat}
     reader::Reader
 end
 
-struct AquiferHead
+struct AquiferHead <: Forcing
     head::Array{OptionalFloat}
     reader::Reader
 end

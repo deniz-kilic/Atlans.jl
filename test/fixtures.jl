@@ -190,13 +190,13 @@ function subsoil_netcdf()
     domainbase = defVar(ds, "domainbase", Float64, ("x", "y"))
     surface_level = defVar(ds, "surface_level", Float64, ("x", "y"))
     max_oxidation_depth = defVar(ds, "max_oxidation_depth", Float64, ("x", "y"))
-    geology[:] .= 1
-    lithology[:] .= 2
-    phreatic[:] .= 0.5
-    thickness[:] .= 0.25
-    base[:] .= 0.0
-    domainbase[:] .= 0.0
-    surface_level[:] .= 1.0
+    geology .= 1
+    lithology .= 2
+    phreatic .= 0.5
+    thickness .= 0.25
+    base .= 0.0
+    domainbase .= 0.0
+    surface_level .= 1.0
     max_oxidation_depth .= 1.2
     return filename
 end
@@ -211,7 +211,7 @@ function stage_change_netcdf()
         create_ycoord!(ds, [87.5, 62.5, 37.5])
         defVar(ds, "time", DateTime.(["2020-01-01", "2020-02-01"]), ("time",))
         difference = defVar(ds, "stage_change", Float64, ("x", "y", "time"))
-        difference[:] .= -0.1
+        difference .= -0.1
     end
     return filename
 end
@@ -226,7 +226,7 @@ function deep_subsidence_netcdf()
         create_ycoord!(ds, [87.5, 62.5, 37.5])
         defVar(ds, "time", DateTime.(["2020-01-01", "2020-02-01"]), ("time",))
         difference = defVar(ds, "subsidence", Float64, ("x", "y", "time"))
-        difference[:] .= -0.05
+        difference .= -0.05
     end
     return filename
 end
