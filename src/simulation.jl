@@ -26,8 +26,8 @@ struct Output
 end
 
 
-struct Model{G,C,P,O,T,A}
-    columns::Vector{SoilColumn{G,C,P,O}}
+struct Model{G,C,P,O,T,A,S}
+    columns::Vector{SoilColumn{G,C,P,O,S}}
     index::Vector{CartesianIndex}
     timestepper::T
     adaptive_cellsize::A
@@ -146,6 +146,7 @@ function Model(
     base = subsoil.data[:zbase]
     domainbase = subsoil.data[:domainbase]
     surface = subsoil.data[:surface_level]
+    phreatic = subsoil.data[:phreatic_level]
     geology = subsoil.data[:geology]
     lithology = subsoil.data[:lithology]
     thickness = subsoil.data[:thickness]
@@ -155,7 +156,7 @@ function Model(
     index = Vector{CartesianIndex}()
 
     for I in CartesianIndices(domainbase)
-        (ismissing(domainbase[I]) || ismissing(surface[I])) && continue
+        (ismissing(domainbase[I]) || ismissing(surface[I]) || ismissing(phreatic[I])) && continue
 
         domain = prepare_domain(
             domainbase[I],

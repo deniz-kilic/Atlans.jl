@@ -37,7 +37,7 @@ effective_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
 transfer_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
 prepare_forcingperiod!(::ConsolidationColumn{NullConsolidation}) = nothing
 consolidate!(::ConsolidationColumn{NullConsolidation}, _, _) = nothing
-synchronize!(::ConsolidationColumn{NullConsolidation}, _) = nothing
+synchronize_z!(::ConsolidationColumn{NullConsolidation}, _) = nothing
 
 
 function apply_preconsolidation!(
@@ -186,7 +186,7 @@ function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
     end
 end
 
-function synchronize!(column::ConsolidationColumn{C}, Δz) where {C<:ConsolidationProcess}
+function synchronize_z!(column::ConsolidationColumn{C}, Δz) where {C<:ConsolidationProcess}
     for i = 1:length(column.cells)
         cell = column.cells[i]
         newcell = @set cell.Δz = Δz[i]

@@ -21,9 +21,11 @@ const τ_ref = 1.0
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end
 abstract type GroundwaterColumn end
+abstract type ShrinkageProcess end
 
 struct NullConsolidation end
 struct NullOxidation end
+struct NullShrinkage end
 
 abstract type Preconsolidation end
 abstract type AbstractAbcIsotache <: ConsolidationProcess end

@@ -8,7 +8,7 @@ end
 
 oxidation_depth(column::OxidationColumn{NullOxidation}, _, _, _, _) = 0.0
 oxidate!(column::OxidationColumn{NullOxidation}, _, _) = nothing
-synchronize!(column::OxidationColumn{NullOxidation}, _) = nothing
+synchronize_z!(column::OxidationColumn{NullOxidation}, _) = nothing
 
 function oxidation_depth(
     column::OxidationColumn{O},
@@ -44,7 +44,7 @@ function oxidate!(
     return
 end
 
-function synchronize!(column::OxidationColumn{O}, Δz) where {O<:OxidationProcess}
+function synchronize_z!(column::OxidationColumn{O}, Δz) where {O<:OxidationProcess}
     for i = 1:length(column.cells)
         cell = column.cells[i]
         newcell = @set cell.Δz = Δz[i]

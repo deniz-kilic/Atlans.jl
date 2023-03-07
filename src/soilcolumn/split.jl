@@ -35,7 +35,7 @@ function shouldsplit(vector, newlength)
 end
 
 function cellsplit!(
-    column::Union{ConsolidationColumn,OxidationColumn},
+    column::Union{ConsolidationColumn,OxidationColumn, ShrinkageColumn},
     index,
     newlength,
     lowerΔz,
@@ -120,6 +120,11 @@ function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)
     push!(oc.result, NaN)
 end
 
+function columnsplit!(sc::ShrinkageColumn, index, newlength, lowerΔz, upperΔz)
+    cellsplit!(sc, index, newlength, lowerΔz, upperΔz)
+    push!(sc.result, NaN)
+end
+
 function split!(sc::SoilColumn, level, tolerance)
     index, lowerΔz, upperΔz = find_split_index(sc.z, sc.Δz, level, tolerance)
     isnothing(index) && return
@@ -131,6 +136,7 @@ function split!(sc::SoilColumn, level, tolerance)
         columnsplit!(sc.groundwater, index, newlength, lowerΔz, upperΔz)
         columnsplit!(sc.consolidation, index, newlength, lowerΔz, upperΔz)
         columnsplit!(sc.oxidation, index, newlength, lowerΔz, upperΔz)
+        columnsplit!(sc.shrinkage, index, newlength, lowerΔz, upperΔz)
     end
     update_z!(sc)
     return
