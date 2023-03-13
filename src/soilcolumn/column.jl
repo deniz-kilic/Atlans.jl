@@ -135,8 +135,8 @@ before applying the changes to compute the pre-loading effective stress.
 function prepare_forcingperiod!(
     column::SoilColumn,
     split_tolerance,
-    deep_subsidence = 0.0,
-    phreatic_change = 0.0,
+    deep_subsidence=0.0,
+    phreatic_change=0.0,
 )
     level = oxidation_depth(
         column.oxidation,
@@ -198,7 +198,7 @@ function advance_timestep!(c::SoilColumn, Δt::Float)
     prepare_timestep!(c, Δt)
     consolidate!(c.consolidation, phreatic_level(c.groundwater), Δt)
     oxidate!(c.oxidation, phreatic_level(c.groundwater), Δt)
-    shrink!(c.shrinkage, phreatic_level(c.groundwater), Δt)
+    # shrink!(c.shrinkage, phreatic_level(c.groundwater), Δt)
     subside!(c)
     return sum(c.subsidence), sum(c.consolidation.result), sum(c.oxidation.result)
 end

@@ -45,6 +45,9 @@ include("soilcolumn/oxidation/oxidation.jl")
 include("soilcolumn/oxidation/carbonstore.jl")
 #include("soilcolumn/oxidation/constant_rate.jl")
 
+include("soilcolumn/shrinkage/simple_shrinkage.jl")
+include("soilcolumn/shrinkage/shrinkage.jl")
+
 include("soilcolumn/column.jl")
 include("soilcolumn/split.jl")
 

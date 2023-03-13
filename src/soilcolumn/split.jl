@@ -35,7 +35,7 @@ function shouldsplit(vector, newlength)
 end
 
 function cellsplit!(
-    column::Union{ConsolidationColumn,OxidationColumn, ShrinkageColumn},
+    column::Union{ConsolidationColumn,OxidationColumn,ShrinkageColumn},
     index,
     newlength,
     lowerΔz,

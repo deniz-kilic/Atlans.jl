@@ -1,8 +1,9 @@
-struct ShrinkageColumn{C}
-    cells::Vector{C}
+struct ShrinkageColumn{S}
+    cells::Vector{S}
     z::Vector{Float}  # cell center
     Δz::Vector{Float}  # cell height
     result::Vector{Float}
+    max_shrinkage_depth::Float
 end
 
 shrinkage_depth(column::ShrinkageColumn{NullShrinkage}, _, _, _, _) = nothing
@@ -10,11 +11,11 @@ shrink!(column::ShrinkageColumn{NullShrinkage}, _) = nothing
 synchronize_z!(column::ShrinkageColumn{NullShrinkage}, __) = nothing
 
 function shrink!(
-    column::Shrinkagecolumn{S}
+    column::ShrinkageColumn{S},
     phreatic_level::Float,
     Δt::Float,
 ) where {S<:ShrinkageProcess}
-    shrinkage_z = max(phreatic_level, surface_level(column) - column.max_oxidation_depth)
+    shrinkage_z = max(phreatic_level, surface_level(column) - column.max_shrinkage_depth)
     column.result .= 0.0
     for index in reverse(1:length(column.cells))
         if column.z[index] > shrinkage_z
@@ -55,6 +56,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
         domain.z,
         domain.Δz,
         fill(NaN, domain.n),
+        2 # TODO: find out how to determine max shrinkage depth 
     )
     return column
 
