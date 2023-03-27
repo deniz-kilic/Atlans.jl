@@ -107,30 +107,18 @@ ncells = 10
 thickness = 0.5
 zbase = -5.0
 
-cell = Atlans.SimpleShrinkage(0.5, 1.8, 4.0, 3.0, NaN) # single cell to shrink
+cell = Atlans.SimpleShrinkage(0.5, 1.8) # single cell to shrink
 
 
-soilcolumn = create_soilcolumn(ncells, thickness, zbase)
+# soilcolumn = create_soilcolumn(ncells, thickness, zbase)
 
-phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
-time = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3650]
+# phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
+# time = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3650]
 
 # println(soilcolumn.shrinkage.result)
 # for t in diff(Float64.(time))
 #     Atlans.shrink!(soilcolumn.shrinkage, phreatic, t)
 # end
 
-shr_col = soilcolumn.shrinkage
-Δt = 1.0
-
-shr_z = max(phreatic, Atlans.surface_level(shr_col) - shr_col.max_shrinkage_depth)
-
-for idx in reverse(1:length(shr_col.cells))
-    if shr_col.z[idx] > shr_z
-        cell = shr_col.cells[idx]
-        newcell = Atlans.shrink(cell, Δt)
-        println(idx, ' ', shr_col.z[idx], ' ', cell)
-    end
-end
 
 # println(soilcolumn.shrinkage.result)
