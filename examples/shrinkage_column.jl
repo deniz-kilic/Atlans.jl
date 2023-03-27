@@ -67,8 +67,9 @@ end
 
 
 function shrinkage_column(z, Δz)
+    τ_years = 60.0
     n_vals = [0.7, 0.7, 0.7, 0.7, 0.7, 1.1, 1.2, 1.6, 1.7, 1.7]
-    cells = [Atlans.SimpleShrinkage(i, n, 5.0, 3.0, NaN) for (i, n) in zip(Δz, n_vals)]
+    cells = [Atlans.SimpleShrinkage(i, n, τ_years, 3.0, NaN) for (i, n) in zip(Δz, n_vals)]
     result = fill(NaN, length(z))
     max_shrinkage_depth = 1.3
 
@@ -106,19 +107,17 @@ end
 ncells = 10
 thickness = 0.5
 zbase = -5.0
+τ_years = 30.0
 
-cell = Atlans.SimpleShrinkage(0.5, 1.8) # single cell to shrink
+cell = Atlans.SimpleShrinkage(0.5, 1.8, τ_years, 3.0, NaN) # single cell to shrink
+soilcolumn = create_soilcolumn(ncells, thickness, zbase) # soilcolumn with all Atlans attributes
 
+phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
+time = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3650]
 
-# soilcolumn = create_soilcolumn(ncells, thickness, zbase)
-
-# phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
-# time = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3650]
-
-# println(soilcolumn.shrinkage.result)
-# for t in diff(Float64.(time))
-#     Atlans.shrink!(soilcolumn.shrinkage, phreatic, t)
-# end
-
-
-# println(soilcolumn.shrinkage.result)
+println(soilcolumn.shrinkage.result)
+for t in diff(Float64.(time))
+    Atlans.shrink!(soilcolumn.shrinkage, phreatic, t)
+end
+println(soilcolumn.shrinkage.result)
+println(sum(soilcolumn.shrinkage.result))
