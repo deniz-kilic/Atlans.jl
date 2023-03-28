@@ -19,14 +19,6 @@ struct SimpleShrinkage <: ShrinkageProcess
 end
 
 
-function SimpleShrinkage(Δz::Float, n::Float)
-    τ_standard = 60.0 # standard time dependent factor determining shrinkage speed
-    r = 3.0
-    shrinkage = NaN
-    return SimpleShrinkage(Δz, n, τ_standard, r, shrinkage)
-end
-
-
 """
     shrink(voxel, Δt)
 
