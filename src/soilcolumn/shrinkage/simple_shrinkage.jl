@@ -6,16 +6,51 @@ Simple voxel with attributes to compute shrinkage for.
 #Arguments
 - `Δz::Float`: Thickness of the voxel. [m]
 - `n::Float`: Shrinkage factor of the voxel. [-]
-- `τ::Float`: Time dependent factor for shrinkage process. [years]
+- `L::Float`: Mass percentage of lutum.
+- `H::Float`: Mass percentage of organic.
+- `τ::Float`: Time dependent factor for shrinkage process. [days]
 - `r::Float`: Direction of shrinkage, r is 3 indicates isoptropic. [-]
 - `shrinkage::Float`: Computed shrinkage or elevation change over time. [m]
 """
 struct SimpleShrinkage <: ShrinkageProcess
     Δz::Float
     n::Float
+    L::Float
+    H::Float
     τ::Float
     r::Float
+    sf::Float
     shrinkage::Float
+end
+
+
+function SimpleShrinkage(Δz, n, L, H)
+    sf = shrinkage_factor(n, L, H)
+    τ = 60.0 * 365.25 # Time dependent factor for shrinkage process
+    r = 3.0 # Direction of shrinkage is assumed isoptropic (r=3)
+    return SimpleShrinkage(Δz, n, L, H, τ, r, sf, NaN)
+end
+
+
+function mass_colloidal(L, H)
+    return 1 - L - H #TODO: L and H fraction or percentage
+end
+
+
+function mass_solids(R, L, H)
+    C = (R / ρR) + (H / ρH) + (L / ρL)
+    return C
+end
+
+
+function shrinkage_factor(n, L, H)
+    b = 3.0 # constant
+    R = mass_colloidal(L, H)
+    C = mass_solids(R, L, H)
+
+    pore_volume = (L + b * H) / ρw
+    sf = pore_volume / ((n * pore_volume) / ρw + (0.2R / ρw) + C)
+    return sf
 end
 
 
@@ -30,16 +65,23 @@ Shrink a voxel for given time interval.
 """
 function shrink(voxel::SimpleShrinkage, Δt::Float64)
     n_residual = 0.7
-    n_next = voxel.n + (voxel.n - n_residual) * (exp(-Δt / (voxel.τ * 365.25)) - 1)
+    n_next = voxel.n + (voxel.n - n_residual) * (exp(-Δt / (voxel.τ)) - 1)
 
     Δn = n_next - voxel.n
 
-    factor = 0.33 #TODO: get correct factor value from WENR?
-    relative_change = (1 + (factor * Δn))^(1.0 / voxel.r) - 1
+    relative_change = (1 + (voxel.sf * Δn))^(1.0 / voxel.r) - 1
 
     shrinkage = voxel.Δz * relative_change
-    Δz = voxel.Δz + shrinkage
-    Δz = min(voxel.Δz, Δz)
+    Δz = min(voxel.Δz, voxel.Δz + shrinkage)
 
-    return SimpleShrinkage(Δz, n_next, voxel.τ, voxel.r, shrinkage)
+    return SimpleShrinkage(
+        Δz,
+        n_next,
+        voxel.L,
+        voxel.H,
+        voxel.τ,
+        voxel.r,
+        voxel.sf,
+        shrinkage,
+    )
 end
