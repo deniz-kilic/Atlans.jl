@@ -194,3 +194,21 @@ function synchronize_z!(column::ConsolidationColumn{C}, Δz) where {C<:Consolida
     end
     return
 end
+
+function update_γ!(
+    column::ConsolidationColumn{C},
+    shrinkage,
+) where {C<:ConsolidationProcess}
+    for i = 1:length(column.cells)
+        cell = column.cells[i]
+        γ_wet = compress_γ_wet(cell, shrinkage[i] + cell.consolidation)
+        γ_dry = compress_γ_dry(cell, shrinkage[i] + cell.consolidation)
+        newcell = @set cell.γ_dry = γ_dry
+        newcell = @set newcell.γ_wet = γ_wet
+        column.cells[i] = newcell
+    end
+    return
+end
+
+
+update_γ!(column::ConsolidationColumn{NullConsolidation}, shrinkage) = nothing

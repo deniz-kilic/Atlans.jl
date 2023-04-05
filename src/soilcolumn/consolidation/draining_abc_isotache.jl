@@ -84,8 +84,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
 
     # Thickness should not go below 0
     consolidation = min(abc.Δz, strain * abc.Δz)
-    γ_wet = compress_γ_wet(abc, consolidation)
-    γ_dry = compress_γ_dry(abc, consolidation)
+
 
     # return new state
     return DrainingAbcIsotache(
@@ -93,8 +92,8 @@ function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
         abc.Δz_0,
         t,  # new
         abc.σ′,
-        γ_wet,  # new
-        γ_dry,  # new
+        abc.γ_wet,
+        abc.γ_dry,
         abc.c_d,
         abc.c_v,
         Unew,  # new
