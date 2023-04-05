@@ -17,6 +17,10 @@ const OptionalFloat = Union{Float,Missing}
 const OptionalInt = Union{Int,Missing}
 const γ_water = 9810.0
 const τ_ref = 1.0
+const ρw = 1000.0
+const ρL = 2500.0
+const ρR = 2650.0
+const ρH = 1470.0
 
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end
