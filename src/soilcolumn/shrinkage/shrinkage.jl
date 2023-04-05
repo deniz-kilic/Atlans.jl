@@ -20,8 +20,23 @@ end
 
 
 shrinkage_depth(column::ShrinkageColumn{NullShrinkage}, _, _, _, _) = nothing
-shrink!(column::ShrinkageColumn{NullShrinkage}, _) = nothing
-synchronize_z!(column::ShrinkageColumn{NullShrinkage}, __) = nothing
+shrink!(column::ShrinkageColumn{NullShrinkage}, _, _) = nothing
+synchronize_z!(column::ShrinkageColumn{NullShrinkage}, _) = nothing
+
+
+function shrinkage_depth(
+    column::ShrinkageColumn{S},
+    surface_level,
+    phreatic_level,
+    deep_subsidence,
+    phreatic_change,
+) where {S<:ShrinkageProcess}
+    new_surface = surface_level - deep_subsidence
+    new_phreatic = phreatic_level + phreatic_change
+    depth = max(0.0, new_surface - new_phreatic)
+    depth = min(column.max_shrinkage_depth, depth)
+    return surface_level - depth
+end
 
 
 function shrink!(

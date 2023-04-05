@@ -18,7 +18,17 @@ struct SoilColumn{G,C,P,O,S}
     subsidence::Vector{Float}
 end
 
-function SoilColumn(base::Float, x, y, z, Δz, groundwater, consolidation, oxidation, shrinkage)
+function SoilColumn(
+    base::Float,
+    x,
+    y,
+    z,
+    Δz,
+    groundwater,
+    consolidation,
+    oxidation,
+    shrinkage,
+)
     return SoilColumn(
         Base(base),
         x,
@@ -138,14 +148,29 @@ function prepare_forcingperiod!(
     deep_subsidence=0.0,
     phreatic_change=0.0,
 )
-    level = oxidation_depth(
+    surface = surface_level(column)
+    phreatic = phreatic_level(column.groundwater)
+
+    # First split for oxidation process
+    oxidation_level = oxidation_depth(
         column.oxidation,
-        surface_level(column),
-        phreatic_level(column.groundwater),
+        surface,
+        phreatic,
         deep_subsidence,
         phreatic_change,
     )
-    split!(column, level, split_tolerance)
+    split!(column, oxidation_level, split_tolerance)
+
+    # Now split for shrinkage process
+    shrinkage_level = shrinkage_depth(
+        column.shrinkage,
+        surface,
+        phreatic,
+        deep_subsidence,
+        phreatic_change,
+    )
+    split!(column, shrinkage_level, split_tolerance)
+
     initial_stress!(column)
     prepare_forcingperiod!(column.consolidation)
     return
@@ -161,20 +186,28 @@ function update_z!(column::SoilColumn)
     column.z .= column.base.z .+ cumsum(column.Δz) .- 0.5 .* column.Δz
 end
 
+
 """
     subside!(column)
     
-Apply consolidation and oxidation to thickness
+Apply consolidation, oxidation and shrinkage to thickness
 """
 function subside!(column::SoilColumn)
     # Δz should not become negative
     column.subsidence .=
-        min.((column.consolidation.result .+ column.oxidation.result .+ column.shrinkage.result), column.Δz)
+        min.(
+            (
+                column.consolidation.result .+ column.oxidation.result .+
+                column.shrinkage.result
+            ),
+            column.Δz,
+        )
     column.Δz .-= column.subsidence
     synchronize_z!(column.groundwater, column.Δz)
     synchronize_z!(column.consolidation, column.Δz)
     synchronize_z!(column.oxidation, column.Δz)
     synchronize_z!(column.shrinkage, column.Δz)
+    update_γ!(column.consolidation, column.shrinkage)
     update_z!(column)
 end
 
@@ -198,9 +231,14 @@ function advance_timestep!(c::SoilColumn, Δt::Float)
     prepare_timestep!(c, Δt)
     consolidate!(c.consolidation, phreatic_level(c.groundwater), Δt)
     oxidate!(c.oxidation, phreatic_level(c.groundwater), Δt)
-    # shrink!(c.shrinkage, phreatic_level(c.groundwater), Δt)
+    shrink!(c.shrinkage, phreatic_level(c.groundwater), Δt)
     subside!(c)
-    return sum(c.subsidence), sum(c.consolidation.result), sum(c.oxidation.result)
+    return (
+        sum(c.subsidence),
+        sum(c.consolidation.result),
+        sum(c.oxidation.result),
+        sum(c.shrinkage.result),
+    )
 end
 
 """
@@ -231,7 +269,6 @@ function advance_forcingperiod!(c::SoilColumn, timesteps::Vector{Float})
 end
 
 # Output
-
 output(oc::OxidationColumn) = sum(cell.oxidation for cell in oc.cells)
 output(cc::ConsolidationColumn) = sum(cell.oxidation for cell in cc.cells)
 output(gw::GW where {GW<:GroundwaterColumn}) = phreatic_level(gw)
