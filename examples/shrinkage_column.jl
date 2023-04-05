@@ -42,9 +42,7 @@ function consolidation_column(z, Δz)
     preconsolidation = Atlans.OverConsolidationRatio(fill(2.15, length(z)))
     result = fill(NaN, length(z))
 
-    cc = Atlans.ConsolidationColumn(
-        cells, z, Δz, σ, σ′, p, preconsolidation, result
-    )
+    cc = Atlans.ConsolidationColumn(cells, z, Δz, σ, σ′, p, preconsolidation, result)
 end
 
 
@@ -69,7 +67,11 @@ end
 function shrinkage_column(z, Δz)
     τ_years = 60.0
     n_vals = [0.7, 0.7, 0.7, 0.7, 0.7, 1.1, 1.2, 1.6, 1.7, 1.7]
-    cells = [Atlans.SimpleShrinkage(i, n, τ_years, 3.0, NaN) for (i, n) in zip(Δz, n_vals)]
+
+    m_clay = 0.8
+    m_organic = 0.1
+
+    cells = [Atlans.SimpleShrinkage(i, n, m_clay, m_organic) for (i, n) in zip(Δz, n_vals)]
     result = fill(NaN, length(z))
     max_shrinkage_depth = 1.3
 
@@ -98,26 +100,36 @@ function create_soilcolumn(ncells, thickness, zbase)
         groundwater,
         consolidation,
         oxidation,
-        shrinkage
+        shrinkage,
     )
 
 end
 
 
+workdir = raw"n:\Projects\11205500\11205981\B. Measurements and calculations\WP3\Fase 3 - prognose case\kem-atlantis\data"
+path_nc = joinpath(workdir, "subsoil-model-fase2.nc")
+path_csv = joinpath(workdir, "parameters.csv")
+subsoil = Atlans.prepare_subsoil_data(path_nc, path_csv)
+
 ncells = 10
 thickness = 0.5
 zbase = -5.0
-τ_years = 30.0
 
-cell = Atlans.SimpleShrinkage(0.5, 1.8, τ_years, 3.0, NaN) # single cell to shrink
 soilcolumn = create_soilcolumn(ncells, thickness, zbase) # soilcolumn with all Atlans attributes
 
-phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
-time = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 3650]
+timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
+timesteps = Atlans.create_timesteps(timestepper, 3650.0)
 
-println(soilcolumn.shrinkage.result)
-for t in diff(Float64.(time))
-    Atlans.shrink!(soilcolumn.shrinkage, phreatic, t)
-end
-println(soilcolumn.shrinkage.result)
-println(sum(soilcolumn.shrinkage.result))
+## From here the model is 'running'
+Atlans.apply_preconsolidation!(soilcolumn)
+Atlans.prepare_forcingperiod!(soilcolumn, 0.01, 0.0, -1.0)
+Atlans.set_phreatic_difference!(soilcolumn, -1.0)
+s, c, o, shr = Atlans.advance_forcingperiod!(soilcolumn, timesteps)
+
+# phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
+# for t in timesteps
+#     Atlans.shrink!(soilcolumn.shrinkage, phreatic, t)
+# end
+# println(soilcolumn.shrinkage.result)
+
+# @show sum(0.5 * 20 - sum(soilcolumn.Δz))
