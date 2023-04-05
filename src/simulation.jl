@@ -16,12 +16,13 @@ struct Writer
     params::Dict{Symbol,String}
 end
 
-struct Output
+struct Output # TODO: add shrinkage???
     x::Vector{Float}
     y::Vector{Float}
     phreatic_level::Array{Float}
     consolidation::Array{Float}
     oxidation::Array{Float}
+    shrinkage::Array{Float}
     subsidence::Array{Float}
 end
 
@@ -124,16 +125,30 @@ function prepare_domain(
     return VerticalDomain(z, Δz, geology[index], lithology[index], index, n)
 end
 
+
 """
-Initialize a model with specified groundwater, consolidation, and oxidation
-processes from a netCDF file and CSV lookup table describing the subsoil
-parameters, appropriate for the chosen processes.
+    Model(
+        groundwater::Type,
+        consolidation::Type,
+        oxidation::Type,
+        preconsolidation::Type,
+        shrinkage::Type,
+        adaptive_cellsize,
+        timestepper,
+        path_subsoil,
+        path_lookup
+    )
+
+Initialize a model with specified groundwater, consolidation, oxidation and
+shrinkage processes from a netCDF file and CSV lookup table describing the
+subsoil parameters, appropriate for the chosen processes.
 """
 function Model(
     groundwater::Type,
     consolidation::Type,
     oxidation::Type,
     preconsolidation::Type,
+    shrinkage::Type,
     adaptive_cellsize,
     timestepper,
     path_subsoil,
@@ -151,12 +166,13 @@ function Model(
     lithology = subsoil.data[:lithology]
     thickness = subsoil.data[:thickness]
 
-    columntype = SoilColumn{groundwater,consolidation,preconsolidation,oxidation}
+    columntype = SoilColumn{groundwater,consolidation,preconsolidation,oxidation,shrinkage}
     columns = Vector{columntype}()
     index = Vector{CartesianIndex}()
 
     for I in CartesianIndices(domainbase)
-        (ismissing(domainbase[I]) || ismissing(surface[I]) || ismissing(phreatic[I])) && continue
+        (ismissing(domainbase[I]) || ismissing(surface[I]) || ismissing(phreatic[I])) &&
+            continue
 
         domain = prepare_domain(
             domainbase[I],
@@ -172,6 +188,7 @@ function Model(
         g_column = initialize(groundwater, domain, subsoil, I)
         c_column = initialize(consolidation, preconsolidation, domain, subsoil, I)
         o_column = initialize(oxidation, domain, subsoil, I)
+        s_column = initialize(shrinkage, domain, subsoil, I)
 
         column = SoilColumn(
             domainbase[I],
@@ -182,6 +199,7 @@ function Model(
             g_column,
             c_column,
             o_column,
+            s_column,
         )
         # Set values such as preconsolidation stress, τ0, etc.        
         # This requires groundwater: pore pressure, etc.
@@ -191,14 +209,16 @@ function Model(
     end
 
     shape = size(domainbase)
-    output =
-        Output(x, y, fill(NaN, shape), fill(NaN, shape), fill(NaN, shape), fill(NaN, shape))
+    fillnan() = fill(NaN, shape)
 
-    return Model(columns, index, timestepper, adaptive_cellsize, output)
+    output = Output(x, y, fillnan(), fillnan(), fillnan(), fillnan(), fillnan())
+
+    return Model(columns, index, timestepper, adaptive_cellsize, output) #TODO: is this call with columns correct?
 end
 
+
 """
-    simulation(model, path_output, stop_time)
+    Simulation(model, path_output, stop_time)
     
 Setup a simulation from an initialized model.
 """
@@ -219,6 +239,7 @@ function Simulation(
     return simulation
 end
 
+
 """
 Advance a single stress period for all columns.
 
@@ -235,10 +256,10 @@ function advance_forcingperiod!(
     timesteps = create_timesteps(model.timestepper, duration)
     @progress for (I, column) in zip(model.index, model.columns)
         # Compute pre-loading stresses, set t to 0, etc.
-        if !isnothing(deep_subsidence)
-            column_subsidence = get_elevation_shift(deep_subsidence, column, I)
-        else
+        if isnothing(deep_subsidence)
             column_subsidence = 0.0
+        else
+            column_subsidence = get_elevation_shift(deep_subsidence, column, I)
         end
 
         if !isnothing(stage_change)
@@ -261,16 +282,19 @@ function advance_forcingperiod!(
             apply_forcing!(forcing, column, I)
         end
         # Compute
-        subsidence, consolidation, oxidation = advance_forcingperiod!(column, timesteps)
+        subsidence, consolidation, oxidation, shrinkage =
+            advance_forcingperiod!(column, timesteps)
         # Store result
         model.output.phreatic_level[I] = phreatic_level(column.groundwater)
 
         model.output.subsidence[I] = subsidence
         model.output.consolidation[I] = consolidation
         model.output.oxidation[I] = oxidation
+        model.output.shrinkage[I] = shrinkage
     end
     return
 end
+
 
 function load_forcing!(forcing, key, time, model)
     !haskey(forcing, key) && return nothing
@@ -310,6 +334,7 @@ function advance_forcingperiod!(simulation)
     return
 end
 
+
 """
 Collect the period boundaries from the forcing input.
 """
@@ -330,6 +355,7 @@ function set_periods!(simulation, additional_times)
     clock.times = sort(unique(alltimes))
     return
 end
+
 
 """
 Run all forcing periods of the simulation.
