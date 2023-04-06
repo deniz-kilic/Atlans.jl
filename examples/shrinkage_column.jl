@@ -1,48 +1,17 @@
 using Atlans
 
 
-function draining_abc_isotache(Δz)
-    t = 0.0
-    σ′ = NaN
-    γ_wet = 12_500.0
-    γ_dry = 10_500.0
-    c_d = 1.0
-    c_v = 0.006912
-    U = 0.0
-    a = 0.01737
-    b = 0.1303
-    c = 0.008686
-    τ = NaN
-    consolidation = NaN
-
-    return Atlans.DrainingAbcIsotache(
-        Δz,
-        Δz,
-        t,
-        σ′,
-        γ_wet,
-        γ_dry,
-        c_d,
-        c_v,
-        U,
-        a,
-        b,
-        c,
-        τ,
-        consolidation,
-    )
-end
-
-
 function consolidation_column(z, Δz)
-    cells = [draining_abc_isotache(i) for i in Δz]
+    cells = fill(Atlans.NullConsolidation(), length(z))
     σ = fill(NaN, length(z))
     σ′ = fill(NaN, length(z))
     p = fill(NaN, length(z))
     preconsolidation = Atlans.OverConsolidationRatio(fill(2.15, length(z)))
-    result = fill(NaN, length(z))
+    result = fill(0.0, length(z))
 
-    cc = Atlans.ConsolidationColumn(cells, z, Δz, σ, σ′, p, preconsolidation, result)
+    return Atlans.ConsolidationColumn(
+        cells, z, Δz, σ, σ′, p, preconsolidation, result
+    )
 end
 
 
@@ -51,7 +20,7 @@ function oxidation_column(z, Δz)
     result = fill(0.0, length(z))
     max_oxidation_depth = NaN
 
-    oc = Atlans.OxidationColumn(cells, z, Δz, result, max_oxidation_depth)
+    return Atlans.OxidationColumn(cells, z, Δz, result, max_oxidation_depth)
 end
 
 
@@ -60,7 +29,7 @@ function groundwater_column(z)
     dry = fill(false, length(z))
     p = fill(NaN, length(z))
 
-    gw = Atlans.HydrostaticGroundwater(z, phreatic, dry, p)
+    return Atlans.HydrostaticGroundwater(z, phreatic, dry, p)
 end
 
 
@@ -75,7 +44,7 @@ function shrinkage_column(z, Δz)
     result = fill(NaN, length(z))
     max_shrinkage_depth = 1.3
 
-    sc = Atlans.ShrinkageColumn(cells, z, Δz, result, max_shrinkage_depth)
+    return Atlans.ShrinkageColumn(cells, z, Δz, result, max_shrinkage_depth)
 end
 
 
@@ -86,12 +55,12 @@ function create_soilcolumn(ncells, thickness, zbase)
     Δz = fill(thickness, ncells)
     z = (zbase .+ cumsum(Δz)) .- (thickness .* Δz)
 
-    consolidation = consolidation_column(z, Δz)
-    oxidation = oxidation_column(z, Δz)
+    consolidation = consolidation_column(z, Δz) # NullConsolidation
+    oxidation = oxidation_column(z, Δz) # NullOxidation
     groundwater = groundwater_column(z)
     shrinkage = shrinkage_column(z, Δz)
 
-    soilcolumn = Atlans.SoilColumn(
+    return Atlans.SoilColumn(
         zbase,
         x,
         y,
@@ -106,30 +75,55 @@ function create_soilcolumn(ncells, thickness, zbase)
 end
 
 
-workdir = raw"n:\Projects\11205500\11205981\B. Measurements and calculations\WP3\Fase 3 - prognose case\kem-atlantis\data"
-path_nc = joinpath(workdir, "subsoil-model-fase2.nc")
-path_csv = joinpath(workdir, "parameters.csv")
-subsoil = Atlans.prepare_subsoil_data(path_nc, path_csv)
-
 ncells = 10
 thickness = 0.5
 zbase = -5.0
 
-soilcolumn = create_soilcolumn(ncells, thickness, zbase) # soilcolumn with all Atlans attributes
-
+#%%
+ad = Atlans.AdaptiveCellsize(0.25, 0.01)
 timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
 timesteps = Atlans.create_timesteps(timestepper, 3650.0)
 
-## From here the model is 'running'
-Atlans.apply_preconsolidation!(soilcolumn)
-Atlans.prepare_forcingperiod!(soilcolumn, 0.01, 0.0, -1.0)
-Atlans.set_phreatic_difference!(soilcolumn, -1.0)
-s, c, o, shr = Atlans.advance_forcingperiod!(soilcolumn, timesteps)
 
-# phreatic = Atlans.phreatic_level(soilcolumn.groundwater)
-# for t in timesteps
-#     Atlans.shrink!(soilcolumn.shrinkage, phreatic, t)
-# end
-# println(soilcolumn.shrinkage.result)
+soilcolumn = create_soilcolumn(ncells, thickness, zbase) # soilcolumn with all Atlans attributes
+
+Atlans.apply_preconsolidation!(soilcolumn)
+Atlans.prepare_forcingperiod!(soilcolumn, 0.01, 0.0, 0.0)
+Atlans.set_phreatic_difference!(soilcolumn, -1.0)
+
+println(soilcolumn.z)
+# s, c, o, shr = Atlans.advance_forcingperiod!(soilcolumn, timesteps)
+# println(soilcolumn.z)
 
 # @show sum(0.5 * 20 - sum(soilcolumn.Δz))
+
+subs = 0.0
+cons = 0.0
+ox = 0.0
+shr = 0.0
+
+for Δt in timesteps
+    Atlans.prepare_timestep!(soilcolumn, Δt)
+    Atlans.consolidate!(soilcolumn.consolidation, Atlans.phreatic_level(soilcolumn.groundwater), Δt)
+    println("Cons: \n", soilcolumn.z, "\n", soilcolumn.consolidation.result)
+    Atlans.oxidate!(soilcolumn.oxidation, Atlans.phreatic_level(soilcolumn.groundwater), Δt)
+    println("Ox: \n", soilcolumn.z, "\n", soilcolumn.oxidation.result)
+    Atlans.shrink!(soilcolumn.shrinkage, Atlans.phreatic_level(soilcolumn.groundwater), Δt)
+    println("Shr: \n", soilcolumn.z, "\n", soilcolumn.shrinkage.result)
+
+
+    soilcolumn.subsidence .= min.(
+        (
+            soilcolumn.consolidation.result .+ soilcolumn.oxidation.result .+
+            soilcolumn.shrinkage.result
+        ),
+        soilcolumn.Δz,
+    )
+    # Δs, Δc, Δo, Δsh = Atlans.advance_timestep!(soilcolumn, Δt)
+    # subs += Δs
+    # cons += Δc
+    # ox += Δo
+    # shr += Δsh
+    break
+end
+
