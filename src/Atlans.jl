@@ -24,8 +24,8 @@ const ρH = 1470.0
 
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end
-abstract type GroundwaterColumn end
 abstract type ShrinkageProcess end
+abstract type GroundwaterColumn end
 
 struct NullConsolidation end
 struct NullOxidation end

@@ -227,7 +227,7 @@ function Simulation(
     path_output::String,
     stop_time::DateTime,
     forcing,
-    additional_times = nothing,
+    additional_times=nothing,
 )
     if isnothing(additional_times)
         additional_times = DateTime[]
@@ -248,10 +248,10 @@ Timesteps are determined by the total duration and the chosen timestepper.
 function advance_forcingperiod!(
     model,
     duration;
-    deep_subsidence = nothing,
-    stage_indexation = nothing,
-    stage_change = nothing,
-    aquifer_head = nothing,
+    deep_subsidence=nothing,
+    stage_indexation=nothing,
+    stage_change=nothing,
+    aquifer_head=nothing
 )
     timesteps = create_timesteps(model.timestepper, duration)
     @progress for (I, column) in zip(model.index, model.columns)
@@ -282,8 +282,9 @@ function advance_forcingperiod!(
             apply_forcing!(forcing, column, I)
         end
         # Compute
-        subsidence, consolidation, oxidation, shrinkage =
-            advance_forcingperiod!(column, timesteps)
+        subsidence, consolidation, oxidation, shrinkage = advance_forcingperiod!(
+            column, timesteps
+        )
         # Store result
         model.output.phreatic_level[I] = phreatic_level(column.groundwater)
 
@@ -323,10 +324,10 @@ function advance_forcingperiod!(simulation)
     advance_forcingperiod!(
         model,
         duration;
-        deep_subsidence = load_forcing!(forcing, :deep_subsidence, time, model),
-        stage_indexation = load_forcing!(forcing, :stage_indexation, time, model),
-        stage_change = load_forcing!(forcing, :stage_change, time, model),
-        aquifer_head = load_forcing!(forcing, :aquifer_head, time, model),
+        deep_subsidence=load_forcing!(forcing, :deep_subsidence, time, model),
+        stage_indexation=load_forcing!(forcing, :stage_indexation, time, model),
+        stage_change=load_forcing!(forcing, :stage_change, time, model),
+        aquifer_head=load_forcing!(forcing, :aquifer_head, time, model)
     )
 
     write(simulation.writer, clock, simulation.model.output)

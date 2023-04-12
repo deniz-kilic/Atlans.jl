@@ -194,14 +194,14 @@ Apply consolidation, oxidation and shrinkage to thickness
 """
 function subside!(column::SoilColumn)
     # Δz should not become negative
-    column.subsidence .=
-        min.(
-            (
-                column.consolidation.result .+ column.oxidation.result .+
-                column.shrinkage.result
-            ),
-            column.Δz,
-        )
+    column.subsidence .= min.(
+        (
+            column.consolidation.result
+            .+ column.oxidation.result
+            .+ column.shrinkage.result
+        ),
+        column.Δz,
+    )
     column.Δz .-= column.subsidence
     synchronize_z!(column.groundwater, column.Δz)
     synchronize_z!(column.consolidation, column.Δz)
