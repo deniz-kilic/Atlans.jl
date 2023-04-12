@@ -1,3 +1,10 @@
+const NullColumn = Union{
+    ConsolidationColumn{NullConsolidation,OverConsolidationRatio},
+    OxidationColumn{NullOxidation},
+    ShrinkageColumn{NullShrinkage}
+}
+
+
 """
 Logic for splitting a column to accomodate for a moving phreatic level in
 combination with organic matter stores.
@@ -6,6 +13,7 @@ struct AdaptiveCellsize
     Δzmax::Float
     split_tolerance::Float
 end
+
 
 function find_split_index(z, Δz, level, tolerance)
     for index in eachindex(z)
@@ -24,6 +32,7 @@ function find_split_index(z, Δz, level, tolerance)
     return nothing, NaN, NaN
 end
 
+
 function shouldsplit(vector, newlength)
     if length(vector) == newlength
         return false
@@ -33,6 +42,19 @@ function shouldsplit(vector, newlength)
         error("vector is not equal to newlength or newlength - 1")
     end
 end
+
+
+"""
+    cellsplit!(column, _, newlength, _, _,)
+
+Logic for cellsplit! if one of the processes is ignored (e.g. NullConsolidation).
+"""
+function cellsplit!(column::NullColumn, _, newlength, _, _)
+    if shouldsplit(column.cells, newlength)
+        push!(column.cells, column.cells[1])
+    end
+end
+
 
 function cellsplit!(
     column::Union{ConsolidationColumn,OxidationColumn,ShrinkageColumn},
@@ -51,6 +73,7 @@ function cellsplit!(
     end
     return
 end
+
 
 """
 For CarbonStore, organic and mineral mass should be split according to cell
@@ -94,6 +117,7 @@ function cellsplit!(
     return
 end
 
+
 function zsplit!(Δz, index, newlength, lowerΔz, upperΔz)
     if shouldsplit(Δz, newlength)
         insert!(Δz, index, lowerΔz)
@@ -102,28 +126,48 @@ function zsplit!(Δz, index, newlength, lowerΔz, upperΔz)
     return
 end
 
+
 function columnsplit!(hg::HydrostaticGroundwater, index, newlength, lowerΔz, upperΔz)
     push!(hg.dry, false)
     push!(hg.p, NaN)
 end
+
 
 function columnsplit!(cc::ConsolidationColumn, index, newlength, lowerΔz, upperΔz)
     cellsplit!(cc, index, newlength, lowerΔz, upperΔz)
     push!(cc.σ, NaN)
     push!(cc.σ′, NaN)
     push!(cc.p, NaN)
-    push!(cc.result, NaN)
+
+    if typeof(cc) <: NullColumn
+        push!(cc.result, 0.0)
+    else
+        push!(cc.result, NaN)
+    end
 end
+
 
 function columnsplit!(oc::OxidationColumn, index, newlength, lowerΔz, upperΔz)
     cellsplit!(oc, index, newlength, lowerΔz, upperΔz)
-    push!(oc.result, NaN)
+
+    if typeof(oc) <: NullColumn
+        push!(oc.result, 0.0)
+    else
+        push!(oc.result, NaN)
+    end
 end
+
 
 function columnsplit!(sc::ShrinkageColumn, index, newlength, lowerΔz, upperΔz)
     cellsplit!(sc, index, newlength, lowerΔz, upperΔz)
-    push!(sc.result, NaN)
+
+    if typeof(sc) <: NullColumn
+        push!(sc.result, 0.0)
+    else
+        push!(sc.result, NaN)
+    end
 end
+
 
 function split!(sc::SoilColumn, level, tolerance)
     index, lowerΔz, upperΔz = find_split_index(sc.z, sc.Δz, level, tolerance)
