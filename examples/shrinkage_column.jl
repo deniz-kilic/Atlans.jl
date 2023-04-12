@@ -1,6 +1,16 @@
 using Atlans
 
 
+function carbon_store()
+    f_organic = 0.2
+    ρb = 1000.0
+    Δz = 0.5
+    f_minimum_organic = 0.05
+    α = 1.0e-3
+    return Atlans.CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
+end
+
+
 function consolidation_column(z, Δz)
     cells = fill(Atlans.NullConsolidation(), length(z))
     σ = fill(NaN, length(z))
@@ -60,6 +70,10 @@ function create_soilcolumn(ncells, thickness, zbase)
     groundwater = groundwater_column(z)
     shrinkage = shrinkage_column(z, Δz)
 
+    # oxidation = Atlans.OxidationColumn(
+    #     fill(carbon_store(), ncells), z, Δz, fill(0.0, ncells), 1.2
+    # )
+
     return Atlans.SoilColumn(
         zbase,
         x,
@@ -84,46 +98,13 @@ ad = Atlans.AdaptiveCellsize(0.25, 0.01)
 timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
 timesteps = Atlans.create_timesteps(timestepper, 3650.0)
 
-
 soilcolumn = create_soilcolumn(ncells, thickness, zbase) # soilcolumn with all Atlans attributes
 
 Atlans.apply_preconsolidation!(soilcolumn)
 Atlans.prepare_forcingperiod!(soilcolumn, 0.01, 0.0, 0.0)
 Atlans.set_phreatic_difference!(soilcolumn, -1.0)
 
+#%%
 println(soilcolumn.z)
-# s, c, o, shr = Atlans.advance_forcingperiod!(soilcolumn, timesteps)
-# println(soilcolumn.z)
-
-# @show sum(0.5 * 20 - sum(soilcolumn.Δz))
-
-subs = 0.0
-cons = 0.0
-ox = 0.0
-shr = 0.0
-
-for Δt in timesteps
-    Atlans.prepare_timestep!(soilcolumn, Δt)
-    Atlans.consolidate!(soilcolumn.consolidation, Atlans.phreatic_level(soilcolumn.groundwater), Δt)
-    println("Cons: \n", soilcolumn.z, "\n", soilcolumn.consolidation.result)
-    Atlans.oxidate!(soilcolumn.oxidation, Atlans.phreatic_level(soilcolumn.groundwater), Δt)
-    println("Ox: \n", soilcolumn.z, "\n", soilcolumn.oxidation.result)
-    Atlans.shrink!(soilcolumn.shrinkage, Atlans.phreatic_level(soilcolumn.groundwater), Δt)
-    println("Shr: \n", soilcolumn.z, "\n", soilcolumn.shrinkage.result)
-
-
-    soilcolumn.subsidence .= min.(
-        (
-            soilcolumn.consolidation.result .+ soilcolumn.oxidation.result .+
-            soilcolumn.shrinkage.result
-        ),
-        soilcolumn.Δz,
-    )
-    # Δs, Δc, Δo, Δsh = Atlans.advance_timestep!(soilcolumn, Δt)
-    # subs += Δs
-    # cons += Δc
-    # ox += Δo
-    # shr += Δsh
-    break
-end
-
+s, c, o, shr = Atlans.advance_forcingperiod!(soilcolumn, timesteps)
+println(soilcolumn.z)
