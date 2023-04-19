@@ -48,7 +48,7 @@ function column_type(_, name)
 end
 
 function read_params_table(path)
-    df = CSV.read(path, DataFrame; delim = ",", stringtype = String, types = column_type)
+    df = CSV.read(path, DataFrame; delim=",", stringtype=String, types=column_type)
     return df
 end
 
@@ -108,28 +108,28 @@ function setup_output_netcdf(path, x, y)::NCDataset
         "time",
         Float,
         ("time",),
-        attrib = ["units" => time_units, "calendar" => calendar],
+        attrib=["units" => time_units, "calendar" => calendar],
     )
     defVar(
         ds,
         "x",
         x,
         ("x",),
-        attrib = ["standard_name" => "projection_x_coordinate", "axis" => "X"],
+        attrib=["standard_name" => "projection_x_coordinate", "axis" => "X"],
     )
     defVar(
         ds,
         "y",
         y,
         ("y",),
-        attrib = ["standard_name" => "projection_y_coordinate", "axis" => "Y"],
+        attrib=["standard_name" => "projection_y_coordinate", "axis" => "Y"],
     )
 
     defVar(ds, "phreatic_level", Float, ("x", "y", "time"))
     defVar(ds, "consolidation", Float, ("x", "y", "time"))
     defVar(ds, "oxidation", Float, ("x", "y", "time"))
-    defVar(ds, "subsidence", Float, ("x", "y", "time"))
     defVar(ds, "shrinkage", Float, ("x", "y", "time"))
+    defVar(ds, "subsidence", Float, ("x", "y", "time"))
     return ds
 end
 

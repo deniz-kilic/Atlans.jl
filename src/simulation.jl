@@ -27,13 +27,14 @@ struct Output # TODO: add shrinkage???
 end
 
 
-struct Model{G,C,P,O,T,A,S}
+struct Model{G,C,P,O,S,T,A}
     columns::Vector{SoilColumn{G,C,P,O,S}}
     index::Vector{CartesianIndex}
     timestepper::T
     adaptive_cellsize::A
     output::Output
 end
+
 
 struct StageIndexation <: Forcing
     percentile::Int
@@ -42,20 +43,24 @@ struct StageIndexation <: Forcing
     reader::Reader
 end
 
+
 struct DeepSubsidence <: Forcing
     subsidence::Array{OptionalFloat}
     reader::Reader
 end
+
 
 struct StageChange <: Forcing
     change::Array{OptionalFloat}
     reader::Reader
 end
 
+
 struct AquiferHead <: Forcing
     head::Array{OptionalFloat}
     reader::Reader
 end
+
 
 struct Simulation{F}
     model::Model
@@ -77,6 +82,7 @@ function repeat_elements(x, v)
     return z
 end
 
+
 """
 In how many equal parts should a thick cell be divided?
 """
@@ -85,6 +91,7 @@ function discretize(Δz, maxΔz::Float)
     index = repeat_elements(1:length(Δz), ncells)
     return index, ncells
 end
+
 
 """
 Temporary structure used to create SoilColumns.
@@ -97,6 +104,7 @@ struct VerticalDomain
     index::Vector{Int}  # which indices of included column (may contain repeats)
     n::Int  # Total number of cells
 end
+
 
 """
 Temporary structure used to create SoilColumns.
