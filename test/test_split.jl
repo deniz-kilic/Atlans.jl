@@ -50,7 +50,7 @@
     end
 
     @testset "cellsplit" begin
-        column = AtlansFixtures.soil_column_hg_abc_cs()
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
         consolidation = column.consolidation
 
         Atlans.cellsplit!(consolidation, 1, 4, NaN, NaN)
@@ -62,7 +62,7 @@
         @test consolidation.cells[2].Δz == 0.75
         @test consolidation.cells[3].Δz == 1.0
 
-        column = AtlansFixtures.soil_column_hg_abc_cs()
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
         consolidation = column.consolidation
         Atlans.cellsplit!(consolidation, 3, 5, 0.25, 0.75)
         @test length(consolidation.cells) == 5
@@ -72,7 +72,7 @@
         @test consolidation.cells[4].Δz == 0.75
         @test consolidation.cells[5].Δz == 1.0
 
-        column = AtlansFixtures.soil_column_hg_abc_cs()
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
         oxidation = column.oxidation
         Atlans.cellsplit!(oxidation, 3, 5, 0.25, 0.75)
         @test length(oxidation.cells) == 5
@@ -81,6 +81,16 @@
         @test oxidation.cells[3].Δz == 0.25
         @test oxidation.cells[4].Δz == 0.75
         @test oxidation.cells[5].Δz == 1.0
+
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
+        shrinkage = column.shrinkage
+        Atlans.cellsplit!(shrinkage, 3, 5, 0.25, 0.75)
+        @test length(shrinkage.cells) == 5
+        @test shrinkage.cells[1].Δz == 1.0
+        @test shrinkage.cells[2].Δz == 1.0
+        @test shrinkage.cells[3].Δz == 0.25
+        @test shrinkage.cells[4].Δz == 0.75
+        @test shrinkage.cells[5].Δz == 1.0
     end
 
     @testset "zsplit!" begin
@@ -93,7 +103,7 @@
     end
 
     @testset "columnsplit consolidation" begin
-        column = AtlansFixtures.soil_column_hg_abc_cs()
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
         consolidation = column.consolidation
 
         Atlans.columnsplit!(consolidation, 1, 5, 0.25, 0.75)
@@ -105,7 +115,7 @@
     end
 
     @testset "columnsplit oxidation" begin
-        column = AtlansFixtures.soil_column_hg_abc_cs()
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
         oxidation = column.oxidation
 
         Atlans.columnsplit!(oxidation, 1, 5, 0.25, 0.75)
@@ -113,8 +123,17 @@
         @test length(oxidation.result) == 5
     end
 
+    @testset "columnsplit shrinkage" begin
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
+        shrinkage = column.shrinkage
+
+        Atlans.columnsplit!(shrinkage, 1, 5, 0.25, 0.75)
+        @test length(shrinkage.cells) == 5
+        @test length(shrinkage.result) == 5
+    end
+
     @testset "split column" begin
-        column = AtlansFixtures.soil_column_hg_abc_cs()
+        column = AtlansFixtures.soil_column_hg_abc_cs_shr()
         # First test for no effect
         Atlans.split!(column, 0.0, 0.0)
         @test length(column.z) == 4
@@ -144,10 +163,15 @@
         @test length(column.consolidation.σ′) == 5
         @test length(column.consolidation.p) == 5
         @test length(column.consolidation.result) == 5
+
         @test length(column.oxidation.z) == 5
         @test length(column.oxidation.Δz) == 5
         @test length(column.oxidation.cells) == 5
         @test length(column.oxidation.result) == 5
 
+        @test length(column.shrinkage.z) == 5
+        @test length(column.shrinkage.Δz) == 5
+        @test length(column.shrinkage.cells) == 5
+        @test length(column.shrinkage.result) == 5
     end
 end

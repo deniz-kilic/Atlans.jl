@@ -33,6 +33,8 @@
                 :minimal_mass_fraction_organic,
                 :oxidation_rate,
                 :rho_bulk,
+                :mass_fraction_lutum,
+                :shrinkage_degree
             ],
         )
         @test tables[:a][(1, 2)] == 0.01737
@@ -89,10 +91,11 @@
                 "phreatic_level",
                 "consolidation",
                 "oxidation",
+                "shrinkage",
                 "subsidence",
             ],
         )
-        @test dimsize(ds["subsidence"]) == (x = 2, y = 3, time = 0)
+        @test dimsize(ds["subsidence"]) == (x=2, y=3, time=0)
     end
 
     @testset "output_writer" begin
@@ -116,8 +119,8 @@
         values = fill(-1.0, (2, 3))
         Atlans.ncwrite(writer, :phreatic_level, values, index)
 
-        @test dimsize(writer.dataset["subsidence"]) == (x = 2, y = 3, time = 2)
-        @test dimsize(writer.dataset["phreatic_level"]) == (x = 2, y = 3, time = 2)
+        @test dimsize(writer.dataset["subsidence"]) == (x=2, y=3, time=2)
+        @test dimsize(writer.dataset["phreatic_level"]) == (x=2, y=3, time=2)
     end
 
     @testset "stage change" begin
