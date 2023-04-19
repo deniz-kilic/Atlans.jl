@@ -159,7 +159,9 @@ function prepare_forcingperiod!(
         deep_subsidence,
         phreatic_change,
     )
-    split!(column, oxidation_level, split_tolerance)
+    if !isnothing(oxidation_level)
+        split!(column, oxidation_level, split_tolerance)
+    end
 
     # Now split for shrinkage process
     shrinkage_level = shrinkage_depth(
@@ -169,7 +171,9 @@ function prepare_forcingperiod!(
         deep_subsidence,
         phreatic_change,
     )
-    split!(column, shrinkage_level, split_tolerance)
+    if !isnothing(shrinkage_level)
+        split!(column, shrinkage_level, split_tolerance)
+    end
 
     initial_stress!(column)
     prepare_forcingperiod!(column.consolidation)
@@ -197,8 +201,10 @@ function subside!(column::SoilColumn)
     column.subsidence .= min.(
         (
             column.consolidation.result
-            .+ column.oxidation.result
-            .+ column.shrinkage.result
+            .+
+            column.oxidation.result
+            .+
+            column.shrinkage.result
         ),
         column.Δz,
     )
@@ -207,7 +213,7 @@ function subside!(column::SoilColumn)
     synchronize_z!(column.consolidation, column.Δz)
     synchronize_z!(column.oxidation, column.Δz)
     synchronize_z!(column.shrinkage, column.Δz)
-    update_γ!(column.consolidation, column.shrinkage)
+    update_γ!(column.consolidation, column.shrinkage.result)
     update_z!(column)
 end
 

@@ -6,7 +6,7 @@ struct OxidationColumn{O}
     max_oxidation_depth::Float
 end
 
-oxidation_depth(column::OxidationColumn{NullOxidation}, _, _, _, _) = 0.0
+oxidation_depth(column::OxidationColumn{NullOxidation}, _, _, _, _) = nothing
 oxidate!(column::OxidationColumn{NullOxidation}, _, _) = nothing
 synchronize_z!(column::OxidationColumn{NullOxidation}, _) = nothing
 
