@@ -61,16 +61,14 @@ function consolidate(kpj::DrainingKoppejan, σ′::Float, Δt::Float)::DrainingK
 
     # consolidation changes: thickness should not go below 0
     consolidation = min(kpj.Δz, strain * kpj.Δz)
-    γ_wet = Atlans.compress_γ_wet(kpj, consolidation)
-    γ_dry = Atlans.compress_γ_dry(kpj, consolidation)
     # return new state
     return DrainingKoppejan(
         kpj.Δz - consolidation,  # new
         kpj.Δz_0,  # no change
         t,  # new
         σ′, # new
-        γ_wet,  # new
-        γ_dry,  # new
+        kpj.γ_wet,
+        kpj.γ_dry,
         kpj.c_d,
         kpj.c_v,
         U,  # new

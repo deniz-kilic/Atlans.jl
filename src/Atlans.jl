@@ -17,13 +17,19 @@ const OptionalFloat = Union{Float,Missing}
 const OptionalInt = Union{Int,Missing}
 const γ_water = 9810.0
 const τ_ref = 1.0
+const ρw = 1000.0
+const ρL = 2500.0
+const ρR = 2650.0
+const ρH = 1470.0
 
 abstract type ConsolidationProcess end
 abstract type OxidationProcess end
+abstract type ShrinkageProcess end
 abstract type GroundwaterColumn end
 
 struct NullConsolidation end
 struct NullOxidation end
+struct NullShrinkage end
 
 abstract type Preconsolidation end
 abstract type AbstractAbcIsotache <: ConsolidationProcess end
@@ -42,6 +48,9 @@ include("soilcolumn/consolidation/draining_abc_isotache.jl")
 include("soilcolumn/oxidation/oxidation.jl")
 include("soilcolumn/oxidation/carbonstore.jl")
 #include("soilcolumn/oxidation/constant_rate.jl")
+
+include("soilcolumn/shrinkage/simple_shrinkage.jl")
+include("soilcolumn/shrinkage/shrinkage.jl")
 
 include("soilcolumn/column.jl")
 include("soilcolumn/split.jl")

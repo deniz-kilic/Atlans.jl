@@ -37,7 +37,7 @@ effective_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
 transfer_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
 prepare_forcingperiod!(::ConsolidationColumn{NullConsolidation}) = nothing
 consolidate!(::ConsolidationColumn{NullConsolidation}, _, _) = nothing
-synchronize!(::ConsolidationColumn{NullConsolidation}, _) = nothing
+synchronize_z!(::ConsolidationColumn{NullConsolidation}, _) = nothing
 
 
 function apply_preconsolidation!(
@@ -186,7 +186,7 @@ function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
     end
 end
 
-function synchronize!(column::ConsolidationColumn{C}, Δz) where {C<:ConsolidationProcess}
+function synchronize_z!(column::ConsolidationColumn{C}, Δz) where {C<:ConsolidationProcess}
     for i = 1:length(column.cells)
         cell = column.cells[i]
         newcell = @set cell.Δz = Δz[i]
@@ -194,3 +194,21 @@ function synchronize!(column::ConsolidationColumn{C}, Δz) where {C<:Consolidati
     end
     return
 end
+
+function update_γ!(
+    column::ConsolidationColumn{C},
+    shrinkage,
+) where {C<:ConsolidationProcess}
+    for i = 1:length(column.cells)
+        cell = column.cells[i]
+        γ_wet = compress_γ_wet(cell, shrinkage[i] + cell.consolidation)
+        γ_dry = compress_γ_dry(cell, shrinkage[i] + cell.consolidation)
+        newcell = @set cell.γ_dry = γ_dry
+        newcell = @set newcell.γ_wet = γ_wet
+        column.cells[i] = newcell
+    end
+    return
+end
+
+
+update_γ!(column::ConsolidationColumn{NullConsolidation}, shrinkage) = nothing

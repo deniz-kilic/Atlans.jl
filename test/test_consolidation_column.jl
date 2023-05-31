@@ -2,7 +2,7 @@ using Setfield
 
 @testset "ConsolidationColumn" begin
 
-    cell = AtlansFixtures.draining_abc_isotache()
+    cell = AtlansFixtures.draining_abc_isotache_cell()
     column = AtlansFixtures.draining_abc_isotache_column()
 
     @testset "constructor" begin
