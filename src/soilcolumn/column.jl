@@ -276,6 +276,6 @@ end
 
 # Output
 output(oc::OxidationColumn) = sum(cell.oxidation for cell in oc.cells)
-output(cc::ConsolidationColumn) = sum(cell.oxidation for cell in cc.cells)
+output(cc::ConsolidationColumn) = sum(cell.consolidation for cell in cc.cells)
 output(gw::GW where {GW<:GroundwaterColumn}) = phreatic_level(gw)
 output(sc::ShrinkageColumn) = sum(cell.shrinkage for cell in sc.cells)
