@@ -98,6 +98,7 @@ function cellsplit!(
             cell.f_minimum_organic,
             lower_fraction * cell.m_organic,
             lower_fraction * cell.m_mineral,
+            cell.α0,
             cell.α,
             NaN,
         )
@@ -107,6 +108,7 @@ function cellsplit!(
             cell.f_minimum_organic,
             upper_fraction * cell.m_organic,
             upper_fraction * cell.m_mineral,
+            cell.α0,
             cell.α,
             NaN,
         )

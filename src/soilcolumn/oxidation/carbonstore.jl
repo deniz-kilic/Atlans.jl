@@ -6,6 +6,7 @@ struct CarbonStore <: OxidationProcess
     f_minimum_organic::Float  # no breakdown beyond this level
     m_organic::Float  # mass of organic material
     m_mineral::Float  # mass of mineral material
+    α0::Float # oxidation rate t=0
     α::Float  # oxidation rate
     oxidation::Float  # computed oxidation
 end
@@ -13,7 +14,9 @@ end
 function CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
     m_organic = mass_organic(f_organic, ρb, Δz)
     m_mineral = mass_mineral(f_organic, ρb, Δz)
-    return CarbonStore(Δz, f_organic, f_minimum_organic, m_organic, m_mineral, α, NaN)
+    return CarbonStore(
+        Δz, f_organic, f_minimum_organic, m_organic, m_mineral, α, α, NaN
+    )
 end
 
 function mass_organic(f_organic, ρb, Δz)
@@ -67,6 +70,7 @@ function oxidate(cs::CarbonStore, Δt::Float)
         cs.f_minimum_organic,
         m_organic, # new
         cs.m_mineral,
+        cs.α0,
         cs.α,
         oxidation,  # new
     )
