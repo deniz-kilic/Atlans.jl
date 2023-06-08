@@ -6,9 +6,11 @@ struct OxidationColumn{O}
     max_oxidation_depth::Float
 end
 
+
 oxidation_depth(column::OxidationColumn{NullOxidation}, _, _, _, _) = nothing
 oxidate!(column::OxidationColumn{NullOxidation}, _, _) = nothing
 synchronize_z!(column::OxidationColumn{NullOxidation}, _) = nothing
+
 
 function oxidation_depth(
     column::OxidationColumn{O},
@@ -23,6 +25,7 @@ function oxidation_depth(
     depth = min(column.max_oxidation_depth, depth)
     return surface_level - depth
 end
+
 
 function oxidate!(
     column::OxidationColumn{O},
@@ -43,6 +46,7 @@ function oxidate!(
     end
     return
 end
+
 
 function synchronize_z!(column::OxidationColumn{O}, Δz) where {O<:OxidationProcess}
     for i = 1:length(column.cells)
