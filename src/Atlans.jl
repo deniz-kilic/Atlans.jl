@@ -47,6 +47,7 @@ include("soilcolumn/consolidation/draining_abc_isotache.jl")
 
 include("soilcolumn/oxidation/oxidation.jl")
 include("soilcolumn/oxidation/carbonstore.jl")
+include("soilcolumn/oxidation/oxidation_rate.jl")
 #include("soilcolumn/oxidation/constant_rate.jl")
 
 include("soilcolumn/shrinkage/simple_shrinkage.jl")
