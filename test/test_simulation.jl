@@ -148,5 +148,6 @@
         )
         simulation = Atlans.Simulation(model, tempname(), DateTime("2020-03-01"), forcing)
         Atlans.run!(simulation)
+        rm("atlans.log")
     end
 end
