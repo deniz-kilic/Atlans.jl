@@ -1,5 +1,6 @@
 using SpecialFunctions: erf
 
+
 struct CarbonStore <: OxidationProcess
     Δz::Float  # cell thickness
     f_organic::Float  # mass fraction organic material
@@ -11,6 +12,7 @@ struct CarbonStore <: OxidationProcess
     oxidation::Float  # computed oxidation
 end
 
+
 function CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
     m_organic = mass_organic(f_organic, ρb, Δz)
     m_mineral = mass_mineral(f_organic, ρb, Δz)
@@ -19,21 +21,26 @@ function CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
     )
 end
 
+
 function mass_organic(f_organic, ρb, Δz)
     return f_organic * ρb * Δz
 end
+
 
 function mass_mineral(f_organic, ρb, Δz)
     return (1.0 - f_organic) * ρb * Δz
 end
 
+
 function ρ_bulk(m_organic, m_mineral, Δz)
     return (m_organic + m_mineral) / Δz
 end
 
+
 function fraction_organic(m_organic, m_mineral)
     return m_organic / (m_organic + m_mineral)
 end
+
 
 """
 Empirical equation to compute specific volume of organic material.
@@ -48,6 +55,7 @@ function volume_organic(f_organic, ρb)
         return 0.5 / (f_organic * ρb) * (1.0 + erf((f_organic - 0.2) / 0.1))
     end
 end
+
 
 function oxidate(cs::CarbonStore, Δt::Float)
     if cs.α == 0 || cs.Δz == 0.0
@@ -77,6 +85,11 @@ function oxidate(cs::CarbonStore, Δt::Float)
 end
 
 
+"""
+    initialize(::Type{CarbonStore}, domain, subsoil, I)
+
+Initialize a OxidationColumn for a domain at location I based subsurface input.
+"""
 function initialize(::Type{CarbonStore}, domain, subsoil, I)
     f_organic = fetch_field(subsoil, :mass_fraction_organic, I, domain)
     f_minimum_organic = fetch_field(subsoil, :minimal_mass_fraction_organic, I, domain)
@@ -98,4 +111,24 @@ function initialize(::Type{CarbonStore}, domain, subsoil, I)
         max_oxidation_depth,
     )
     return column
+end
+
+
+"""
+    initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
+
+Initialize an empty OxidationColumn (i.e. oxidation is ignored) at location I.
+"""
+function (::Type{NullOxidation}, domain, _, _)
+    cells = Vector{NullOxidation}
+    for i in 1:length(domain.Δz)
+        push!(cells, NullOxidation())
+    end
+    return OxidationColumn(
+        cells,
+        domain.z,
+        domain.Δz,
+        fill(NaN, domain.n),
+        NaN
+    )
 end

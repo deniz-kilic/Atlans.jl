@@ -17,6 +17,7 @@ struct DrainingAbcIsotache <: AbstractAbcIsotache
     consolidation::Float  # Computed consolidation
 end
 
+
 function DrainingAbcIsotache(Δz, γ_wet, γ_dry, c_d, c_v, a, b, c)
     return DrainingAbcIsotache(
         Δz,
@@ -105,6 +106,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
     )
 end
 
+
 """
 Turn a collection of vectors into a collection of DrainingAbcIsotache cells.
 """
@@ -142,6 +144,12 @@ function draining_abc_isotache_column(
     return consolidation
 end
 
+
+"""
+    initialize(::Type{DrainingAbcIsotache}, domain, subsoil, I)
+
+Initialize a ConsolidationColumn for a domain at location I based subsurface input.
+"""
 function initialize(
     ::Type{DrainingAbcIsotache},
     preconsolidation::Type,
@@ -174,6 +182,32 @@ function initialize(
 
     return ConsolidationColumn(cells, z, Δz, σ, σ′, p, precon, result)
 end
+
+
+"""
+    initialize(::Type{NullConsolidation}, domain, subsoil, I)
+
+Initialize an empty ConsolidationColumn (i.e. consolidation is ignored) at location I.
+"""
+function initialize(::Type{NullConsolidation}, _, domain, _, _)
+    cells = Vector{NullConsolidation}()
+    for i in 1:length(domain.Δz)
+        push!(cells, Atlans.NullConsolidation())
+    end
+    preconsolidation = OverConsolidationRatio(fill(NaN, length(cells)))
+    z = domain.z
+    return ConsolidationColumn(
+        cells,
+        z,
+        domain.Δz,
+        similar(z),
+        similar(z),
+        similar(z),
+        preconsolidation,
+        similar(z)
+    )
+end
+
 
 """
 Reset degree of consolidation and time.

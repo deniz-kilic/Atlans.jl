@@ -70,6 +70,11 @@ function synchronize_z!(column::ShrinkageColumn{S}, Δz) where {S<:ShrinkageProc
 end
 
 
+"""
+    initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
+
+Initialize a ShrinkageColumn for a domain at location I based subsurface input.
+"""
 function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
     n = fetch_field(subsoil, :shrinkage_degree, I, domain)
     L = fetch_field(subsoil, :mass_fraction_lutum, I, domain)
@@ -91,4 +96,24 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
         max_shrinkage_depth,
     )
     return column
+end
+
+
+"""
+    initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
+
+Initialize an empty ShrinkageColumn (i.e. shrinkage is ignored) at location I.
+"""
+function initialize(::Type{NullShrinkage}, domain, _, _)
+    cells = Vector{NullShrinkage}()
+    for i in 1:length(domain.Δz)
+        push!(cells, Atlans.NullShrinkage())
+    end
+    return ShrinkageColumn(
+        cells,
+        domain.z,
+        domain.Δz,
+        fill(NaN, domain.n),
+        NaN
+    )
 end
