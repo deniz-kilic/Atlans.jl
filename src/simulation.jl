@@ -16,7 +16,7 @@ struct Writer
     params::Dict{Symbol,String}
 end
 
-struct Output # TODO: add shrinkage???
+struct Output
     x::Vector{Float}
     y::Vector{Float}
     phreatic_level::Array{Float}
@@ -59,6 +59,12 @@ end
 struct AquiferHead <: Forcing
     head::Array{OptionalFloat}
     reader::Reader
+end
+
+
+mutable struct Temperature <: Forcing
+    temp::OptionalFloat
+    table::DataFrame
 end
 
 
@@ -259,7 +265,8 @@ function advance_forcingperiod!(
     deep_subsidence=nothing,
     stage_indexation=nothing,
     stage_change=nothing,
-    aquifer_head=nothing
+    aquifer_head=nothing,
+    temperature=nothing
 )
     timesteps = create_timesteps(model.timestepper, duration)
     @progress for (I, column) in zip(model.index, model.columns)
@@ -284,8 +291,9 @@ function advance_forcingperiod!(
             column_subsidence,
             column_phreatic_change,
         )
-        # Apply changes
-        for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head)
+        ## TODO: Implement alpha update below -apply_forcing!
+        # Apply changes 
+        for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head, temperature)
             isnothing(forcing) && continue
             apply_forcing!(forcing, column, I)
         end
@@ -335,7 +343,8 @@ function advance_forcingperiod!(simulation)
         deep_subsidence=load_forcing!(forcing, :deep_subsidence, time, model),
         stage_indexation=load_forcing!(forcing, :stage_indexation, time, model),
         stage_change=load_forcing!(forcing, :stage_change, time, model),
-        aquifer_head=load_forcing!(forcing, :aquifer_head, time, model)
+        aquifer_head=load_forcing!(forcing, :aquifer_head, time, model),
+        temperature=load_forcing!(forcing, :temperature, time, model)
     )
 
     write(simulation.writer, clock, simulation.model.output)
@@ -353,7 +362,11 @@ function set_periods!(simulation, additional_times)
 
     alltimes = DateTime[]
     for forcing in simulation.forcing
-        times = forcing.reader.times
+        if typeof(forcing) == Temperature
+            times = forcing.table.times
+        else
+            times = forcing.reader.times
+        end
         append!(alltimes, times[times.<stop_time])
     end
     for time in additional_times

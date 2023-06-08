@@ -17,11 +17,13 @@ function StageIndexation(path, percentile)
     )
 end
 
+
 function DeepSubsidence(path)
     reader = prepare_reader(path)
     size = xy_size(reader)
     return DeepSubsidence(Array{OptionalFloat}(missing, size), reader)
 end
+
 
 function StageChange(path)
     reader = prepare_reader(path)
@@ -29,14 +31,22 @@ function StageChange(path)
     return StageChange(Array{OptionalFloat}(missing, size), reader)
 end
 
+
 function AquiferHead(path)
     reader = prepare_reader(path)
     size = xy_size(reader)
     return AquiferHead(Array{OptionalFloat}(missing, size), reader)
 end
 
+
 function Surcharge(path, groundwater::Type, consolidation::Type, oxidation::Type)
     error("Not implemented")
+end
+
+
+function Temperature(path)
+    temperature = CSV.read(path, DataFrame)
+    return Temperature(missing, temperature)
 end
 
 # Reading
@@ -50,6 +60,7 @@ function read_forcing!(si::StageIndexation, time)
     return false
 end
 
+
 function read_forcing!(ds::DeepSubsidence, time)
     if time in ds.reader.times
         ds.subsidence .= ncread(ds.reader, :subsidence, time)
@@ -57,6 +68,7 @@ function read_forcing!(ds::DeepSubsidence, time)
     end
     return false
 end
+
 
 function read_forcing!(sc::StageChange, time)
     if time in sc.reader.times
@@ -66,9 +78,20 @@ function read_forcing!(sc::StageChange, time)
     return false
 end
 
+
 function read_forcing!(ah::AquiferHead, time)
     if time in ah.reader.times
         ah.weir_area .= ncread(ah.reader, :aquifer_change, time)
+        return true
+    end
+    return false
+end
+
+
+function read_forcing!(t::Temperature, time)
+    time_idx = findfirst(t.table.times .== time)
+    if !isnothing(time_idx)
+        t.temp = t.table.temperature[time_idx]
         return true
     end
     return false
@@ -98,17 +121,20 @@ function get_elevation_shift(ds::DeepSubsidence, column, I)
     return subsidence
 end
 
+
 function get_elevation_shift(si::StageIndexation, column, I)
     change = si.change[I]
     (ismissing(change) || change == 0.0) && return 0.0
     return change
 end
 
+
 function get_elevation_shift(si::StageChange, column, I)
     change = si.change[I]
     (ismissing(change) || change == 0.0) && return 0.0
     return change
 end
+
 
 function apply_forcing!(si::StageIndexation, column, I)
     change = si.change[I]
@@ -118,6 +144,7 @@ function apply_forcing!(si::StageIndexation, column, I)
     return
 end
 
+
 function apply_forcing!(ds::DeepSubsidence, column, I)
     subsidence = ds.subsidence[I]
     ismissing(subsidence) && return
@@ -125,6 +152,7 @@ function apply_forcing!(ds::DeepSubsidence, column, I)
     set_deep_subsidence!(column, subsidence)
     return
 end
+
 
 function apply_forcing!(si::StageChange, column, I)
     change = si.change[I]
@@ -134,12 +162,23 @@ function apply_forcing!(si::StageChange, column, I)
     return
 end
 
+
 function apply_forcing!(ah::AquiferHead, column, I)
     head = ah.head[I]
     ismissing(head) && return
 
     set_aquifer(column, head)
     return
+end
+
+
+function apply_forcing!(t::Temperature, column, _)
+    oc = column.oxidation
+    for i in 1:length(oc.cells)
+        cell = oc.cells[i]
+        newcell = update_alpha(cell, t.temp)
+        oc.cells[i] = newcell
+    end
 end
 
 
