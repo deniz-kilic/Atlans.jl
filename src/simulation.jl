@@ -227,7 +227,7 @@ function Model(
 
     output = Output(x, y, fillnan(), fillnan(), fillnan(), fillnan(), fillnan())
 
-    return Model(columns, index, timestepper, adaptive_cellsize, output) #TODO: is this call with columns correct?
+    return Model(columns, index, timestepper, adaptive_cellsize, output)
 end
 
 
