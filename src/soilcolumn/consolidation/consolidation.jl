@@ -31,13 +31,14 @@ function ConsolidationColumn(cells, z, Δz, preconsolidation)
     )
 end
 
-apply_preconsolidation!(::ConsolidationColumn{NullConsolidation}) = nothing
-total_stress!(::ConsolidationColumn{NullConsolidation}, _) = nothing
-effective_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
-transfer_stress!(::ConsolidationColumn{NullConsolidation}) = nothing
-prepare_forcingperiod!(::ConsolidationColumn{NullConsolidation}) = nothing
-consolidate!(::ConsolidationColumn{NullConsolidation}, _, _) = nothing
-synchronize_z!(::ConsolidationColumn{NullConsolidation}, _) = nothing
+NullConsolidationColumn = ConsolidationColumn{NullConsolidation,OverConsolidationRatio}
+apply_preconsolidation!(::NullConsolidationColumn) = nothing
+total_stress!(::NullConsolidationColumn, _) = nothing
+effective_stress!(::NullConsolidationColumn) = nothing
+transfer_stress!(::NullConsolidationColumn) = nothing
+prepare_forcingperiod!(::NullConsolidationColumn) = nothing
+consolidate!(::NullConsolidationColumn, _, _) = nothing
+synchronize_z!(::NullConsolidationColumn, _) = nothing
 
 
 function apply_preconsolidation!(
