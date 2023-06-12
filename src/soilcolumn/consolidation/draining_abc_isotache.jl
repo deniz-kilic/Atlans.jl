@@ -37,6 +37,7 @@ function DrainingAbcIsotache(Δz, γ_wet, γ_dry, c_d, c_v, a, b, c)
     )
 end
 
+
 """
     consolidate(abc::DrainingAbcIsotache, σ′, Δt)
     
@@ -175,10 +176,10 @@ function initialize(
 
     z = domain.z
     Δz = domain.Δz
-    σ = similar(z)
-    σ′ = similar(z)
-    p = similar(z)
-    result = similar(z)
+    σ = fill(NaN, length(z))
+    σ′ = fill(NaN, length(z))
+    p = fill(NaN, length(z))
+    result = fill(0.0, length(z))
 
     return ConsolidationColumn(cells, z, Δz, σ, σ′, p, precon, result)
 end
@@ -200,11 +201,11 @@ function initialize(::Type{NullConsolidation}, _, domain, _, _)
         cells,
         z,
         domain.Δz,
-        similar(z),
-        similar(z),
-        similar(z),
+        fill(NaN, length(z)),
+        fill(NaN, length(z)),
+        fill(NaN, length(z)),
         preconsolidation,
-        similar(z)
+        fill(0.0, length(z))
     )
 end
 

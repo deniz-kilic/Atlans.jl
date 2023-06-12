@@ -92,7 +92,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
         cells,
         domain.z,
         domain.Δz,
-        fill(NaN, domain.n),
+        fill(0.0, domain.n),
         max_shrinkage_depth,
     )
     return column
@@ -113,7 +113,7 @@ function initialize(::Type{NullShrinkage}, domain, _, _)
         cells,
         domain.z,
         domain.Δz,
-        fill(NaN, domain.n),
+        fill(0.0, domain.n),
         NaN
     )
 end
