@@ -1,5 +1,5 @@
 """
-    ShrinkageColumn{S}(cells, z, Δz, result, max_shrinkage_depth)
+    ShrinkageColumn{S}(cells, z, Δz, result, Hv0)
 
 Collection of SimpleShrinkage cells to compute shrinkage for. 
 
@@ -8,14 +8,14 @@ Collection of SimpleShrinkage cells to compute shrinkage for.
 - `z::Vector{Float}`: Depth of the cells.
 - `Δz::Vector{Float}`: Thickness of the cells.
 - `result::Vector{Float}`: Computed shrinkage of each cell. All NaNs at t=0.
-- `max_shrinkage_depth::Float`: Maximum depth to compute shrinkage for in cells.
+- `Hv0::Float`: Absolute depth above phreatic level to compute shrinkage for in cells.
 """
 struct ShrinkageColumn{S}
     cells::Vector{S}
     z::Vector{Float}  # cell center
     Δz::Vector{Float}  # cell height
     result::Vector{Float}
-    max_shrinkage_depth::Float
+    Hv0::Float
 end
 
 
@@ -33,9 +33,9 @@ function shrinkage_depth(
 ) where {S<:ShrinkageProcess}
     new_surface = surface_level - deep_subsidence
     new_phreatic = phreatic_level + phreatic_change
-    depth = max(0.0, new_surface - new_phreatic)
-    depth = min(column.max_shrinkage_depth, depth)
-    return surface_level - depth
+    # proposed solution for Hv0 shrinkage (depth is to NAP)
+    depth = min(new_surface, new_phreatic + column.Hv0)
+    return depth
 end
 
 
@@ -44,7 +44,7 @@ function shrink!(
     phreatic_level::Float,
     Δt::Float,
 ) where {S<:ShrinkageProcess}
-    shrinkage_z = max(phreatic_level, surface_level(column) - column.max_shrinkage_depth)
+    shrinkage_z = phreatic_level + column.Hv0 # Doesn't matter is this is above surface level
     column.result .= 0.0
     for index in reverse(1:length(column.cells))
         if column.z[index] > shrinkage_z
@@ -80,7 +80,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
     L = fetch_field(subsoil, :mass_fraction_lutum, I, domain)
     H = fetch_field(subsoil, :mass_fraction_organic, I, domain)
 
-    max_shrinkage_depth = subsoil.data[:max_shrinkage_depth][I]
+    Hv0 = subsoil.data[:hv0_shr][I]
     cells = Vector{SimpleShrinkage}()
 
     for (i, Δz) in enumerate(domain.Δz)
@@ -93,7 +93,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
         domain.z,
         domain.Δz,
         fill(0.0, domain.n),
-        max_shrinkage_depth,
+        Hv0,
     )
     return column
 end
