@@ -148,7 +148,7 @@ function create_column(
         o_column,
         s_column,
     )
-    return column, d
+    return column
 end
 
 
@@ -235,3 +235,14 @@ df = DataFrame(
 )
 
 CSV.write(joinpath(workdir, "result_surface.csv"), df)
+
+
+# c, d = create_column(
+#     Atlans.HydrostaticGroundwater,
+#     Atlans.NullConsolidation,
+#     Atlans.CarbonStore,
+#     Atlans.OverConsolidationRatio,
+#     Atlans.NullShrinkage,
+#     table_path
+# )
+##
