@@ -86,14 +86,16 @@ function subsoil_netcdf()
     domainbase = defVar(ds, "domainbase", Float64, ("x", "y"))
     surface_level = defVar(ds, "surface_level", Float64, ("x", "y"))
     max_oxidation_depth = defVar(ds, "max_oxidation_depth", Float64, ("x", "y"))
-    max_shrinkage_depth = defVar(ds, "max_shrinkage_depth", Float64, ("x", "y"))
+    hv0_ox = defVar(ds, "Hv0_ox", Float64, ("x", "y"))
+    hv0_shr = defVar(ds, "Hv0_shr", Float64, ("x", "y"))
 
     phreatic .= -0.5
     base .= -4.3
     domainbase .= -4.3
     surface_level .= 0.0
     max_oxidation_depth .= 1.2
-    max_shrinkage_depth .= 1.2
+    hv0_ox .= 0.0
+    hv0_shr .= 0.0
     return filename
 end
 
@@ -234,9 +236,9 @@ df = DataFrame(
     s_without_forcing=s_without_forcing
 )
 
-CSV.write(joinpath(workdir, "result_surface.csv"), df)
+# CSV.write(joinpath(workdir, "result_surface.csv"), df)
 
-
+##
 # c, d = create_column(
 #     Atlans.HydrostaticGroundwater,
 #     Atlans.NullConsolidation,

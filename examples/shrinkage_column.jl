@@ -28,9 +28,8 @@ end
 function oxidation_column(z, Δz)
     cells = fill(Atlans.NullOxidation(), length(z))
     result = fill(0.0, length(z))
-    max_oxidation_depth = NaN
 
-    return Atlans.OxidationColumn(cells, z, Δz, result, max_oxidation_depth)
+    return Atlans.OxidationColumn(cells, z, Δz, result, NaN, NaN)
 end
 
 
@@ -52,9 +51,9 @@ function shrinkage_column(z, Δz)
 
     cells = [Atlans.SimpleShrinkage(i, n, m_clay, m_organic) for (i, n) in zip(Δz, n_vals)]
     result = fill(NaN, length(z))
-    max_shrinkage_depth = 1.3
+    Hv0 = 0.3
 
-    return Atlans.ShrinkageColumn(cells, z, Δz, result, max_shrinkage_depth)
+    return Atlans.ShrinkageColumn(cells, z, Δz, result, Hv0)
 end
 
 
