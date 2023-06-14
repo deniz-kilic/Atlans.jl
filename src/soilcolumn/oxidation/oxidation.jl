@@ -4,28 +4,27 @@ struct OxidationColumn{O}
     Δz::Vector{Float}
     result::Vector{Float}
     max_oxidation_depth::Float
-    Hv0::Float
+    no_oxidation_Δz::Float
 end
 
 
-oxidation_depth(column::OxidationColumn{NullOxidation}, _, _, _, _) = nothing
+oxidation_level(column::OxidationColumn{NullOxidation}, _, _, _, _) = nothing
 oxidate!(column::OxidationColumn{NullOxidation}, _, _) = nothing
 synchronize_z!(column::OxidationColumn{NullOxidation}, _) = nothing
 
 
-function oxidation_depth(
+function oxidation_level(
     column::OxidationColumn{O},
     surface_level,
     phreatic_level,
     deep_subsidence,
     phreatic_change,
 ) where {O<:OxidationProcess}
-    new_surface = surface_level - deep_subsidence
-    new_phreatic = phreatic_level + phreatic_change
-    oxidation_z = new_phreatic + column.Hv0 # solution
-    depth = max(0.0, new_surface - oxidation_z)
-    depth = min(column.max_oxidation_depth, depth)
-    return surface_level - depth
+    oxidation_z = max(
+        surface_level - deep_subsidence - column.max_oxidation_depth,
+        phreatic_level + phreatic_change + column.no_oxidation_Δz,
+    )
+    return oxidation_z
 end
 
 
@@ -35,7 +34,7 @@ function oxidate!(
     Δt::Float,
 ) where {O<:OxidationProcess}
     oxidation_z = max( # Doesn't matter if oxidation_z is above surface_level of column
-        phreatic_level + column.Hv0,
+        phreatic_level + column.no_oxidation_Δz,
         surface_level(column) - column.max_oxidation_depth
     )
     column.result .= 0.0

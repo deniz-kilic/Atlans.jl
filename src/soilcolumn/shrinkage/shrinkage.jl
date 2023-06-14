@@ -15,27 +15,22 @@ struct ShrinkageColumn{S}
     z::Vector{Float}  # cell center
     Δz::Vector{Float}  # cell height
     result::Vector{Float}
-    Hv0::Float
+    no_shrinkage_Δz::Float
 end
 
 
-shrinkage_depth(column::ShrinkageColumn{NullShrinkage}, _, _, _, _) = nothing
+shrinkage_level(column::ShrinkageColumn{NullShrinkage}, _, _, _, _) = nothing
 shrink!(column::ShrinkageColumn{NullShrinkage}, _, _) = nothing
 synchronize_z!(column::ShrinkageColumn{NullShrinkage}, _) = nothing
 
 
-function shrinkage_depth(
+function shrinkage_level(
     column::ShrinkageColumn{S},
-    surface_level,
     phreatic_level,
-    deep_subsidence,
     phreatic_change,
 ) where {S<:ShrinkageProcess}
-    new_surface = surface_level - deep_subsidence
-    new_phreatic = phreatic_level + phreatic_change
-    # proposed solution for Hv0 shrinkage (depth is to NAP)
-    depth = min(new_surface, new_phreatic + column.Hv0)
-    return depth
+    shrinkage_z = phreatic_level + phreatic_change + column.no_shrinkage_Δz
+    return shrinkage_z
 end
 
 
@@ -44,7 +39,7 @@ function shrink!(
     phreatic_level::Float,
     Δt::Float,
 ) where {S<:ShrinkageProcess}
-    shrinkage_z = phreatic_level + column.Hv0 # Doesn't matter is this is above surface level
+    shrinkage_z = phreatic_level + column.no_shrinkage_Δz # Doesn't matter is this is above surface level
     column.result .= 0.0
     for index in reverse(1:length(column.cells))
         if column.z[index] > shrinkage_z
@@ -80,7 +75,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
     L = fetch_field(subsoil, :mass_fraction_lutum, I, domain)
     H = fetch_field(subsoil, :mass_fraction_organic, I, domain)
 
-    Hv0 = subsoil.data[:hv0_shr][I]
+    no_shrinkage_Δz = subsoil.data[:no_shr_thickness][I]
     cells = Vector{SimpleShrinkage}()
 
     for (i, Δz) in enumerate(domain.Δz)
@@ -93,7 +88,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
         domain.z,
         domain.Δz,
         fill(0.0, domain.n),
-        Hv0,
+        no_shrinkage_Δz,
     )
     return column
 end
