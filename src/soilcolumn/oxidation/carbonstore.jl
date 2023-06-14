@@ -96,7 +96,7 @@ function initialize(::Type{CarbonStore}, domain, subsoil, I)
     α = fetch_field(subsoil, :oxidation_rate, I, domain)
     ρb = fetch_field(subsoil, :rho_bulk, I, domain)
 
-    Hv0 = subsoil.data[:Hv0_ox]
+    Hv0 = subsoil.data[:Hv0_ox][I]
     max_oxidation_depth = subsoil.data[:max_oxidation_depth][I]
 
     cells = Vector{CarbonStore}()
