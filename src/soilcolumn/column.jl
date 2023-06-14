@@ -152,27 +152,25 @@ function prepare_forcingperiod!(
     phreatic = phreatic_level(column.groundwater)
 
     # First split for oxidation process
-    oxidation_level = oxidation_depth(
+    oxidation_z = oxidation_level(
         column.oxidation,
         surface,
         phreatic,
         deep_subsidence,
         phreatic_change,
     )
-    if !isnothing(oxidation_level)
-        split!(column, oxidation_level, split_tolerance)
+    if !isnothing(oxidation_z)
+        split!(column, oxidation_z, split_tolerance)
     end
 
     # Now split for shrinkage process
-    shrinkage_level = shrinkage_depth(
+    shrinkage_z = shrinkage_level(
         column.shrinkage,
-        surface,
         phreatic,
-        deep_subsidence,
         phreatic_change,
     )
-    if !isnothing(shrinkage_level)
-        split!(column, shrinkage_level, split_tolerance)
+    if !isnothing(shrinkage_z)
+        split!(column, shrinkage_z, split_tolerance)
     end
 
     initial_stress!(column)
