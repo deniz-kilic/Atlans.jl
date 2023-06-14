@@ -11,6 +11,7 @@ function StageIndexation(path, percentile)
     size = xy_size(reader)
     return StageIndexation(
         percentile,
+        Array{OptionalFloat}(missing, size),
         Array{OptionalInt}(missing, size),
         Array{OptionalFloat}(missing, size),
         reader,
@@ -55,6 +56,7 @@ function read_forcing!(si::StageIndexation, time)
     if time in forcing.reader.times
         si.weir_area .= ncread(si.reader, :weir_area, time)
         si.change .= ncread(si.reader, :change, time)
+        si.factor .= ncread(si.reader, :factor, time)
         return true
     end
     return false
@@ -138,9 +140,10 @@ end
 
 function apply_forcing!(si::StageIndexation, column, I)
     change = si.change[I]
-    (ismissing(change) || change == 0.0) && return
+    factor = si.factor[I]
+    (ismissing(change) || change == 0.0 || ismissing(factor)) && return
 
-    set_phreatic_difference!(column, change)
+    set_phreatic_difference!(column, change * factor)
     return
 end
 

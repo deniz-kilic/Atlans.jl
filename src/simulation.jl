@@ -38,6 +38,7 @@ end
 
 struct StageIndexation <: Forcing
     percentile::Int
+    factor::Array{OptionalFloat}
     weir_area::Array{OptionalInt}
     change::Array{OptionalFloat}
     reader::Reader
@@ -62,7 +63,7 @@ struct AquiferHead <: Forcing
 end
 
 
-mutable struct Temperature <: Forcing
+mutable struct Temperature <: Forcing # TODO: maak ruimtelijk
     temp::OptionalFloat
     table::DataFrame
 end
@@ -291,7 +292,6 @@ function advance_forcingperiod!(
             column_subsidence,
             column_phreatic_change,
         )
-        ## TODO: Implement alpha update below -apply_forcing!
         # Apply changes 
         for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head, temperature)
             isnothing(forcing) && continue
