@@ -19,7 +19,7 @@ struct ShrinkageColumn{S}
 end
 
 
-shrinkage_level(column::ShrinkageColumn{NullShrinkage}, _, _, _, _) = nothing
+shrinkage_level(column::ShrinkageColumn{NullShrinkage}, _, _) = nothing
 shrink!(column::ShrinkageColumn{NullShrinkage}, _, _) = nothing
 synchronize_z!(column::ShrinkageColumn{NullShrinkage}, _) = nothing
 
