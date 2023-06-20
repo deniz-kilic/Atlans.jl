@@ -75,7 +75,7 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
     L = fetch_field(subsoil, :mass_fraction_lutum, I, domain)
     H = fetch_field(subsoil, :mass_fraction_organic, I, domain)
 
-    no_shrinkage_Δz = subsoil.data[:no_shr_thickness][I]
+    no_shrinkage_Δz = subsoil.data[:no_shrinkage_thickness][I]
     cells = Vector{SimpleShrinkage}()
 
     for (i, Δz) in enumerate(domain.Δz)
