@@ -11,7 +11,7 @@ function StageIndexation(path, percentile)
     size = xy_size(reader)
     return StageIndexation(
         percentile,
-        Array{OptionalFloat}(1.0, size),
+        fill(1.0, size),
         Array{OptionalInt}(missing, size),
         Array{OptionalFloat}(missing, size),
         reader,
