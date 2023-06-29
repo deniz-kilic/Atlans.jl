@@ -109,7 +109,7 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
     isarea = Array{Bool}(undef, size(weir_areas))
     for area in unique(weir_areas)
         isarea .= (weir_areas .== area)
-        si.change[isarea] = percentile(
+        si.change[isarea] .= percentile(
             vec(model.output.subsidence[isarea]),
             si.percentile
         )
