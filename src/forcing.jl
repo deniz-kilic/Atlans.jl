@@ -103,7 +103,6 @@ end
 prepare_forcingperiod!(_::Forcing, _::Model) = nothing
 
 function prepare_forcingperiod!(si::StageIndexation, model::Model)
-    @show si.change
     si.change .= 0.0
     weir_areas = si.weir_area
     isarea = Array{Bool}(undef, size(weir_areas))
@@ -114,7 +113,6 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
             si.percentile
         )
     end
-    @show si.change
     return
 end
 
