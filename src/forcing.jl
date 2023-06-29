@@ -53,9 +53,8 @@ end
 # Reading
 
 function read_forcing!(si::StageIndexation, time)
-    if time in forcing.reader.times
+    if time in si.reader.times
         si.weir_area .= ncread(si.reader, :weir_area, time)
-        si.change .= ncread(si.reader, :change, time)
         si.factor .= ncread(si.reader, :factor, time)
         return true
     end
@@ -104,6 +103,7 @@ end
 prepare_forcingperiod!(_::Forcing, _::Model) = nothing
 
 function prepare_forcingperiod!(si::StageIndexation, model::Model)
+    @show si.change
     si.change .= 0.0
     weir_areas = si.weir_area
     isarea = Array{Bool}(undef, size(weir_areas))
@@ -111,6 +111,7 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
         isarea .= (weir_areas .== area)
         si.change[isarea] = percentile(model.output.subsidence[isarea], si.percentile)
     end
+    @show si.change
     return
 end
 
