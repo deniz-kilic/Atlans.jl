@@ -10,6 +10,7 @@ Simple voxel with attributes to compute shrinkage for.
 - `H::Float`: Mass percentage of organic.
 - `τ::Float`: Time dependent factor for shrinkage process. [days]
 - `r::Float`: Direction of shrinkage, r is 3 indicates isoptropic. [-]
+- `sf::Float`: TODO: look-up in document [-]
 - `Δz0::Float`: Start thickness of the voxel. Shrinkage is computed relative to 
         the start thickness of a cell. [m]
 - `shrinkage::Float`: Computed shrinkage or elevation change over time. [m]
@@ -67,7 +68,12 @@ Shrink a voxel for given time interval.
 - `Δt::Float`: Time interval. [days]
 """
 function shrink(voxel::SimpleShrinkage, Δt::Float64)
-    n_residual = 0.7
+    n_residual = 0.5
+
+    if voxel.n <= n_residual
+        return voxel
+    end
+
     n_next = voxel.n + (voxel.n - n_residual) * (exp(-Δt / (voxel.τ)) - 1)
 
     Δn = voxel.n - n_next
