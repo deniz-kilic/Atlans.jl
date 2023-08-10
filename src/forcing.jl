@@ -105,8 +105,8 @@ prepare_forcingperiod!(_::Forcing, _::Model) = nothing
 function prepare_forcingperiod!(si::StageIndexation, model::Model)
     si.change .= 0.0
     weir_areas = si.weir_area
-    isarea = Array{Bool}(undef, size(weir_areas))
-    for area in unique(weir_areas)
+    isarea = fill(false, size(weir_areas))
+    for area in skipmissing(unique(weir_areas))
         isarea .= (weir_areas .== area)
         si.change[isarea] .= percentile(
             vec(model.output.subsidence[isarea]),
