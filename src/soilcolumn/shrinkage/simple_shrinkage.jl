@@ -11,8 +11,6 @@ Simple voxel with attributes to compute shrinkage for.
 - `τ::Float`: Time dependent factor for shrinkage process. [days]
 - `r::Float`: Direction of shrinkage, r is 3 indicates isoptropic. [-]
 - `sf::Float`: TODO: look-up in document [-]
-- `Δz0::Float`: Start thickness of the voxel. Shrinkage is computed relative to 
-        the start thickness of a cell. [m]
 - `shrinkage::Float`: Computed shrinkage or elevation change over time. [m]
 """
 struct SimpleShrinkage <: ShrinkageProcess
@@ -23,7 +21,6 @@ struct SimpleShrinkage <: ShrinkageProcess
     τ::Float
     r::Float
     sf::Float
-    Δz0::Float
     shrinkage::Float
 end
 
@@ -32,7 +29,7 @@ function SimpleShrinkage(Δz, n, L, H)
     sf = shrinkage_factor(n, L, H)
     τ = 60.0 * 365.25 # Time dependent factor for shrinkage process
     r = 3.0 # Direction of shrinkage is assumed isoptropic (r=3)
-    return SimpleShrinkage(Δz, n, L, H, τ, r, sf, Δz, 0.0)
+    return SimpleShrinkage(Δz, n, L, H, τ, r, sf, 0.0)
 end
 
 
@@ -80,8 +77,10 @@ function shrink(voxel::SimpleShrinkage, Δt::Float64)
 
     relative_change = (1 + (voxel.sf * Δn))^(1.0 / voxel.r) - 1
 
-    shrinkage = voxel.Δz0 * relative_change
+    shrinkage = voxel.Δz * relative_change
     Δz = min(voxel.Δz, voxel.Δz - shrinkage)
+
+    new_sf = shrinkage_factor(n_next, L, H)
 
     return SimpleShrinkage(
         Δz,
@@ -90,8 +89,7 @@ function shrink(voxel::SimpleShrinkage, Δt::Float64)
         voxel.H,
         voxel.τ,
         voxel.r,
-        voxel.sf,
-        voxel.Δz0,
+        new_sf,
         shrinkage,
     )
 end
