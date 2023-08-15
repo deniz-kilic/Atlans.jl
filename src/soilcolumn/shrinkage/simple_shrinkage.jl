@@ -80,7 +80,7 @@ function shrink(voxel::SimpleShrinkage, Δt::Float64)
     shrinkage = voxel.Δz * relative_change
     Δz = min(voxel.Δz, voxel.Δz - shrinkage)
 
-    new_sf = shrinkage_factor(n_next, L, H)
+    new_sf = shrinkage_factor(n_next, voxel.L, voxel.H)
 
     return SimpleShrinkage(
         Δz,
