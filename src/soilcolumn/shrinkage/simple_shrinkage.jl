@@ -53,7 +53,7 @@ function shrinkage_factor(n, L, H)
     C = mass_solids(R, L, H)
 
     pore_volume = (L + b * H) / ρw
-    sf = pore_volume / ((n * pore_volume) / ρw + (0.2R / ρw) + C)
+    sf = pore_volume / ((n * pore_volume) + (0.2R / ρw) + C)
     return sf
 end
 
