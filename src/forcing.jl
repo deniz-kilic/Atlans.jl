@@ -103,6 +103,7 @@ end
 prepare_forcingperiod!(_::Forcing, _::Model) = nothing
 
 function prepare_forcingperiod!(si::StageIndexation, model::Model)
+    change_to_negative = -1
     si.change .= 0.0
     weir_areas = si.weir_area
     replace!(weir_areas, missing => typemin(Int64))
@@ -112,7 +113,7 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
         si.change[isarea] .= percentile(
             vec(model.output.subsidence[isarea]),
             si.percentile
-        )
+        ) * change_to_negative
     end
     return
 end
