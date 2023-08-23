@@ -28,7 +28,7 @@ function DrainingAbcIsotache(Δz, γ_wet, γ_dry, c_d, c_v, a, b, c)
         γ_dry,
         c_d,
         c_v,
-        NaN,
+        0.0,
         a,
         b,
         c,
