@@ -34,6 +34,7 @@ struct NullShrinkage end
 abstract type Preconsolidation end
 abstract type AbstractAbcIsotache <: ConsolidationProcess end
 
+include("utils.jl")
 
 include("soilcolumn/groundwater/groundwater.jl")
 include("soilcolumn/groundwater/hydrostatic.jl")
