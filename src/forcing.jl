@@ -115,12 +115,17 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
         isarea .= (weir_areas .== area)
 
         if area == -1 # Change is the subsidence per column
-            si.change[isarea] = model.output.subsidence[isarea]
+            si.change[isarea] .= model.output.subsidence[isarea]
         else
-            si.change[isarea] .= percentile(
-                vec(model.output.subsidence[isarea]),
-                si.percentile
-            ) * change_to_negative
+            try
+                si.change[isarea] .= nanpercentile(
+                    model.output.subsidence[isarea],
+                    si.percentile
+                ) * change_to_negative
+            catch ArgumentError
+                @show area
+                throw(ArgumentError) # TODO: Make loop continue if stage_indexation is oriented correctly
+            end
         end
     end
     return
@@ -202,3 +207,5 @@ end
 #    return
 #end
 #
+
+
