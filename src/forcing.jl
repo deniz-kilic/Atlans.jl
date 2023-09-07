@@ -123,8 +123,7 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
                     si.percentile
                 ) * change_to_negative
             catch ArgumentError
-                @show area
-                throw(ArgumentError) # TODO: Make loop continue if stage_indexation is oriented correctly
+                continue
             end
         end
     end
