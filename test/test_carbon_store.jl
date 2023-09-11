@@ -13,6 +13,7 @@
             Atlans.mass_organic(f_organic, ρb, Δz),
             Atlans.mass_mineral(f_organic, ρb, Δz),
             α,
+            α,
             0.0,
         )
 

@@ -34,7 +34,7 @@ end
 
 
 function mass_colloidal(L, H)
-    return 1 - L - H #TODO: L and H fraction or percentage
+    return 1 - L - H
 end
 
 

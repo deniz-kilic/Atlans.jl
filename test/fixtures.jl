@@ -86,7 +86,7 @@ function carbon_store_column()
     Δz = fill(1.0, 4)
     result = fill(NaN, 4)
 
-    return Atlans.OxidationColumn(cells, z, Δz, result, 1.0)
+    return Atlans.OxidationColumn(cells, z, Δz, result, 1.0, 0.0)
 end
 
 
@@ -96,9 +96,9 @@ function shrinkage_column()
     cells = fill(cell, 4)
     z = collect(0.5:1.0:4.0)
     Δz = fill(1.0, 4)
-    result = fill(NaN, 4)
+    result = fill(0.0, 4)
 
-    return Atlans.ShrinkageColumn(cells, z, Δz, result, 1.0)
+    return Atlans.ShrinkageColumn(cells, z, Δz, result, 0.2)
 end
 
 
@@ -129,15 +129,15 @@ function soil_column_hg_abc_cs_shr()
         fill(NaN, ncells), # σ′
         fill(NaN, ncells), # p
         Atlans.OverConsolidationRatio(fill(2.15, ncells)),
-        fill(NaN, ncells), # result
+        fill(0.0, ncells), # result
     )
 
     oc = Atlans.OxidationColumn(
-        fill(carbon_store_cell(), ncells), z, Δz, fill(NaN, ncells), 1.0
+        fill(carbon_store_cell(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(shrinkage_cell(), ncells), z, Δz, fill(NaN, ncells), 1.0
+        fill(shrinkage_cell(), ncells), z, Δz, fill(0.0, ncells), 0.2
     )
 
     gw = Atlans.HydrostaticGroundwater(
@@ -165,15 +165,15 @@ function soil_column_hg_abc_nullox_nullshr()
         fill(NaN, ncells), # σ′
         fill(NaN, ncells), # p
         Atlans.OverConsolidationRatio(fill(2.15, ncells)),
-        fill(NaN, ncells), # result
+        fill(0.0, ncells), # result
     )
 
     oc = Atlans.OxidationColumn(
-        fill(Atlans.NullOxidation(), ncells), z, Δz, fill(0.0, ncells), 1.0
+        fill(Atlans.NullOxidation(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(Atlans.NullShrinkage(), ncells), z, Δz, fill(0.0, ncells), 1.0
+        fill(Atlans.NullShrinkage(), ncells), z, Δz, fill(0.0, ncells), 0.2
     )
 
     gw = Atlans.HydrostaticGroundwater(
@@ -205,11 +205,11 @@ function soil_column_hg_nullcons_cs_nullshr()
     )
 
     oc = Atlans.OxidationColumn(
-        fill(carbon_store_cell(), ncells), z, Δz, fill(NaN, ncells), 1.0
+        fill(carbon_store_cell(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(Atlans.NullShrinkage(), ncells), z, Δz, fill(0.0, ncells), 1.0
+        fill(Atlans.NullShrinkage(), ncells), z, Δz, fill(0.0, ncells), 0.2
     )
 
     gw = Atlans.HydrostaticGroundwater(
@@ -241,11 +241,11 @@ function soil_column_hg_nullcons_nullox_shr()
     )
 
     oc = Atlans.OxidationColumn(
-        fill(Atlans.NullOxidation(), ncells), z, Δz, fill(0.0, ncells), 1.0
+        fill(Atlans.NullOxidation(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(shrinkage_cell(), ncells), z, Δz, fill(NaN, ncells), 1.0
+        fill(shrinkage_cell(), ncells), z, Δz, fill(0.0, ncells), 0.2
     )
 
     gw = Atlans.HydrostaticGroundwater(
@@ -295,7 +295,8 @@ function subsoil_netcdf()
     domainbase = defVar(ds, "domainbase", Float64, ("x", "y"))
     surface_level = defVar(ds, "surface_level", Float64, ("x", "y"))
     max_oxidation_depth = defVar(ds, "max_oxidation_depth", Float64, ("x", "y"))
-    max_shrinkage_depth = defVar(ds, "max_shrinkage_depth", Float64, ("x", "y"))
+    hv0_ox = defVar(ds, "no_oxidation_thickness", Float64, ("x", "y"))
+    hv0_shr = defVar(ds, "no_shrinkage_thickness", Float64, ("x", "y"))
 
     geology .= 1
     lithology .= 2
@@ -305,7 +306,8 @@ function subsoil_netcdf()
     domainbase .= 0.0
     surface_level .= 1.0
     max_oxidation_depth .= 1.2
-    max_shrinkage_depth .= 1.2
+    hv0_ox .= 0.0
+    hv0_shr .= 0.2
     return filename
 end
 

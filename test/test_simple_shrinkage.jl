@@ -8,13 +8,16 @@
 
     @testset "Initialization" begin
         @test typeof(cell) == Atlans.SimpleShrinkage
-        @test cell.sf ≈ 2.45736988
+        @test cell.sf ≈ 0.475005417
+        @test cell.shrinkage == 0.0
     end
 
     @testset "Shrink" begin
         Δt = 1.0
         new_cell = Atlans.shrink(cell, Δt)
         @test typeof(new_cell) == Atlans.SimpleShrinkage
-        @test new_cell.shrinkage ≈ 3.73750395e-5
+        @test new_cell.shrinkage ≈ 8.669686745399474e-6
+        @test cell.Δz - new_cell.shrinkage == new_cell.Δz
+        @test new_cell.Δz ≈ 0.99999133
     end
 end

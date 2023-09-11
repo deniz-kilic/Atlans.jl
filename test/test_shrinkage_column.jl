@@ -14,11 +14,9 @@
 
     @testset "shrinkage_depth" begin
         phreatic = 2.5
-        sz = max(
-            phreatic,
-            Atlans.surface_level(column) - column.max_shrinkage_depth
-        )
-        @test sz ≈ 3.0
+        phreatic_change = 0.0
+        sz = phreatic + phreatic_change + column.no_shrinkage_Δz
+        @test sz ≈ 2.7
     end
 
     @testset "shrink" begin
@@ -27,8 +25,8 @@
 
         Atlans.shrink!(column, phreatic, Δt)
 
-        expected_shr = [0.0, 0.0, 0.0, 0.12372923070259101]
-        expected_Δz = [1.0, 1.0, 1.0, 0.876270769297409]
+        expected_shr = [0.0, 0.0, 0.0, 0.02888402952870206]
+        expected_Δz = [1.0, 1.0, 1.0, 0.9711159704712979]
 
         @test all(column.result .≈ expected_shr)
         @test all(c.Δz ≈ Δz for (c, Δz) in zip(column.cells, expected_Δz))

@@ -14,7 +14,7 @@
     @testset "oxidation_depth" begin
         phreatic = 2.5
         oz = max(
-            phreatic,
+            phreatic + column.no_oxidation_Δz,
             Atlans.surface_level(column) - column.max_oxidation_depth
         )
         @test oz ≈ 3.0
