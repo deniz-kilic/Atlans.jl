@@ -140,6 +140,28 @@
         @test typeof(forcing) == Atlans.DeepSubsidence
         @test all(ismissing.(forcing.subsidence))
         Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
-        @test all(forcing.subsidence .≈ -0.05)
+        @test all(forcing.subsidence .≈ 0.05)
+    end
+
+    @testset "stage indexation" begin
+        path = AtlansFixtures.stage_indexation_netcdf()
+        forcing = Atlans.StageIndexation(path, 50)
+
+        @test typeof(forcing) == Atlans.StageIndexation
+        @test all(ismissing.(forcing.weir_area))
+        @test all(forcing.factor .== 1.0)
+        Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
+        @test all(forcing.weir_area .== 1.0)
+        @test all(forcing.factor .== 0.5)
+    end
+
+    @testset "temperature" begin
+        path = AtlansFixtures.temperature_table()
+        forcing = Atlans.Temperature(path)
+
+        @test typeof(forcing) .== Atlans.Temperature
+        @test ismissing(forcing.temp)
+        Atlans.read_forcing!(forcing, DateTime("2020-01-01"))
+        @test forcing.temp == 14.0
     end
 end

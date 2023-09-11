@@ -328,6 +328,25 @@ function stage_change_netcdf()
 end
 
 
+function stage_indexation_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c") do ds
+        defDim(ds, "x", 2)
+        defDim(ds, "y", 3)
+        defDim(ds, "time", 2)
+        create_xcoord!(ds, [12.5, 37.5])
+        create_ycoord!(ds, [87.5, 62.5, 37.5])
+        defVar(ds, "time", DateTime.(["2020-01-01", "2020-02-01"]), ("time",))
+        weir_area = defVar(ds, "weir_area", Float64, ("x", "y", "time"))
+        factor = defVar(ds, "factor", Float64, ("x", "y", "time"))
+
+        weir_area .= 1.0
+        factor .= 0.5
+    end
+    return filename
+end
+
+
 function deep_subsidence_netcdf()
     filename = tempname()
     ds = NCDatasets.Dataset(filename, "c") do ds
@@ -338,7 +357,7 @@ function deep_subsidence_netcdf()
         create_ycoord!(ds, [87.5, 62.5, 37.5])
         defVar(ds, "time", DateTime.(["2020-01-01", "2020-02-01"]), ("time",))
         difference = defVar(ds, "subsidence", Float64, ("x", "y", "time"))
-        difference .= -0.05
+        difference .= 0.05
     end
     return filename
 end
@@ -365,6 +384,17 @@ function params_table()
         rho_bulk=[1000.0],
         mass_fraction_lutum=[0.7],
         shrinkage_degree=[1.4]
+    )
+    CSV.write(filename, df)
+    return filename
+end
+
+
+function temperature_table()
+    filename = tempname()
+    df = DataFrame(
+        times=DateTime.(["2020-01-01", "2020-02-01"]),
+        temperature=[14.0, 15.0]
     )
     CSV.write(filename, df)
     return filename
