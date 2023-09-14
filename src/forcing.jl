@@ -115,7 +115,7 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
         isarea .= (weir_areas .== area)
 
         if area == -1 # Change is the subsidence per column
-            si.change[isarea] .= model.output.subsidence[isarea]
+            si.change[isarea] .= model.output.subsidence[isarea] .* change_to_negative
         else
             try
                 si.change[isarea] .= nanpercentile(
