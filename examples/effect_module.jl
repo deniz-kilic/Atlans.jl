@@ -1,4 +1,5 @@
 using Atlans
+using Dates
 
 Δzmax = 0.25
 
@@ -9,14 +10,14 @@ model = Atlans.Model(
     Atlans.DrainingAbcIsotache,
     Atlans.CarbonStore,
     Atlans.OverConsolidationRatio,
-    Atlans.AdaptiveCellsize(0.25, 0.01),
+    Atlans.NullShrinkage,
+    Atlans.AdaptiveCellsize(Δzmax, 0.01),
     Atlans.ExponentialTimeStepper(1.0, 2),
     joinpath(basedir, "3-input/subsurface_model.nc"),
-    joinpath(basedir, "3-input/param_table_test.csv"),
-    Δzmax,
+    joinpath(basedir, "3-input/parameters.csv"),
 )
 forcing = (
-    stage_change = Atlans.StageChange(joinpath(basedir, "3-input/stage_change.nc")),
+    stage_change=Atlans.StageChange(joinpath(basedir, "3-input/stage_change.nc")),
 )
 
 additional_times = map(DateTime, ["1920-01-01", "1930-01-01", "1940-01-01", "1950-01-01", "1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01"])
@@ -28,4 +29,4 @@ simulation = Atlans.Simulation(
     forcing,
     additional_times,
 );
-Atlans.run!(simulation);
+# Atlans.run!(simulation);
