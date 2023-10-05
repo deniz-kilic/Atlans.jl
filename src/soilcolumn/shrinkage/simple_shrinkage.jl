@@ -28,7 +28,7 @@ end
 function SimpleShrinkage(Δz, n, L, H)
     sf = shrinkage_factor(n, L, H)
     τ = 60.0 * 365.25 # Time dependent factor for shrinkage process
-    r = 2.0 # Direction of shrinkage is assumed isoptropic (r=3)
+    r = 1.0 # Direction of shrinkage is assumed isoptropic (r=3)
     return SimpleShrinkage(Δz, n, L, H, τ, r, sf, 0.0)
 end
 
