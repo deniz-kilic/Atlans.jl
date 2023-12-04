@@ -1,0 +1,30 @@
+project:
+  type: website
+
+website:
+  title: "Atlantis Subsidence (Atlans)"
+  navbar:
+    left:
+      - text: "Atlans core"
+      - text: "Usage"
+      - text: "API reference"
+  
+  sidebar:
+    - title: "Atlans core"
+      contents:
+        - core/consolidation.qmd
+        - core/oxidation.qmd
+        - core/shrinkage.qmd
+    - title: "Usage"
+      contents:
+        - usage/build_model.qmd
+        - usage/build_column.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+
