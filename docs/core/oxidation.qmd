@@ -2,4 +2,4 @@
 title: "Oxidation"
 ---
 
-Add text...
+Oxidation occurs in organic rich layers (e.g. peat) above the groundwater table. For oxidation two approaches are supported ([Bootsma et al., 2020](https://doi.org/10.5194/piahs-382-415-2020): a more comprehensive organic mass based approach where the organic matter content determines the potential amount of surface lowering and a more simple oxidation at a constant rate. 
