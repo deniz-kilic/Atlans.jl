@@ -3,22 +3,34 @@ project:
 
 website:
   title: "Atlantis Subsidence (Atlans)"
+  page-navigation: true
   navbar:
     left:
-      - text: "Atlans core"
+      - text: "Atlantis"
+        file: core/index.qmd
+      - text: "Input Data"
+        file: data/index.qmd
       - text: "Usage"
+        file: usage/index.qmd
       - text: "API reference"
+        file: build/index.md
   
   sidebar:
-    - title: "Atlans core"
+    - title: "Atlantis"
       contents:
-        - core/consolidation.qmd
+        - core/index.qmd
+        - core/compaction.qmd
         - core/oxidation.qmd
         - core/shrinkage.qmd
+    - title: "Input Data"
+      contents:
+        - data/index.qmd
+        - data/requirements.qmd
     - title: "Usage"
       contents:
-        - usage/build_model.qmd
-        - usage/build_column.qmd
+        - usage/index.qmd
+        - usage/build_model.ipynb
+        - usage/build_column.ipynb
 
 format:
   html:

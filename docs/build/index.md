@@ -6,7 +6,7 @@
 # API Reference
 
 
-*This is the private internal documentation of the Ribasim API.*
+*This is the private internal documentation of the Atlans API.*
 
 - [API Reference](index.md#API-Reference)
     - [Modules](index.md#Modules)
@@ -761,8 +761,8 @@ Weight of (part of) a single cell
 - [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Any})
 - [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Atlans.SoilColumn, Vector{Float64}})
 - [`Atlans.advance_timestep!`](index.md#Atlans.advance_timestep!-Tuple{Atlans.SoilColumn, Float64})
-- [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Atlans.OxidationColumn{Atlans.CarbonStore}, Vararg{Any, 4}})
 - [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Union{Atlans.ConsolidationColumn{Atlans.NullConsolidation, Atlans.OverConsolidationRatio}, Atlans.OxidationColumn{Atlans.NullOxidation}, Atlans.ShrinkageColumn{Atlans.NullShrinkage}}, Vararg{Any, 4}})
+- [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Atlans.OxidationColumn{Atlans.CarbonStore}, Vararg{Any, 4}})
 - [`Atlans.compress_γ_dry`](index.md#Atlans.compress_γ_dry-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.compress_γ_wet`](index.md#Atlans.compress_γ_wet-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.consolidate`](index.md#Atlans.consolidate-Tuple{Atlans.DrainingAbcIsotache, Any, Any})
@@ -772,18 +772,18 @@ Weight of (part of) a single cell
 - [`Atlans.draining_abc_isotache_column`](index.md#Atlans.draining_abc_isotache_column-NTuple{8, Any})
 - [`Atlans.effective_stress!`](index.md#Atlans.effective_stress!-Tuple{Atlans.ConsolidationColumn})
 - [`Atlans.formulate`](index.md#Atlans.formulate-Tuple{Atlans.AbcIsotache, Vararg{Float64, 4}})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Vararg{Any, 4}})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Any, Any, Any})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Vararg{Any, 4}})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any, Any})
 - [`Atlans.parse_loglevel`](index.md#Atlans.parse_loglevel-Tuple{AbstractString})
 - [`Atlans.periodduration`](index.md#Atlans.periodduration-Tuple{Any})
 - [`Atlans.pow`](index.md#Atlans.pow-Tuple{Any, Any})
 - [`Atlans.prepare_domain`](index.md#Atlans.prepare_domain-NTuple{7, Any})
-- [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!-Tuple{Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, P} where P<:Atlans.Preconsolidation})
 - [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!)
+- [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!-Tuple{Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, P} where P<:Atlans.Preconsolidation})
 - [`Atlans.prepare_timestep!`](index.md#Atlans.prepare_timestep!-Tuple{Atlans.SoilColumn, Any})
 - [`Atlans.relative_oxidation_rate`](index.md#Atlans.relative_oxidation_rate)
 - [`Atlans.repeat_elements`](index.md#Atlans.repeat_elements-Tuple{Any, Any})

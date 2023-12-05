@@ -1,0 +1,10 @@
+---
+title: "Compaction"
+---
+
+# Process
+
+# Calculation methods
+Different approaches to calculate the amount of consolidation are supported ([Bootsma et al., 2020](https://doi.org/10.5194/piahs-382-415-2020)): the Koppejan ([CUR, 1996](https://www.taylorfrancis.com/books/mono/10.1201/9781315138657/building-soft-soils-cur-centre-civil-engineering)) and Isotache ([Kooi et al., 2018](https://publications.deltares.nl/11202275_008.pdf)) models.
+
+# Consolidation column

@@ -2,4 +2,9 @@
 title: "Shrinkage"
 ---
 
+# Process
+
+# Calculation methods
 Since April 2023, Atlans supports calculations for shrinkage (Kooi et al., 2023). Similar to oxidation, shrinkage occurs above the groundwater table.
+
+# Shrinkage column

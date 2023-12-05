@@ -1,5 +1,14 @@
 ---
-title: "Atlans core"
+title: "Atlantis"
 ---
 
-Add text
+Start with brief explanation how Atlantis works:
+- Atlantis calculates the amount of subsidence over user-defined stress periods (e.g. periods of 5 or 10 years)
+- Add ...
+
+# Subjects to cover in this page:
+- Core of Atlantis are the Model and Simulation objects
+- Explanation of what the model consists of -> a collection of columns consisting of 4 types of columns -> groundwater, consolidation, oxidation and shrinkage columns (maybe include figure of this concept)
+- Explanation of a column. Only discuss the four components (gw, cons, ox, shr) briefly as this will be covered in the respective pages.
+- Current calculation methods which are supported by Atlantis and including or ignoring these in the modelling
+
