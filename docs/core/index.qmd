@@ -6,9 +6,25 @@ Start with brief explanation how Atlantis works:
 - Atlantis calculates the amount of subsidence over user-defined stress periods (e.g. periods of 5 or 10 years)
 - Add ...
 
+![Schematic overview of the Atlantis modelling framework. (a) representation of a single modelling cycle in a stress period. (b) Time discretization of the model in terms of stress periods and time steps. Adapted from @bootsma2020atlantis.](../images/schematic_modelling-01.png){#fig-schematic}
+
 # Subjects to cover in this page:
 - Core of Atlantis are the Model and Simulation objects
+![Main components of an Atlantis subsurface model that is used for modelling simulations.](../images/components_model-01.png){#fig-components}
 - Explanation of what the model consists of -> a collection of columns consisting of 4 types of columns -> groundwater, consolidation, oxidation and shrinkage columns (maybe include figure of this concept)
 - Explanation of a column. Only discuss the four components (gw, cons, ox, shr) briefly as this will be covered in the respective pages.
 - Current calculation methods which are supported by Atlantis and including or ignoring these in the modelling
 
+# Model
+
+## Column
+
+### Groundwater column
+
+### Consolidation column
+
+### Oxidation column
+
+### Shrinkage column
+
+# Simulation

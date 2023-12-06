@@ -19,7 +19,7 @@ website:
     - title: "Atlantis"
       contents:
         - core/index.qmd
-        - core/compaction.qmd
+        - core/consolidation.qmd
         - core/oxidation.qmd
         - core/shrinkage.qmd
     - title: "Input Data"
@@ -38,5 +38,9 @@ format:
     css: styles.css
     toc: true
 
+bibliography: references.bib
 
-
+crossref: 
+  fig-title: Fig.
+  fig-prefix: Fig.
+  title-delim: "."
