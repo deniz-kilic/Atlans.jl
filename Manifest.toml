@@ -354,6 +354,7 @@ version = "2022.10.11"
 [[deps.NCDatasets]]
 deps = ["CFTime", "CommonDataModel", "DataStructures", "Dates", "NetCDF_jll", "NetworkOptions", "Printf"]
 git-tree-sha1 = "4263c4220f22e20729329838bf7e94a49d1ac32f"
+pinned = true
 uuid = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 version = "0.12.17"
 
