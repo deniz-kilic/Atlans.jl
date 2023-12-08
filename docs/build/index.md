@@ -35,7 +35,39 @@
 
 
 
-Logic for splitting a column to accomodate for a moving phreatic level in combination with organic matter stores.
+```julia
+AdaptiveCellsize(Δzmax::Float, split_tolerance::Float)
+```
+
+Logic for splitting a column to accomodate for a moving phreatic level in combination with organic matter stores. Handles how the thickness of thick voxels  (>Δzmax) should be discretized and determines when splitting occurs. If the thickness of a cell above, or below, the groundwater table is lower than the tolerance, no splitting occurs.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.Clock' href='#Atlans.Clock'>#</a>
+**`Atlans.Clock`** &mdash; *Type*.
+
+
+
+```julia
+Clock(time::Vector{DateTime}, iteration::int, stop_time::DateTime)
+```
+
+Clock object that keeps track of the stress periods, iterations in a Simulation and stop time of the Simulation.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.ExponentialTimeStepper' href='#Atlans.ExponentialTimeStepper'>#</a>
+**`Atlans.ExponentialTimeStepper`** &mdash; *Type*.
+
+
+
+```julia
+ExponentialTimestepper(start::Float, multiplier::T)
+```
+
+Struct to discretize time steps (in days) within each stress period.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -77,10 +109,10 @@ Collection of SimpleShrinkage cells to compute shrinkage for.
 
 **Arguments:**
 
-  * `cells::Vector{S}`: Collection of structs for SimpleShrinkage cell attributes.
+  * `cells::Vector{S}`: Collection of cells containing the shrinkage process.
   * `z::Vector{Float}`: Depth of the cells.
   * `Δz::Vector{Float}`: Thickness of the cells.
-  * `result::Vector{Float}`: Computed shrinkage of each cell. All NaNs at t=0.
+  * `result::Vector{Float}`: Computed shrinkage of each cell.
   * `Hv0::Float`: Absolute depth above phreatic level to compute shrinkage for in cells.
 
 
@@ -101,8 +133,8 @@ Simple voxel with attributes to compute shrinkage for.
 
   * `Δz::Float`: Thickness of the voxel. [m]
   * `n::Float`: Shrinkage factor of the voxel. [-]
-  * `L::Float`: Mass percentage of lutum.
-  * `H::Float`: Mass percentage of organic.
+  * `L::Float`: Mass fraction of lutum.
+  * `H::Float`: Mass fraction of organic.
   * `τ::Float`: Time dependent factor for shrinkage process. [days]
   * `r::Float`: Direction of shrinkage, r is 3 indicates isoptropic. [-]
   * `sf::Float`: TODO: look-up in document [-]
@@ -747,6 +779,8 @@ Weight of (part of) a single cell
 ## Index
 
 - [`Atlans.AdaptiveCellsize`](index.md#Atlans.AdaptiveCellsize)
+- [`Atlans.Clock`](index.md#Atlans.Clock)
+- [`Atlans.ExponentialTimeStepper`](index.md#Atlans.ExponentialTimeStepper)
 - [`Atlans.Model`](index.md#Atlans.Model-Tuple{Type, Type, Type, Type, Type, Vararg{Any, 4}})
 - [`Atlans.ShrinkageColumn`](index.md#Atlans.ShrinkageColumn)
 - [`Atlans.SimpleShrinkage`](index.md#Atlans.SimpleShrinkage)
@@ -757,12 +791,12 @@ Weight of (part of) a single cell
 - [`Atlans.U`](index.md#Atlans.U-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.add_time`](index.md#Atlans.add_time-Tuple{Any, Any})
 - [`Atlans.advance!`](index.md#Atlans.advance!-Tuple{Any})
+- [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Atlans.SoilColumn, Vector{Float64}})
 - [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Any, Any})
 - [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Any})
-- [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Atlans.SoilColumn, Vector{Float64}})
 - [`Atlans.advance_timestep!`](index.md#Atlans.advance_timestep!-Tuple{Atlans.SoilColumn, Float64})
-- [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Union{Atlans.ConsolidationColumn{Atlans.NullConsolidation, Atlans.OverConsolidationRatio}, Atlans.OxidationColumn{Atlans.NullOxidation}, Atlans.ShrinkageColumn{Atlans.NullShrinkage}}, Vararg{Any, 4}})
 - [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Atlans.OxidationColumn{Atlans.CarbonStore}, Vararg{Any, 4}})
+- [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Union{Atlans.ConsolidationColumn{Atlans.NullConsolidation, Atlans.OverConsolidationRatio}, Atlans.OxidationColumn{Atlans.NullOxidation}, Atlans.ShrinkageColumn{Atlans.NullShrinkage}}, Vararg{Any, 4}})
 - [`Atlans.compress_γ_dry`](index.md#Atlans.compress_γ_dry-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.compress_γ_wet`](index.md#Atlans.compress_γ_wet-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.consolidate`](index.md#Atlans.consolidate-Tuple{Atlans.DrainingAbcIsotache, Any, Any})
@@ -772,18 +806,18 @@ Weight of (part of) a single cell
 - [`Atlans.draining_abc_isotache_column`](index.md#Atlans.draining_abc_isotache_column-NTuple{8, Any})
 - [`Atlans.effective_stress!`](index.md#Atlans.effective_stress!-Tuple{Atlans.ConsolidationColumn})
 - [`Atlans.formulate`](index.md#Atlans.formulate-Tuple{Atlans.AbcIsotache, Vararg{Float64, 4}})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Vararg{Any, 4}})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any, Any})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any, Any})
 - [`Atlans.parse_loglevel`](index.md#Atlans.parse_loglevel-Tuple{AbstractString})
 - [`Atlans.periodduration`](index.md#Atlans.periodduration-Tuple{Any})
 - [`Atlans.pow`](index.md#Atlans.pow-Tuple{Any, Any})
 - [`Atlans.prepare_domain`](index.md#Atlans.prepare_domain-NTuple{7, Any})
-- [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!)
 - [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!-Tuple{Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, P} where P<:Atlans.Preconsolidation})
+- [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!)
 - [`Atlans.prepare_timestep!`](index.md#Atlans.prepare_timestep!-Tuple{Atlans.SoilColumn, Any})
 - [`Atlans.relative_oxidation_rate`](index.md#Atlans.relative_oxidation_rate)
 - [`Atlans.repeat_elements`](index.md#Atlans.repeat_elements-Tuple{Any, Any})
