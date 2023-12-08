@@ -2,9 +2,69 @@
 title: "Shrinkage"
 ---
 
-# Process
+# Process (onderstaand vertalen, uit: Kooi et al.)
+Rijping vindt plaats bij het droogvallen (drainage/ontwatering) van klei-rijke sedimenten die onder water zijn afgezet. Luchtindringing in de bodem zet fysische en chemische veranderingen in gang waarbij het slappe sediment geleidelijk verandert in een stevige, doorlatende bodem met structuur. Fysische rijping gaat gepaard met een onomkeerbaar verlies aan water en een aanzienlijk volumeverlies, variërend van 10% bij lichte zavel tot wel 30% bij zware klei (Jongmans et al. 2013). Dit wordt ook wel (onomkeerbare) krimp genoemd. Wateronttrekking door begroeiing versnelt het rijpingsproces aanzienlijk. Door het volumeverlies ontstaan rijpingsscheuren in de bodem en treedt maaivelddaling op.
+
+In de Flevopolders was rijping (krimp) een hoofdoorzaak van de bodemdaling door de drooglegging van de waterbodems van het IJsselmeer. Grote delen van het minerale dek zijn inmiddels sterk gerijpt waardoor een verdere bijdrage aan bodemdaling afwezig of zeer beperkt is. Echter, op diverse locaties in Flevoland komen desondanks nog ongerijpte of onvolledig gerijpte bodemhorizonten voor op relatief ondiepe bodemniveaus (boven de GLG). Dat betekent dat op deze locaties ook nu nog rekening moet worden gehouden met een rijpingsbijdrage (restrijping). Bovendien is klei en zavel beneden de diepste grondwaterstand over het algemeen niet aan uitdroging blootgesteld, wat betekent dat in scenario’s waarbij de grondwaterstand (GLG) zou worden verlaagd, rijping weer zal gaan bijdragen. Er is daarom besloten om rijping als apart bodemdalingsproces mee te nemen in de bodemdalingsprognose voor Flevoland (zie uitgangspunt 2 in hoofdstuk 2). Omdat bij aanvang van dit project rijping in Atlantis ontbrak, is hiervoor een nieuwe rekenwijze opgesteld.
+
 
 # Calculation methods
 Since April 2023, Atlans supports calculations for shrinkage (Kooi et al., 2023). Similar to oxidation, shrinkage occurs above the groundwater table.
 
-## Shrinkage process (SimpleShrinkage)
+(onderstaande ook vertalen)<br>
+De volgende uitgangspunten zijn gebruikt bij het opstellen van de rekenwijze.
+
+- De rekenwijze maakt gebruik van de GLG als de algemene stuurvariabele voor de karakterisatie van grondwatercondities in Atlantis.
+- Als toestandsvariabele die de mate van rijping karakteriseert word gebruik gemaakt van het bestaande concept n-factor (rijpingsgraad of rijpingsgetal) (Pons en Zonneveld, 1965). Zie bijlage 19B.
+- Rijping is compleet als een laagste limietwaarde voor de n-factor is bereikt. Er kan dan geen verdere rijping meer plaatsvinden.
+- Rijping is onomkeerbaar.
+- Rijping is een proces (volumeafname van voxels) dat ook bij gelijkblijvende grondwatercondities (hier GLG) plaatsvindt . Het alternatief zou zijn dat een forcering (GLG verandering ten opzichte van het bodemmateriaal) nodig is om volumeverlies door rijping te bewerkstelligen. Hoewel er geen zekerheid bestaat over de juiste zienswijze, pleiten de volgende overwegingen voor het gekozen uitgangspunt:
+  - Het feit dat rijpingsgraad globaal toeneemt met de ouderdom van diverse andere, oudere polders, zoals in de Dollard. 
+  - Bij de drooglegging van Flevoland was natuurlijk sprake van forcering door de drooglegging en ontwatering. Vervolgens was echter ook sprake van een seculaire ontwikkeling; rijping als naijling die in ieder geval decennia lang door heeft gewerkt, en mogelijk nog steeds gaande is. 
+  - Bij bodemkartering rond 2000 is geconstateerd dat in Noord- Zuid Holland  (De Vries et al, 2017)  de rijpingsgraad van bodemhorizonten was toegenomen in vergelijking met de karting in de 60’ en 70 er jaren. Dit is in ieder geval niet strijdig met een seculair karakter van de rijping, maar forcering door veranderd landgebruik en ingrepen in de waterhuishouding zullen hier ook aan hebben bijgedragen en mogelijk ook dominant zijn geweest.
+
+
+## Shrinkage calculation (SimpleShrinkage)
+The decrease in shrinkage degree ($n$) is described as an exponential relation (with e-folding time scale $\tau$ that determines when the final state is "reached"):
+
+$$
+\frac{dn}{dt} = \frac{n_{final}-n}{\tau}
+$$ {#eq-n-decrease}
+
+At unchanged conditions, a starting value $n_{start}$ follows at $t = t_{start}$:
+
+$$
+n(t) = n_{final} + (n_{start} - n_{final})\cdot{e}^{-(t-t_{start})/\tau} 
+$$ {#eq-n-start}
+
+For a time step of finite size $\Delta{t}$ then follows:
+
+$$
+n(t + \Delta{t}) = n(t) + \left(n(t)-n_{final}\right)\left(e^{-\Delta{t}/\tau}-1\right)
+$$ {#eq-n-at-t}
+
+A reduction of shrinkage degree for a time step or stress period that follows from @eq-n-decrease is translated into a relative decrease of volume of a voxel (or part of a voxel that is within the depths where shrinkage occurs):
+
+$$
+\Delta{V}/V_{ref} = factor \cdot \Delta{n}
+$$ {#eq-relative-volume-loss}
+
+The decrease results in a negative value. For practical purposes,  $V_{ref}$ is the same as the soil volume with the shrinkage degree at the start of the calculation ($n_0$). Therefore, the volume changes ($\Delta{V}$) for a given time step can be calculated from volume of a voxel at $t_0$. The $factor$ in @eq-relative-volume-loss is given by a relation from Pons and Zonneveld [-@pons1965ripening]:
+
+$$
+factor = \frac{(L+bH)/\rho_w}{n_0(L+bH)/\rho_w+0.2R/\rho_w+C}
+$$ {#eq-factor}
+
+$$
+R = 1 - L - H; \; \; C=R/\rho_R + H/\rho_H + L/\rho_L
+$$
+
+where $L, H, R, C$ are the mass fractions of the lutum, organic, colloidal and solid particles respectively and $\rho_w, \rho_L, \rho_H, \rho_R$ are the densities of water and solid particles respectively. Subsequently, the relative change of thickness of a voxel is calculated by including a geometry factor ($r$):
+
+$$
+\frac{\Delta{H}}{H} = \left(1+\frac{\Delta{V}}{V}\right)^{1/r}-1
+$$ {#eq-relative-thickness-change}
+
+Here, $r=3$ produces isotropic shrinkage and $r=1$, purely vertical shrinkage [@rijnierse1983thesis].
+
+A lower limit beneath the land surface can be specified where shrinkage will no longer take place which is at a specified depth ($H_v^0$) above the MLGT. To be able to incorporate shrinkage in subsidence calculations, $n, L$ and $H$ must be parameterized for voxels at the start.

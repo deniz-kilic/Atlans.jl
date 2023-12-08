@@ -3,7 +3,7 @@ title: "Atlantis"
 ---
 
 # Subjects to cover in this page:
-- The input model for the subsidence calculcations is constructed from the subsurface model and groundwater table.
+- The input model for Atlantis is constructed from the subsurface model, groundwater table and elevation data.
 - Time dimensions is categorized in terms of stress periods and time steps (@fig-schematic b). A stress period is the time during which a constant stress is applied (for example the surface water stage in a management area or a surcharge). Within a stress period, time is discretized into individual timesteps. A stress period therefore generally consists of multiple timesteps. A complete model simulation can consist of one or multiple stress periods which may all vary in duration.
 - In each time step, a consolidation, oxidation and shrinkage calculation is performed and the resulting loss in elevation due to each process is stored.
 

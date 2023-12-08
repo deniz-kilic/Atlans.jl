@@ -6,9 +6,54 @@ title: "Oxidation"
 Oxidation occurs in organic rich layers (e.g. peat) above the groundwater table.
 
 # Calculation methods
-For oxidation two approaches are supported ([Bootsma et al., 2020](https://doi.org/10.5194/piahs-382-415-2020): a more comprehensive organic mass based approach where the organic matter content determines the potential amount of surface lowering and a more simple oxidation at a constant rate.
+For oxidation two approaches are supported ([Bootsma et al., 2020](https://doi.org/10.5194/piahs-382-415-2020)): a more comprehensive organic mass based approach where the organic matter content determines the potential amount of surface lowering and a more simple oxidation at a constant rate.
 
-## Organic based approach (CarbonStore)
+### Organic based approach (CarbonStore)
+All voxels are initially assigned an organic mass fraction:
+$$
+F_{org} = \frac{M_{org}}{M_{org} + M_{min}}
+$$ {#eq-F-org}
 
+where *org* and *min* denote organic and mineral respectively. $F_{org}$ is identical to the LOI (loss on ignition) quantity that is used for the characterization of organic matter content of subsurface materials. The organic and the mineral mass content of a voxel (per $m^2$ in map view) is calculated from:
 
-## Constant rate (ConstantRate)
+$$
+M_{org} = F_{org}\rho_{bulk}H
+$$ {#eq-mass-organic}
+$$
+M_{min} = (1-F_{org})\rho_{bulk}H
+$$ {#eq-mass-mineral}
+
+where $\rho_{bulk}$ is the dry bulk density and $H$ is the momentary voxel height. The initial bulk density ($kg/m^3$) is modelled with an empirical relationship obtained from a large set of observational data of Dutch peat samples [@erkens2016double]:
+
+$$
+\rho_{bulk} = \frac{100}{F_{org}}(1-e^{-F_{org}/0.12})
+$$ {#eq-rho-bulk-erkens}
+
+In each time step $\Delta t$, organic mass loss is modelling using a constant rate law for the (part of) the voxels that are shallower than a specified height above the MLGT and not deeper than 1.2 m below the surface level:
+
+$$
+\Delta M_{org} = -\alpha_{m}H\Delta t
+$$ {#eq-mass-loss}
+
+$\alpha_{m}$ is an empirical constant estimated from a dataset with observations over several of land subsidence in peat-meadow areas in the Netherlands [@vandenakker2007veenweide]. Organic mass loss of each voxel is then converted to a height loss with:
+
+$$
+\Delta H^{ox} = \Delta M_{org}\hat{V}
+$$ {#eq-height-loss}
+
+where $\hat{V}$ is called the "specific volume of oxidation". Direct measurements of this quantity do not exist. For high $F_{org}$ (i.e. regular peat) $\hat{V}$ can likely be approximated by the reciprocal of the dry bulk organic matter density. Below $F_{org} \approx 0.3$ (i.e. transition to organic rich clay), $\hat{V}$ is expected to decrease as the bulk volume is more strongly determined by the mineral framework rather than by the organic matter. These concepts are captured by the following equation:
+
+$$
+\hat{V} = \frac{0.5}{F_{org}\rho_{bulk}} \left( 1+erf \left( \frac{F_{org}-0.2}{0.1} \right) \right)\; \; [m^3/kg/m^2]
+$$ {#eq-specific-volume-ox}
+
+Each time step, $M_{org}$ and $F_{org}$ (@eq-F-org) are updated for organic mass loss. The thickness of the voxel ($H$) is updated with the combined result of the consolidation, oxidation and shrinkage. Subsequently, $\rho_{bulk}$ is updated using:
+
+$$
+\rho_{bulk} = \frac{M_{org} + M_{min}}{H}
+$$ {#eq-bulk-density}
+
+This organic-mass based approach of oxidation provides a consistent framework to account for the mineral content of organic soils. While the organic mass fraction decreases by oxidation, the mineral mass fraction increases and ultimately, the non-oxidizable residue remains. The approach also allows modelling of oxidation-caused subsidence contributions of organic-rich clays and is not limited to oxidation of peat.
+
+### Constant rate (ConstantRate)
+Add explanation of constant rate calculations...
