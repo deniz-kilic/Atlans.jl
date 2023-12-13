@@ -36,8 +36,8 @@ end
 """
     Clock(time::Vector{DateTime}, iteration::int, stop_time::DateTime)
 
-Clock object that keeps track of the stress periods, iterations in a Simulation
-and stop time of the Simulation.
+Object to keep track of the stress periods, number of iterations and stop time of
+an Atlantis Simulation.
 """
 mutable struct Clock
     times::Vector{DateTime}

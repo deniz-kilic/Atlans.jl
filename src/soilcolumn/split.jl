@@ -8,7 +8,7 @@ const NullColumn = Union{
 """
     AdaptiveCellsize(Δzmax::Float, split_tolerance::Float)
 
-Logic for splitting a column to accomodate for a moving phreatic level in
+Logic for splitting cells in a column to accomodate for a moving phreatic level in
 combination with organic matter stores. Handles how the thickness of thick voxels 
 (>Δzmax) should be discretized and determines when splitting occurs. If the thickness
 of a cell above, or below, the groundwater table is lower than the tolerance, no
