@@ -40,7 +40,13 @@ function AquiferHead(path)
 end
 
 
-function Surcharge(path, groundwater::Type, consolidation::Type, oxidation::Type)
+function Surcharge(
+    path,
+    groundwater::Type,
+    consolidation::Type,
+    oxidation::Type,
+    shrinkage::Type
+    )
     error("Not implemented")
 end
 
@@ -97,6 +103,10 @@ function read_forcing!(t::Temperature, time)
     end
     return false
 end
+
+# function read_forcing!(sur::Surcharge, time)
+#     error("Not implemented")
+# end
 
 # Prepare forcing period
 
@@ -199,6 +209,11 @@ function apply_forcing!(t::Temperature, column, _)
         oc.cells[i] = newcell
     end
 end
+
+
+# function apply_forcing!(sur::Surcharge, column, I)
+#     error("Not implemented")
+# end
 
 
 #function apply_forcing!(sc::Surcharge, column, I)

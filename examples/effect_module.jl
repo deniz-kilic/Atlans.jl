@@ -3,7 +3,10 @@ using Dates
 
 Δzmax = 0.25
 
-basedir = raw"N:\Projects\11209000\11209259\B. Measurements and calculations\009 effectmodule bodemdaling\data"
+basedir = raw"c:/Users/knaake/OneDrive - Stichting Deltares/Documents/bodemdaling/for_deniz"
+
+path_nc = joinpath(basedir, "base_subsurface_model.nc")
+path_table = joinpath(basedir, "parameters.csv")
 
 model = Atlans.Model(
     Atlans.HydrostaticGroundwater,
@@ -13,14 +16,14 @@ model = Atlans.Model(
     Atlans.NullShrinkage,
     Atlans.AdaptiveCellsize(Δzmax, 0.01),
     Atlans.ExponentialTimeStepper(1.0, 2),
-    joinpath(basedir, "3-input/subsurface_model.nc"),
-    joinpath(basedir, "3-input/parameters.csv"),
+    joinpath(basedir, "base_subsurface_model.nc"),
+    joinpath(basedir, "parameters.csv"),
 )
 forcing = (
     stage_change=Atlans.StageChange(joinpath(basedir, "3-input/REF2017BP18_stage_change.nc")),
 )
 
-additional_times = map(DateTime, ["1920-01-01", "1930-01-01", "1940-01-01", "1950-01-01", "1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01"])
+# additional_times = map(DateTime, ["1920-01-01", "1930-01-01", "1940-01-01", "1950-01-01", "1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01"])
 
 simulation = Atlans.Simulation(
     model,
