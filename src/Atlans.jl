@@ -63,6 +63,7 @@ include("forcing.jl")
 include("io.jl")
 include("logging.jl")
 
-include("surcharge.jl")
+include("surcharge/surcharge_column.jl")
+include("surcharge/surcharge.jl")
 
 end # module

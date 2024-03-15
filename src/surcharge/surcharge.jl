@@ -1,12 +1,3 @@
-struct SurchargeColumn{G,C,O,S}
-   Δz::Vector{Float}
-   groundwater::G
-   consolidation::ConsolidationColumn{C}
-   oxidation::OxidationColumn{O}
-   shrinkage::ShrinkageColumn{S}
-end
-
-
 function set_surcharge!(
    column::SoilColumn,
    surcharge::SurchargeColumn,
@@ -19,13 +10,13 @@ function set_surcharge!(
 end
 
 
-function prepare_loookup_table(path_table)
+function prepare_lookup_table(path_table)
     df = read_params_table(path_table)
     build_lookup_tables(df)
 end
 
 
-function prepare_domain(thickness::Float, lithology::Int, Δzmax)
+function prepare_domain(thickness::Float, lithology::Int, Δzmax::Float)
     index, ncells = discretize(thickness, Δzmax)
     Δz = fill(thickness/ncells, ncells)
     z = 0 .+ cumsum(Δz) .- 0.5 .* Δz
@@ -35,7 +26,7 @@ function prepare_domain(thickness::Float, lithology::Int, Δzmax)
 end
 
 
-function prepare_domain(thickness, lithology, Δzmax)
+function prepare_domain(thickness::Vector{Float}, lithology::Vector{Int}, Δzmax::Float)
     index, ncells = discretize(thickness, Δzmax)
     Δz = (thickness./ncells)[index]
     z = 0 .+ cumsum(Δz) .- 0.5 .* Δz
