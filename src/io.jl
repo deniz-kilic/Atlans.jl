@@ -95,6 +95,14 @@ function xy_size(reader)
     return (size_x, size_y)
 end
 
+
+function xyz_size(reader)
+    size_x = length(reader.dataset["x"])
+    size_y = length(reader.dataset["y"])
+    size_z = length(reader.dataset["layer"])
+    return (size_x, size_y, size_z)
+end
+
 # Writing
 # -------
 function setup_output_netcdf(path, x, y)::NCDataset
