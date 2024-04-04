@@ -17,7 +17,7 @@ model = Atlans.Model(
     joinpath(basedir, "3-input/parameters.csv"),
 )
 forcing = (
-    stage_change=Atlans.StageChange(joinpath(basedir, "3-input/stage_change.nc")),
+    stage_change=Atlans.StageChange(joinpath(basedir, "3-input/REF2017BP18_stage_change.nc")),
 )
 
 additional_times = map(DateTime, ["1920-01-01", "1930-01-01", "1940-01-01", "1950-01-01", "1960-01-01", "1970-01-01", "1980-01-01", "1990-01-01", "2000-01-01"])
@@ -25,8 +25,8 @@ additional_times = map(DateTime, ["1920-01-01", "1930-01-01", "1940-01-01", "195
 simulation = Atlans.Simulation(
     model,
     joinpath(basedir, "4-output/test.nc"),
-    DateTime("2010-01-01"),
+    DateTime("1940-01-01"),
     forcing,
     additional_times,
 );
-# Atlans.run!(simulation);
+Atlans.run!(simulation);

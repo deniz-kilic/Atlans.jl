@@ -65,7 +65,7 @@
         reader = Atlans.prepare_reader(path_nc)
 
         @test typeof(reader) == Atlans.Reader
-        @test typeof(reader.dataset) == NCDatasets.NCDataset{Nothing}
+        @test typeof(reader.dataset) == NCDatasets.NCDataset{Nothing, Missing}
         @test all(reader.times .== DateTime.(["2020-01-01", "2020-02-01"]))
 
         diff = Atlans.ncread(reader, :stage_change)
@@ -81,7 +81,7 @@
         y = [87.5, 62.5, 37.5]
         ds = Atlans.setup_output_netcdf(path, x, y)
 
-        @test typeof(ds) == NCDatasets.NCDataset{Nothing}
+        @test typeof(ds) == NCDatasets.NCDataset{Nothing, Missing}
         @test issetequal(
             keys(ds),
             [
@@ -105,7 +105,7 @@
         writer = Atlans.prepare_writer(path, x, y)
 
         @test typeof(writer) == Atlans.Writer
-        @test typeof(writer.dataset) == NCDatasets.NCDataset{Nothing}
+        @test typeof(writer.dataset) == NCDatasets.NCDataset{Nothing, Missing}
 
         index = Atlans.add_time(writer.dataset, DateTime("2020-01-01"))
         @test index == 1

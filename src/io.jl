@@ -4,7 +4,7 @@ function prepare_subsoil_data(path_nc, path_csv)
     ds = Dataset(path_nc, "r")
     df = read_params_table(path_csv)
     tables = build_lookup_tables(df)
-    data = Dict(Symbol(key) => ds[key][:] for key in keys(ds))
+    data = Dict(Symbol(key) => Array(ds[key]) for key in keys(ds))
     return SubsoilData(data, tables)
 end
 
@@ -16,7 +16,7 @@ end
 
 function ncread(reader, param::Symbol)
     varname = reader.params[param]
-    return reader.dataset[varname][:]
+    return Array(reader.dataset[varname])
 end
 
 function ncread(reader, param::Symbol, t::TimeType)
