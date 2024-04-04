@@ -26,7 +26,15 @@ function prepare_domain(thickness::Float, lithology::Int, Δzmax::Float)
 end
 
 
-function prepare_domain(thickness::Vector{Float}, lithology::Vector{Int}, Δzmax::Float)
+function prepare_domain(
+    thickness::Vector{OptionalFloat},
+    lithology::Vector{OptionalInt},
+    Δzmax::Float
+)   
+    is_values = .!ismissing.(thickness)
+    thickness = thickness[is_values]
+    lithology = lithology[is_values]
+
     index, ncells = discretize(thickness, Δzmax)
     Δz = (thickness./ncells)[index]
     z = 0 .+ cumsum(Δz) .- 0.5 .* Δz
