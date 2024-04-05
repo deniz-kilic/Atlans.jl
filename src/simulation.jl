@@ -1,5 +1,3 @@
-abstract type Forcing end
-
 struct Reader
     dataset::NCDataset
     params::Dict{Symbol,String}
@@ -33,39 +31,6 @@ struct Model{G,C,P,O,S,T,A}
     timestepper::T
     adaptive_cellsize::A
     output::Output
-end
-
-
-struct StageIndexation <: Forcing
-    percentile::Int
-    factor::Array{OptionalFloat}
-    weir_area::Array{OptionalInt}
-    change::Array{OptionalFloat}
-    reader::Reader
-end
-
-
-struct DeepSubsidence <: Forcing
-    subsidence::Array{OptionalFloat}
-    reader::Reader
-end
-
-
-struct StageChange <: Forcing
-    change::Array{OptionalFloat}
-    reader::Reader
-end
-
-
-struct AquiferHead <: Forcing
-    head::Array{OptionalFloat}
-    reader::Reader
-end
-
-
-mutable struct Temperature <: Forcing # TODO: maak ruimtelijk
-    temp::OptionalFloat
-    table::DataFrame
 end
 
 
@@ -233,7 +198,7 @@ end
 
 
 """
-    Simulation(model, path_output, stop_time)
+    Simulation(model, path_output, stop_time, forcings, additional_times)
     
 Setup a simulation from an initialized model.
 """
@@ -241,7 +206,7 @@ function Simulation(
     model::Model,
     path_output::String,
     stop_time::DateTime,
-    forcing,
+    forcings=nothing,
     additional_times=nothing,
 )
     if isnothing(additional_times)
@@ -249,7 +214,12 @@ function Simulation(
     end
     writer = prepare_writer(path_output, model.output.x, model.output.y)
     clock = Clock(DateTime[], 1, stop_time)
-    simulation = Simulation(model, clock, writer, forcing)
+
+    if isnothing(forcings)
+        forcings = Forcings()
+    end
+
+    simulation = Simulation(model, clock, writer, forcings)
     set_periods!(simulation, additional_times)
     return simulation
 end
@@ -314,8 +284,8 @@ end
 
 
 function load_forcing!(forcing, key, time, model)
-    !haskey(forcing, key) && return nothing
     input = getfield(forcing, key)
+    isnothing(input) && return nothing
     active = read_forcing!(input, time)
     if active
         prepare_forcingperiod!(input, model)
@@ -361,7 +331,9 @@ function set_periods!(simulation, additional_times)
     stop_time = clock.stop_time
 
     alltimes = DateTime[]
-    for forcing in simulation.forcing
+    for f in fieldnames(Forcings)
+        forcing = getfield(simulation.forcing, f)
+        isnothing(forcing) && continue
         if typeof(forcing) == Temperature
             times = forcing.table.times
         else
@@ -369,6 +341,7 @@ function set_periods!(simulation, additional_times)
         end
         append!(alltimes, times[times.<stop_time])
     end
+    
     for time in additional_times
         time < stop_time && push!(alltimes, time)
     end

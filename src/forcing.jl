@@ -1,11 +1,74 @@
-#struct Surcharge{G,C,O} <: Forcing
-#    surcharge_index::Array{OptionalInt}
-#    surcharge::Vector{ColumnSurcharge{G,C,O}}
-#    reader::Reader
-#end
+abstract type Forcing end
+
+struct Surcharge <: Forcing
+    lithology::Array{OptionalInt}
+    thickness::Array{OptionalFloat}
+    reader::Reader
+    lookup::Dict
+end
+
+
+struct StageIndexation <: Forcing
+    percentile::Int
+    factor::Array{OptionalFloat}
+    weir_area::Array{OptionalInt}
+    change::Array{OptionalFloat}
+    reader::Reader
+end
+
+
+struct DeepSubsidence <: Forcing
+    subsidence::Array{OptionalFloat}
+    reader::Reader
+end
+
+
+struct StageChange <: Forcing
+    change::Array{OptionalFloat}
+    reader::Reader
+end
+
+
+struct AquiferHead <: Forcing
+    head::Array{OptionalFloat}
+    reader::Reader
+end
+
+
+mutable struct Temperature <: Forcing # TODO: maak ruimtelijk
+    temp::OptionalFloat
+    table::DataFrame
+end
+
+struct Forcings
+    deep_subsidence::Union{DeepSubsidence, Nothing}
+    stage_indexation::Union{StageIndexation, Nothing}
+    stage_change::Union{StageChange, Nothing}
+    aquifer_head::Union{AquiferHead, Nothing}
+    temperature::Union{Temperature, Nothing}
+    surcharge::Union{Surcharge, Nothing}
+end
+
+
+function Forcings(;
+    deep_subsidence=nothing,
+    stage_indexation=nothing,
+    stage_change=nothing,
+    aquifer_head=nothing,
+    temperature=nothing,
+    surcharge=nothing
+    )
+    Forcings(
+        deep_subsidence,
+        stage_indexation,
+        stage_change,
+        aquifer_head,
+        temperature,
+        surcharge
+    )
+end
 
 # Initializing
-
 function StageIndexation(path, percentile)
     reader = prepare_reader(path)
     size = xy_size(reader)
@@ -40,14 +103,17 @@ function AquiferHead(path)
 end
 
 
-function Surcharge(
-    path,
-    groundwater::Type,
-    consolidation::Type,
-    oxidation::Type,
-    shrinkage::Type
+function Surcharge(path_nc, path_table)
+    reader = prepare_reader(path_nc)
+    table = prepare_lookup_table(path_table)
+    size = xyz_size(reader)
+
+    Surcharge(
+        Array{Union{Missing, Int64}}(missing, size),
+        Array{Union{Missing, Float64}}(missing, size),
+        reader,
+        table
     )
-    error("Not implemented")
 end
 
 
@@ -57,6 +123,15 @@ function Temperature(path)
 end
 
 # Reading
+function read_forcing!(sur::Surcharge, time)
+    if time in sur.reader.times
+        sur.lithology .= ncread4d(sur.reader, :lithology, time)
+        sur.thickness .= ncread4d(sur.reader, :thickness, time)
+        return true
+    end
+    return false
+end
+
 
 function read_forcing!(si::StageIndexation, time)
     if time in si.reader.times
@@ -104,12 +179,7 @@ function read_forcing!(t::Temperature, time)
     return false
 end
 
-# function read_forcing!(sur::Surcharge, time)
-#     error("Not implemented")
-# end
-
 # Prepare forcing period
-
 prepare_forcingperiod!(_::Forcing, _::Model) = nothing
 
 function prepare_forcingperiod!(si::StageIndexation, model::Model)
@@ -212,12 +282,3 @@ end
 # function apply_forcing!(sur::Surcharge, column, I)
 #     error("Not implemented")
 # end
-
-
-#function apply_forcing!(sc::Surcharge, column, I)
-#    error("Not implemented")
-#    return
-#end
-#
-
-
