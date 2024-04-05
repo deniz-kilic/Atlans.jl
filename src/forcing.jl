@@ -141,8 +141,6 @@ function prepare_forcingperiod!(si::StageIndexation, model::Model)
 end
 
 # Apply forcing to a column
-
-
 function get_elevation_shift(ds::DeepSubsidence, column, I)
     subsidence = ds.subsidence[I]
     ismissing(subsidence) && return 0.0

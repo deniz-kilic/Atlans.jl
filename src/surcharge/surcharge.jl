@@ -26,11 +26,7 @@ function prepare_domain(thickness::Float, lithology::Int, Δzmax::Float)
 end
 
 
-function prepare_domain(
-    thickness::Vector{OptionalFloat},
-    lithology::Vector{OptionalInt},
-    Δzmax::Float
-)   
+function prepare_domain(thickness::Vector, lithology::Vector, Δzmax::Float)   
     is_values = .!ismissing.(thickness)
     thickness = thickness[is_values]
     lithology = lithology[is_values]
