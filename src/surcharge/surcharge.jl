@@ -19,7 +19,7 @@ end
 function prepare_domain(thickness::Float, lithology::Int, Δzmax::Float)
     index, ncells = discretize(thickness, Δzmax)
     Δz = fill(thickness/ncells, ncells)
-    z = 0 .+ cumsum(Δz) .- 0.5 .* Δz
+    z = fill(NaN, ncells)
     geology = fill(1, ncells)
     lithology = fill(lithology, ncells)
     return VerticalDomain(z, Δz, geology, lithology, index, ncells)
@@ -33,7 +33,7 @@ function prepare_domain(thickness::Vector, lithology::Vector, Δzmax::Float)
 
     index, ncells = discretize(thickness, Δzmax)
     Δz = (thickness./ncells)[index]
-    z = 0 .+ cumsum(Δz) .- 0.5 .* Δz
+    z = fill(NaN, sum(ncells))
     geology = fill(1, sum(ncells))
     n = sum(ncells)
     return VerticalDomain(z, Δz, geology, lithology[index], index, n)

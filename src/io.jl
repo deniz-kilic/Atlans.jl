@@ -103,11 +103,27 @@ function fetch_field(subsoil, field, I, domain)
 end
 
 
+function fetch_field(table, field, domain)
+    if haskey(table, field)
+        values = lookup(table[field], domain.geology, domain.lithology)
+    else
+        error("Mandatory field not in Surcharge lookup table: $field")
+    end
+    return values
+end
+
+
 fetch_field(reader, ::Type{PreOverburdenPressure}, I, domain) =
     fetch_field(reader, :pop, I, domain)
 
+fetch_field(table, ::Type{PreOverburdenPressure}, domain) =
+    fetch_field(table, :pop, domain)
+
 fetch_field(reader, ::Type{OverConsolidationRatio}, I, domain) =
     fetch_field(reader, :ocr, I, domain)
+
+fetch_field(table, ::Type{OverConsolidationRatio}, domain) =
+    fetch_field(table, :ocr, domain)
 
 
 function xy_size(reader)

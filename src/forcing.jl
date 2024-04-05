@@ -1,5 +1,6 @@
 abstract type Forcing end
 
+
 struct Surcharge <: Forcing
     lithology::Array{OptionalInt}
     thickness::Array{OptionalFloat}
@@ -39,6 +40,7 @@ mutable struct Temperature <: Forcing # TODO: maak ruimtelijk
     temp::OptionalFloat
     table::DataFrame
 end
+
 
 struct Forcings
     deep_subsidence::Union{DeepSubsidence, Nothing}
