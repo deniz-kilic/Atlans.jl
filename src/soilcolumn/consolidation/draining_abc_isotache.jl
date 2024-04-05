@@ -193,7 +193,7 @@ Initialize an empty ConsolidationColumn (i.e. consolidation is ignored) at locat
 function initialize(::Type{NullConsolidation}, _, domain, _, _)
     cells = Vector{NullConsolidation}()
     for i in 1:length(domain.Δz)
-        push!(cells, Atlans.NullConsolidation())
+        push!(cells, NullConsolidation())
     end
     preconsolidation = OverConsolidationRatio(fill(NaN, length(cells)))
     z = domain.z

@@ -102,7 +102,7 @@ Initialize an empty ShrinkageColumn (i.e. shrinkage is ignored) at location I.
 function initialize(::Type{NullShrinkage}, domain, _, _)
     cells = Vector{NullShrinkage}()
     for i in 1:length(domain.Δz)
-        push!(cells, Atlans.NullShrinkage())
+        push!(cells, NullShrinkage())
     end
     return ShrinkageColumn(
         cells,
