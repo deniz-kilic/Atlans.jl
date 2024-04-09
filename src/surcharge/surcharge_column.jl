@@ -41,6 +41,12 @@ struct SurchargeColumn
 end
 
 
+"""
+    initialize(::Type{HydrostaticGroundwater}, phreatic::Phreatic, domain::VerticalDomain)
+
+Initialize a GroundwaterSurcharge column that can be added to a HydrostaticGroundwater column
+when Surcharge is applied as a forcing during a forcingperiod.
+"""
 function initialize(
     ::Type{HydrostaticGroundwater},
     phreatic::Phreatic,
@@ -55,6 +61,17 @@ function initialize(
 end
 
 
+"""
+    initialize(
+        ::Type{DrainingAbcIsotache},
+        preconsolidation::Type,
+        domain::VerticalDomain,
+        lookup_table::Dict
+    )
+
+Initialize a ConsolidationSurcharge column that can be added to a ConsolidationColumn
+when Surcharge is applied as a forcing during a forcingperiod.
+"""
 function initialize(
     ::Type{DrainingAbcIsotache},
     preconsolidation::Type,
@@ -86,6 +103,12 @@ function initialize(
 end
 
 
+"""
+    initialize(::Type{CarbonStore}, domain::VerticalDomain, lookup_table::Dict)
+
+Initialize a OxidationSurcharge column that can be added to an OxidationColumn when
+Surcharge is applied as a forcing during a forcingperiod.
+"""
 function initialize(
     ::Type{CarbonStore},
     domain::VerticalDomain,
@@ -104,6 +127,12 @@ function initialize(
 end
 
 
+"""
+    initialize(::Type{SimpleShrinkage}, domain::VerticalDomain, lookup_table::Dict)
+
+Initialize a ShrinkageSurcharge column that can be added to an ShrinkageColumn when
+Surcharge is applied as a forcing during a forcingperiod.
+"""
 function initialize(
     ::Type{SimpleShrinkage},
     domain::VerticalDomain,
@@ -117,7 +146,13 @@ function initialize(
 end
 
 
-function initialize(::Type{NullConsolidation}, domain, _)
+"""
+    initialize(::Type{NullConsolidation}, preconsolidation::Type, domain, _)
+
+Initialize an empty ConsolidationSurcharge column when the consolidation process is
+ignored.
+"""
+function initialize(::Type{NullConsolidation}, preconsolidation::Type, domain, _)
     n = length(domain.z)
     cells = fill(NullConsolidation(), length(n))
     preconsolidation = OverConsolidationRatio(fill(NaN, length(cells)))
@@ -134,18 +169,33 @@ function initialize(::Type{NullConsolidation}, domain, _)
 end
 
 
+"""
+    initialize(::Type{NullOxidation}, domain, _)
+
+Initialize an empty OxidationSurcharge column when the oxidation process is ignored.
+"""
 function initialize(::Type{NullOxidation}, domain, _)
     cells = fill(NullOxidation(), length(domain.z))
     OxidationSurcharge(cells, domain.z, domain.Δz)
 end
 
 
+"""
+    initialize(::Type{NullShrinkage}, domain, _)
+
+Initialize an empty ShrinkageSurcharge column when the shrinkage process is ignored.
+"""
 function initialize(::Type{NullShrinkage}, domain, _)
     cells = fill(NullShrinkage(), length(domain.z))
     ShrinkageSurcharge(cells, domain.z, domain.Δz)
 end
 
 
+"""
+    prepare_timestep!(column::SurchargeColumn, Δt)
+
+Set the initial stresses for a SurchargeColumn.
+"""
 function prepare_timestep!(column::SurchargeColumn, Δt)
     flow!(column.groundwater, Δt)
     exchange_pore_pressure!(column)

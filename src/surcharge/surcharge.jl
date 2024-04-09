@@ -1,3 +1,9 @@
+"""
+    set_surcharge!(column::SoilColumn, surcharge::SurchargeColumn)
+
+Combine a SoilColumn and SurchargeColumn when Surcharge is added as a forcing
+during a forcingperiod.
+"""
 function set_surcharge!(
     column::SoilColumn,
     surcharge::SurchargeColumn,
@@ -42,6 +48,15 @@ function prepare_domain(thickness::Vector, lithology::Vector, Δzmax::Float)
 end
 
 
+"""
+    prepare_surcharge_column(sur::Surcharge, column::SoilColumn, I::CartesianIndex)
+
+Create a SurchargeColumn with correct groundwater, consolidation, oxidation and shrinkage
+Surcharge columns. The correct Atlantis processes (e.g. DrainingAbcIsotache) that each of
+the Surcharge columns are built-up from, are derived from the input SoilColumn. The
+CartesianIndex reads to lithology and thickness to build the Surcharge column from at the
+correct location in the Surcharge forcing input.
+"""
 function prepare_surcharge_column(sur::Surcharge, column::SoilColumn, I::CartesianIndex)
     domain = prepare_domain(sur.thickness[I], sur.lithology[I], 0.25)
     domain.z .= surface_level(column) .+ cumsum(domain.Δz) .- 0.5 .* domain.Δz
@@ -71,7 +86,6 @@ end
 
 
 function set_surcharge!(gw::HydrostaticGroundwater, sugw::GroundwaterSurcharge)
-    # append!(gw.z, sugw.z)
     append!(gw.dry, sugw.dry)
     append!(gw.p, sugw.p)
 end
@@ -79,8 +93,6 @@ end
 
 function set_surcharge!(con::ConsolidationColumn, sucon::ConsolidationSurcharge)
     append!(con.cells, sucon.cells)
-    # append!(con.z, sucon.z)
-    # append!(con.Δz, sucon.Δz)
     append!(con.σ, sucon.σ)
     append!(con.σ′, sucon.σ′)
     append!(con.p, sucon.p)
@@ -90,15 +102,11 @@ end
 
 function set_surcharge!(ox::OxidationColumn, suox::OxidationSurcharge)
     append!(ox.cells, suox.cells)
-    # append!(ox.z, suox.z)
-    # append!(ox.Δz, suox.Δz)
 end
 
 
 function set_surcharge!(shr::ShrinkageColumn, sushr::ShrinkageSurcharge)
     append!(shr.cells, sushr.cells)
-    # append!(shr.z, sushr.z)
-    # append!(shr.Δz, sushr.Δz)
 end
 
 
