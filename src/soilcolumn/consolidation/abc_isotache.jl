@@ -1,6 +1,6 @@
 
 # compute intrinsic time (τ)
-function set_τ0_ocr(abc::ABC where {ABC<:AbstractAbcIsotache}, ocr::Float)
+function set_τ0_ocr(abc::ABC, ocr::Float) where {ABC<:AbstractAbcIsotache}
     if abc.c < 1.0e-4
         τ = 1.0e-9
     else
@@ -9,10 +9,12 @@ function set_τ0_ocr(abc::ABC where {ABC<:AbstractAbcIsotache}, ocr::Float)
     return @set abc.τ = τ
 end
 
-function set_τ0_pop(abc::ABC where {ABC<:AbstractAbcIsotache}, pop::Float)
+
+function set_τ0_pop(abc::ABC, pop::Float) where {ABC<:AbstractAbcIsotache}
     ocr = (abc.σ′ + pop * 1.0e3) / abc.σ′
     return set_τ0_ocr(abc, ocr)
 end
+
 
 struct AbcIsotache <: AbstractAbcIsotache
     Δz::Float
@@ -28,9 +30,11 @@ struct AbcIsotache <: AbstractAbcIsotache
     τ::Float
 end
 
+
 function AbcIsotache(Δz, γ_wet, γ_dry, a, b, c)
     return AbcIsotache(Δz, Δz, 0.0, NaN, γ_wet, γ_dry, a, b, c, NaN)
 end
+
 
 function consolidate!(abc::AbcIsotache, σ′::Float, Δt::Float)
     t = abc.t + Δt
