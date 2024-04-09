@@ -281,6 +281,7 @@ function apply_forcing!(t::Temperature, column, _)
 end
 
 
-# function apply_forcing!(sur::Surcharge, column, I)
-#     error("Not implemented")
-# end
+function apply_forcing!(sur::Surcharge, column, I)
+    surcharge_column = prepare_surcharge_column(sur, column , I)
+    set_surcharge!(column, surcharge_column)
+end

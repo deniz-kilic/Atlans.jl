@@ -15,4 +15,8 @@
         @test all(domain.lithology .== [2, 2, 3, 3, 2])
 
     end
+    
+    @testset "prepare_surcharge_column" begin
+        # TODO: Test if cell thickness of all columns is equal
+    end
 end

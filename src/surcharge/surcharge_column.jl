@@ -32,6 +32,8 @@ end
 
 
 struct SurchargeColumn
+    z::Vector{Float}
+    Δz::Vector{Float}
     groundwater::GroundwaterSurcharge
     consolidation::ConsolidationSurcharge
     oxidation::OxidationSurcharge
