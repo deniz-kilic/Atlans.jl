@@ -38,3 +38,24 @@ function prepare_domain(thickness::Vector, lithology::Vector, Δzmax::Float)
     n = sum(ncells)
     return VerticalDomain(z, Δz, geology, lithology[index], index, n)
 end
+
+
+function prepare_surcharge_column(sur::Surcharge, column::SoilColumn, I::CartesianIndex)
+    domain = prepare_domain(sur.thickness[I], sur.lithology[I], 0.25)
+    domain.z .= surface_level(column) .+ cumsum(domain.Δz) .- 0.5 .* domain.Δz
+    
+    groundwater = initialize(typeof(column.groundwater), column.groundwater.phreatic, domain)
+    oxidation = initialize(eltype(column.oxidation.cells), domain, sur.lookup)
+    shrinkage = initialize(eltype(column.shrinkage.cells), domain, sur.lookup)
+
+    consolidation = initialize(
+        eltype(column.consolidation.cells),
+        typeof(column.consolidation.preconsolidation),
+        domain,
+        sur.lookup
+    )
+
+    surcol = SurchargeColumn(groundwater, consolidation, oxidation, shrinkage)
+    apply_preconsolidation!(surcol)
+    return surcol
+end
