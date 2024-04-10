@@ -400,4 +400,25 @@ function temperature_table()
     return filename
 end
 
+
+function simple_surcharge_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c") do ds
+        defDim(ds, "x", 2)
+        defDim(ds, "y", 3)
+        defDim(ds, "layer", 1)
+        defDim(ds, "time", 1)
+        create_xcoord!(ds, [12.5, 37.5])
+        create_ycoord!(ds, [87.5, 62.5, 37.5])
+        defVar(ds, "layer", [1], ("layer",))
+        defVar(ds, "time", DateTime.(["2020-01-01"]), ("time",))
+        lithology = defVar(ds, "lithology", Int64, ("x", "y", "layer", "time"))
+        thickness = defVar(ds, "thickness", Float64, ("x", "y", "layer", "time"))
+
+        lithology .= 2
+        thickness .= 0.5 # 2 cells will be added
+    end
+    return filename
+end
+
 end # module

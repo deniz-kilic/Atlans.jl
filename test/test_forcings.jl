@@ -4,11 +4,16 @@
         sc = Atlans.StageChange(AtlansFixtures.stage_change_netcdf())
         ds = Atlans.DeepSubsidence(AtlansFixtures.deep_subsidence_netcdf())
         t = Atlans.Temperature(AtlansFixtures.temperature_table())
-        return (
+        sur = Atlans.Surcharge(
+            AtlansFixtures.simple_surcharge_netcdf(),
+            AtlansFixtures.params_table()
+        )
+        return Atlans.Forcings(
             stage_change=sc,
             stage_indexation=si,
             deep_subsidence=ds,
             temperature=t,
+            surcharge=sur
         )
     end
 
@@ -94,5 +99,24 @@
         @test Atlans.phreatic_level(col.groundwater) == 0.5
         Atlans.apply_forcing!(f, col, idx)
         @test Atlans.phreatic_level(col.groundwater) ≈ 0.4
+    end
+
+    @testset "Surcharge" begin
+        model = testing_model()
+        forcings = test_forcings()
+
+        f = Atlans.load_forcing!(forcings, :surcharge, DateTime("2020-01-01"), model)
+        @test all(f.lithology .== 2)
+        @test all(f.thickness .== 0.5)
+
+        for i in eachindex(model.index)
+            idx = model.index[i]
+            col = model.columns[i]
+            ncells = length(col.z)
+
+            Atlans.apply_forcing!(f, col, idx)
+            new_ncells = length(col.z)
+            @test new_ncells == ncells + 2
+        end
     end
 end
