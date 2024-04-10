@@ -98,19 +98,19 @@ function set_surcharge!(con::ConsolidationColumn, sucon::ConsolidationSurcharge)
     append!(con.σ′, sucon.σ′)
     append!(con.p, sucon.p)
     append_preconsolidation!(con.preconsolidation, sucon.preconsolidation)
-    append!(con.result, fill(NaN, length(sucon.cells)))
+    append!(con.result, fill(0.0, length(sucon.cells)))
 end
 
 
 function set_surcharge!(ox::OxidationColumn, suox::OxidationSurcharge)
     append!(ox.cells, suox.cells)
-    append!(ox.result, fill(NaN, length(suox.cells)))
+    append!(ox.result, fill(0.0, length(suox.cells)))
 end
 
 
 function set_surcharge!(shr::ShrinkageColumn, sushr::ShrinkageSurcharge)
     append!(shr.cells, sushr.cells)
-    append!(shr.result, fill(NaN, length(sushr.cells)))
+    append!(shr.result, fill(0.0, length(sushr.cells)))
 end
 
 

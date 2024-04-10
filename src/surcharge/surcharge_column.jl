@@ -117,9 +117,12 @@ function initialize(
     f_minimum_organic = fetch_field(lookup_table, :minimal_mass_fraction_organic, domain)
     α = fetch_field(lookup_table, :oxidation_rate, domain)
 
+    f_organic = 0.0
+    ρb = 833.0 # Standard ρb when parameter is unknown
+
     cells = Vector{CarbonStore}()
     for (i, Δz) in enumerate(domain.Δz)
-        cell = CarbonStore(Δz, 0.0, f_minimum_organic[i], 0.0, α[i])
+        cell = CarbonStore(Δz, f_organic, f_minimum_organic[i], ρb, α[i])
         push!(cells, cell)
     end
 
