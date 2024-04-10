@@ -205,7 +205,7 @@ Setup a simulation from an initialized model.
 function Simulation(
     model::Model,
     path_output::String,
-    stop_time::DateTime,
+    stop_time::DateTime;
     forcings=nothing,
     additional_times=nothing,
 )

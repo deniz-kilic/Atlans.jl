@@ -10,6 +10,7 @@ function set_surcharge!(
 )
     append!(column.z, surcharge.z)
     append!(column.Δz, surcharge.Δz)
+    append!(column.subsidence, fill(NaN, length(surcharge.z)))
 
     set_surcharge!(column.groundwater, surcharge.groundwater)
     set_surcharge!(column.consolidation, surcharge.consolidation)
@@ -97,16 +98,19 @@ function set_surcharge!(con::ConsolidationColumn, sucon::ConsolidationSurcharge)
     append!(con.σ′, sucon.σ′)
     append!(con.p, sucon.p)
     append_preconsolidation!(con.preconsolidation, sucon.preconsolidation)
+    append!(con.result, fill(NaN, length(sucon.cells)))
 end
 
 
 function set_surcharge!(ox::OxidationColumn, suox::OxidationSurcharge)
     append!(ox.cells, suox.cells)
+    append!(ox.result, fill(NaN, length(suox.cells)))
 end
 
 
 function set_surcharge!(shr::ShrinkageColumn, sushr::ShrinkageSurcharge)
     append!(shr.cells, sushr.cells)
+    append!(shr.result, fill(NaN, length(sushr.cells)))
 end
 
 
