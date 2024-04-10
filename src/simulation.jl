@@ -237,7 +237,8 @@ function advance_forcingperiod!(
     stage_indexation=nothing,
     stage_change=nothing,
     aquifer_head=nothing,
-    temperature=nothing
+    temperature=nothing,
+    surcharge=nothing
 )
     timesteps = create_timesteps(model.timestepper, duration)
     @progress for (I, column) in zip(model.index, model.columns)
@@ -263,7 +264,14 @@ function advance_forcingperiod!(
             column_phreatic_change,
         )
         # Apply changes 
-        for forcing in (stage_indexation, deep_subsidence, stage_change, aquifer_head, temperature)
+        for forcing in (
+                stage_indexation,
+                deep_subsidence,
+                stage_change,
+                aquifer_head,
+                temperature,
+                surcharge
+            )
             isnothing(forcing) && continue
             apply_forcing!(forcing, column, I)
         end
@@ -314,7 +322,8 @@ function advance_forcingperiod!(simulation)
         stage_indexation=load_forcing!(forcing, :stage_indexation, time, model),
         stage_change=load_forcing!(forcing, :stage_change, time, model),
         aquifer_head=load_forcing!(forcing, :aquifer_head, time, model),
-        temperature=load_forcing!(forcing, :temperature, time, model)
+        temperature=load_forcing!(forcing, :temperature, time, model),
+        surcharge=load_forcing!(forcing, :surcharge, time, model)
     )
 
     write(simulation.writer, clock, simulation.model.output)
