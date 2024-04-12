@@ -12,23 +12,6 @@
         return array
     end
 
-    function testing_model()
-        path_csv = AtlansFixtures.params_table()
-        path_nc = AtlansFixtures.subsoil_netcdf()
-
-        return Atlans.Model(
-            Atlans.HydrostaticGroundwater,
-            Atlans.DrainingAbcIsotache,
-            Atlans.CarbonStore,
-            Atlans.OverConsolidationRatio,
-            Atlans.SimpleShrinkage,
-            Atlans.AdaptiveCellsize(0.25, 0.01),
-            Atlans.ExponentialTimeStepper(1.0, 2),
-            path_nc,
-            path_csv,
-        )
-    end
-
     @testset "repeat" begin
         out = Atlans.repeat_elements([1.0], 5)
         @test typeof(out) == Array{Float64,1}
@@ -124,7 +107,7 @@
     end
 
     @testset "simulation" begin
-        model = testing_model()
+        model = AtlansFixtures.testing_model()
         path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
         deep_subs = Atlans.DeepSubsidence(path_deep_subsidence)
         forcings = Atlans.Forcings(deep_subsidence=deep_subs)
@@ -143,7 +126,7 @@
     end
 
     @testset "simulation run" begin
-        model = testing_model()
+        model = AtlansFixtures.testing_model()
 
         path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
         path_stage_change = AtlansFixtures.stage_change_netcdf()

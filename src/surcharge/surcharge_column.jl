@@ -157,16 +157,16 @@ ignored.
 """
 function initialize(::Type{NullConsolidation}, preconsolidation::Type, domain, _)
     n = length(domain.z)
-    cells = fill(NullConsolidation(), length(n))
+    cells = fill(NullConsolidation(), n)
     preconsolidation = OverConsolidationRatio(fill(NaN, length(cells)))
 
     ConsolidationSurcharge(
         cells,
         domain.z,
         domain.Δz,
-        fill(NaN, length(n)),
-        fill(NaN, length(n)),
-        fill(NaN, length(n)),
+        fill(NaN, n),
+        fill(NaN, n),
+        fill(NaN, n),
         preconsolidation
     )
 end
@@ -210,6 +210,22 @@ end
 function exchange_pore_pressure!(column::SurchargeColumn)
     column.consolidation.p .= column.groundwater.p * γ_water
 end
+
+
+NullConsolidationSurchargeOcr = ConsolidationSurcharge{
+    NullConsolidation, OverConsolidationRatio
+}
+NullConsolidationSurchargePop = ConsolidationSurcharge{
+    NullConsolidation, PreOverburdenPressure
+}
+apply_preconsolidation!(::NullConsolidationSurchargeOcr) = nothing
+apply_preconsolidation!(::NullConsolidationSurchargePop) = nothing
+total_stress!(::NullConsolidationSurchargeOcr, _) = nothing
+total_stress!(::NullConsolidationSurchargePop, _) = nothing
+effective_stress!(::NullConsolidationSurchargeOcr) = nothing
+effective_stress!(::NullConsolidationSurchargePop) = nothing
+transfer_stress!(::NullConsolidationSurchargeOcr) = nothing
+transfer_stress!(::NullConsolidationSurchargePop) = nothing
 
 
 function apply_preconsolidation!(

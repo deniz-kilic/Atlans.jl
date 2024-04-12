@@ -59,7 +59,17 @@ CartesianIndex reads to lithology and thickness to build the Surcharge column fr
 correct location in the Surcharge forcing input.
 """
 function prepare_surcharge_column(sur::Surcharge, column::SoilColumn, I::CartesianIndex)
-    domain = prepare_domain(sur.thickness[I], sur.lithology[I], 0.25)
+    if ndims(sur.thickness) == 3
+        t = sur.thickness[I, :]
+        l = sur.lithology[I, :]
+    elseif ndims(sur.thickness) == 2 || ndims(sur.thickness) == 1
+        t = sur.thickness[I]
+        l = sur.lithology[I]
+    else
+        error("Incorrect dimensions of Surcharge input, expected (x, y, layer)")
+    end
+
+    domain = prepare_domain(t, l, 0.25) # TODO: make Δzmax alligned with Model instance
     domain.z .= surface_level(column) .+ cumsum(domain.Δz) .- 0.5 .* domain.Δz
     
     groundwater = initialize(typeof(column.groundwater), column.groundwater.phreatic, domain)

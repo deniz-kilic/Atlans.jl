@@ -421,4 +421,63 @@ function simple_surcharge_netcdf()
     return filename
 end
 
+
+function surcharge_profiles_netcdf()
+    filename = tempname()
+    ds = NCDatasets.Dataset(filename, "c") do ds
+        defDim(ds, "x", 2)
+        defDim(ds, "y", 3)
+        defDim(ds, "layer", 2)
+        defDim(ds, "time", 1)
+        create_xcoord!(ds, [12.5, 37.5])
+        create_ycoord!(ds, [87.5, 62.5, 37.5])
+        defVar(ds, "layer", [1, 2], ("layer",))
+        defVar(ds, "time", DateTime.(["2020-01-01"]), ("time",))
+        lithology = defVar(ds, "lithology", Int64, ("x", "y", "layer", "time"))
+        thickness = defVar(ds, "thickness", Float64, ("x", "y", "layer", "time"))
+
+        lithology .= 2
+        thickness[:, :, 1] .= 0.5
+        thickness[:, :, 2] .= 0.25
+    end
+    return filename
+end
+
+
+function test_forcings()
+    si = Atlans.StageIndexation(AtlansFixtures.stage_indexation_netcdf(), 50)
+    sc = Atlans.StageChange(AtlansFixtures.stage_change_netcdf())
+    ds = Atlans.DeepSubsidence(AtlansFixtures.deep_subsidence_netcdf())
+    t = Atlans.Temperature(AtlansFixtures.temperature_table())
+    sur = Atlans.Surcharge(
+        AtlansFixtures.simple_surcharge_netcdf(),
+        AtlansFixtures.params_table()
+    )
+    return Atlans.Forcings(
+        stage_change=sc,
+        stage_indexation=si,
+        deep_subsidence=ds,
+        temperature=t,
+        surcharge=sur
+    )
+end
+
+
+function testing_model()
+    path_csv = AtlansFixtures.params_table()
+    path_nc = AtlansFixtures.subsoil_netcdf()
+
+    return Atlans.Model(
+        Atlans.HydrostaticGroundwater,
+        Atlans.DrainingAbcIsotache,
+        Atlans.CarbonStore,
+        Atlans.OverConsolidationRatio,
+        Atlans.SimpleShrinkage,
+        Atlans.AdaptiveCellsize(0.25, 0.01),
+        Atlans.ExponentialTimeStepper(1.0, 2),
+        path_nc,
+        path_csv,
+    )
+end
+
 end # module
