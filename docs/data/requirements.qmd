@@ -1,0 +1,24 @@
+---
+title: "Dutch use case"
+---
+
+# Input data for a Dutch use case 
+So far, Atlantis has mainly been applied in the Netherlands. Here, the input subsurface model for the modelling with Atlantis is created from a combination of 2D and 3D geological data available at [BRO](https://basisregistratieondergrond.nl/)/[DINO](https://www.dinoloket.nl/) and 2D elevation and 2D groundwater table grids. The main input data sources are listed below:
+
+- [GeoTOP](#geotop) (3D voxelmodel)
+- [BRO Bodemkaart](#bro-bodemkaart) (2D mapping with 3D soilprofiles)
+- [NL3D](#nl3d) (3D voxelmodel)
+- Algemeen Hoogtebestand Nederland ([AHN](#ahn))
+
+
+## GeoTOP
+GeoTOP (found [here](https://dinodata.nl/opendap))
+
+## BRO Bodemkaart
+BRO Bodemkaart (available at [PDOK](https://www.pdok.nl/datasets))
+
+## NL3D 
+NL3D (found [here](https://dinodata.nl/opendap))
+
+## AHN
+AHN (available at [PDOK](https://www.pdok.nl/datasets))

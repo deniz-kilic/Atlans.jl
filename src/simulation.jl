@@ -121,7 +121,7 @@ end
 
 Initialize a model with specified groundwater, consolidation, oxidation and
 shrinkage processes from a netCDF file and CSV lookup table describing the
-subsoil parameters, appropriate for the chosen processes.
+subsurface parameters, appropriate for the chosen processes.
 """
 function Model(
     groundwater::Type,
