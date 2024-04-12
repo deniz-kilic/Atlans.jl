@@ -1,3 +1,6 @@
+abstract type AbstractConsolidationColumn end
+
+
 struct PreOverburdenPressure <: Preconsolidation
     pressure::Vector{Float}
 end
@@ -6,7 +9,7 @@ struct OverConsolidationRatio <: Preconsolidation
     ratio::Vector{Float}
 end
 
-struct ConsolidationColumn{C,P}
+struct ConsolidationColumn{C,P} <: AbstractConsolidationColumn
     cells::Vector{C}
     z::Vector{Float}  # cell center
     Δz::Vector{Float}  # cell height
@@ -53,8 +56,12 @@ function apply_preconsolidation!(
     return
 end
 
+
 function apply_preconsolidation!(
-    column::ConsolidationColumn{ABC,PreOverburdenPressure} where {ABC<:AbstractAbcIsotache},
+    column::ConsolidationColumn{
+        ABC,
+        PreOverburdenPressure
+    } where {ABC<:AbstractAbcIsotache},
 )
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_pop(cell, column.preconsolidation.pressure[i])
@@ -128,7 +135,7 @@ function weight(phreatic_level::Float, zbot::Float, Δz::Float, γ_wet::Float, �
     return weight
 end
 
-function submerged_weight(column::ConsolidationColumn, phreatic)
+function submerged_weight(column::AbstractConsolidationColumn, phreatic)
     surface = column.z[end] + 0.5 * column.Δz[end]
     return (max(0.0, phreatic - surface) * γ_water)
 end
@@ -136,7 +143,7 @@ end
 """
 Compute total stress for entire column
 """
-function total_stress!(column::ConsolidationColumn, phreatic_level)
+function total_stress!(column::AbstractConsolidationColumn, phreatic_level)
     cumulative_weight = submerged_weight(column, phreatic_level)
 
     # Iterate from top to bottom
@@ -155,7 +162,7 @@ end
 """
 Compute effective stress for entire column
 """
-function effective_stress!(column::ConsolidationColumn)
+function effective_stress!(column::AbstractConsolidationColumn)
     @. column.σ′ = column.σ - column.p
     column.σ′[column.σ′.<0.0] .= 0
     return
@@ -164,7 +171,7 @@ end
 """
 Transfer computed stress to the cells of the ConsolidationColumn.
 """
-function transfer_stress!(column::ConsolidationColumn)
+function transfer_stress!(column::AbstractConsolidationColumn)
     for (i, cell) in enumerate(column.cells)
         newcell = @set cell.σ′ = column.σ′[i]
         column.cells[i] = newcell

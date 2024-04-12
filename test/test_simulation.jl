@@ -12,23 +12,6 @@
         return array
     end
 
-    function testing_model()
-        path_csv = AtlansFixtures.params_table()
-        path_nc = AtlansFixtures.subsoil_netcdf()
-
-        return Atlans.Model(
-            Atlans.HydrostaticGroundwater,
-            Atlans.DrainingAbcIsotache,
-            Atlans.CarbonStore,
-            Atlans.OverConsolidationRatio,
-            Atlans.SimpleShrinkage,
-            Atlans.AdaptiveCellsize(0.25, 0.01),
-            Atlans.ExponentialTimeStepper(1.0, 2),
-            path_nc,
-            path_csv,
-        )
-    end
-
     @testset "repeat" begin
         out = Atlans.repeat_elements([1.0], 5)
         @test typeof(out) == Array{Float64,1}
@@ -124,13 +107,18 @@
     end
 
     @testset "simulation" begin
-        model = testing_model()
+        model = AtlansFixtures.testing_model()
         path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
-        forcing = (deep_subsidence=Atlans.DeepSubsidence(path_deep_subsidence),)
-        simulation = Atlans.Simulation(model, tempname(), DateTime("2020-03-01"), forcing)
+        deep_subs = Atlans.DeepSubsidence(path_deep_subsidence)
+        forcings = Atlans.Forcings(deep_subsidence=deep_subs)
+        simulation = Atlans.Simulation(
+            model,
+            tempname(),
+            DateTime("2020-03-01"),
+            forcings=forcings
+        )
 
-        @test simulation.clock.times ==
-              DateTime.(["2020-01-01", "2020-02-01", "2020-03-01"])
+        @test simulation.clock.times == DateTime.(["2020-01-01", "2020-02-01", "2020-03-01"])
         @test simulation.clock.iteration == 1
         @test simulation.clock.stop_time == DateTime("2020-03-01")
 
@@ -138,15 +126,22 @@
     end
 
     @testset "simulation run" begin
-        model = testing_model()
+        model = AtlansFixtures.testing_model()
 
         path_deep_subsidence = AtlansFixtures.deep_subsidence_netcdf()
         path_stage_change = AtlansFixtures.stage_change_netcdf()
-        forcing = (
+        
+        forcings = Atlans.Forcings(
             deep_subsidence=Atlans.DeepSubsidence(path_deep_subsidence),
             stage_change=Atlans.StageChange(path_stage_change),
         )
-        simulation = Atlans.Simulation(model, tempname(), DateTime("2020-03-01"), forcing)
+        
+        simulation = Atlans.Simulation(
+            model,
+            tempname(),
+            DateTime("2020-03-01"), 
+            forcings=forcings
+        )
         Atlans.run!(simulation)
         rm("atlans.log")
     end

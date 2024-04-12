@@ -25,4 +25,5 @@ include("test_column.jl")
 
 include("test_io.jl")
 include("test_forcings.jl")
+include("test_surcharge.jl")
 include("test_simulation.jl")

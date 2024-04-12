@@ -1,8 +1,11 @@
+abstract type HydrostaticColumn <: GroundwaterColumn end
+
+
 mutable struct Phreatic
     ϕ::Float
 end
 
-struct HydrostaticGroundwater <: GroundwaterColumn
+struct HydrostaticGroundwater <: HydrostaticColumn
     z::Vector{Float}
     phreatic::Phreatic
     dry::Vector{Bool}
@@ -25,7 +28,7 @@ function set_phreatic!(hg::HydrostaticGroundwater, ϕ)
 end
 
 
-function pore_pressure!(hg::HydrostaticGroundwater)
+function pore_pressure!(hg::HydrostaticColumn)
     @. hg.p = hg.phreatic.ϕ - hg.z
     @. hg.dry = hg.p < 0.0
     hg.p[hg.dry] .= 0.0
@@ -33,8 +36,8 @@ function pore_pressure!(hg::HydrostaticGroundwater)
 end
 
 
-flow!(hg::HydrostaticGroundwater, _) = pore_pressure!(hg)
-phreatic_level(hg::HydrostaticGroundwater) = hg.phreatic.ϕ
+flow!(hg::HydrostaticColumn, _) = pore_pressure!(hg)
+phreatic_level(hg::HydrostaticColumn) = hg.phreatic.ϕ
 
 
 function initialize(

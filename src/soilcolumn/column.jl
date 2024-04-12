@@ -45,24 +45,6 @@ end
 
 surface_level(column) = column.z[end] + 0.5 * column.Δz[end]
 
-# Forcing
-
-#struct Surcharge{G,C,O}
-#    Δz::Vector{Float}
-#    groundwater::G
-#    consolidation::ConsolidationColumn{C}
-#    oxidation::GroundwaterColumn{O}
-#end
-#
-#function set_surcharge!(
-#    column::SoilColumn,
-#    surcharge,
-#)
-#    set_surcharge!(column.groundwater, surcharge.groundwater)
-#    set_surcharge!(column.consolidation, surcharge.consolidation)
-#    set_surcharge!(column.oxidation, surcharge.oxidation)
-#    return
-#end
 
 function set_deep_subsidence!(column::SoilColumn, subsidence::Float)
     column.base.z -= subsidence

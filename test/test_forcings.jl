@@ -1,39 +1,10 @@
 @testset "Forcings" begin
-    function test_forcings()
-        si = Atlans.StageIndexation(AtlansFixtures.stage_indexation_netcdf(), 50)
-        sc = Atlans.StageChange(AtlansFixtures.stage_change_netcdf())
-        ds = Atlans.DeepSubsidence(AtlansFixtures.deep_subsidence_netcdf())
-        t = Atlans.Temperature(AtlansFixtures.temperature_table())
-        return (
-            stage_change=sc,
-            stage_indexation=si,
-            deep_subsidence=ds,
-            temperature=t,
-        )
-    end
-
-    function testing_model()
-        path_csv = AtlansFixtures.params_table()
-        path_nc = AtlansFixtures.subsoil_netcdf()
-
-        return Atlans.Model(
-            Atlans.HydrostaticGroundwater,
-            Atlans.DrainingAbcIsotache,
-            Atlans.CarbonStore,
-            Atlans.OverConsolidationRatio,
-            Atlans.SimpleShrinkage,
-            Atlans.AdaptiveCellsize(0.25, 0.01),
-            Atlans.ExponentialTimeStepper(1.0, 2),
-            path_nc,
-            path_csv,
-        )
-    end
-
+    
     test_subsidence = [0.05 0.07 0.02; 0.04 0.03 0.05]
 
     @testset "stage indexation" begin
-        model = testing_model()
-        forcings = test_forcings()
+        model = AtlansFixtures.testing_model()
+        forcings = AtlansFixtures.test_forcings()
 
         model.output.subsidence .= test_subsidence
 
@@ -52,8 +23,8 @@
     end
 
     @testset "temperature" begin
-        model = testing_model()
-        forcings = test_forcings()
+        model = AtlansFixtures.testing_model()
+        forcings = AtlansFixtures.test_forcings()
 
         f = Atlans.load_forcing!(forcings, :temperature, DateTime("2020-01-01"), model)
 
@@ -68,8 +39,8 @@
     end
 
     @testset "deep subsidence" begin
-        model = testing_model()
-        forcings = test_forcings()
+        model = AtlansFixtures.testing_model()
+        forcings = AtlansFixtures.test_forcings()
 
         f = Atlans.load_forcing!(forcings, :deep_subsidence, DateTime("2020-01-01"), model)
         @test all(f.subsidence .≈ 0.05)
@@ -82,8 +53,8 @@
     end
 
     @testset "stage change" begin
-        model = testing_model()
-        forcings = test_forcings()
+        model = AtlansFixtures.testing_model()
+        forcings = AtlansFixtures.test_forcings()
 
         f = Atlans.load_forcing!(forcings, :stage_change, DateTime("2020-01-01"), model)
         @test all(f.change .≈ -0.1)
@@ -94,5 +65,48 @@
         @test Atlans.phreatic_level(col.groundwater) == 0.5
         Atlans.apply_forcing!(f, col, idx)
         @test Atlans.phreatic_level(col.groundwater) ≈ 0.4
+    end
+
+    @testset "Simple surcharge" begin
+        model = AtlansFixtures.testing_model()
+        forcings = AtlansFixtures.test_forcings()
+
+        f = Atlans.load_forcing!(forcings, :surcharge, DateTime("2020-01-01"), model)
+        @test all(f.lithology .== 2)
+        @test all(f.thickness .== 0.5)
+
+        for i in eachindex(model.index)
+            idx = model.index[i]
+            col = model.columns[i]
+            ncells = length(col.z)
+
+            Atlans.apply_forcing!(f, col, idx)
+            new_ncells = length(col.z)
+            @test new_ncells == ncells + 2
+        end
+    end
+
+    @testset "Surcharge profile" begin
+        model = AtlansFixtures.testing_model()
+        forcings = Atlans.Forcings(
+            surcharge=Atlans.Surcharge(
+                AtlansFixtures.surcharge_profiles_netcdf(),
+                AtlansFixtures.params_table()
+            )
+        )
+
+        f = Atlans.load_forcing!(forcings, :surcharge, DateTime("2020-01-01"), model)
+        @test all(f.lithology .== 2)
+        @test size(f.thickness) == (2, 3, 2)
+
+        for i in eachindex(model.index)
+            idx = model.index[i]
+            col = model.columns[i]
+            ncells = length(col.z)
+
+            Atlans.apply_forcing!(f, col, idx)
+            new_ncells = length(col.z)
+            @test new_ncells == ncells + 3
+        end
     end
 end
