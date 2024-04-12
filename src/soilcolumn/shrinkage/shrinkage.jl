@@ -4,10 +4,10 @@
 Collection of SimpleShrinkage cells to compute shrinkage for. 
 
 # Arguments:
-- `cells::Vector{S}`: Collection of structs for SimpleShrinkage cell attributes.
+- `cells::Vector{S}`: Collection of cells containing the shrinkage process.
 - `z::Vector{Float}`: Depth of the cells.
 - `Δz::Vector{Float}`: Thickness of the cells.
-- `result::Vector{Float}`: Computed shrinkage of each cell. All NaNs at t=0.
+- `result::Vector{Float}`: Computed shrinkage of each cell.
 - `Hv0::Float`: Absolute depth above phreatic level to compute shrinkage for in cells.
 """
 struct ShrinkageColumn{S}

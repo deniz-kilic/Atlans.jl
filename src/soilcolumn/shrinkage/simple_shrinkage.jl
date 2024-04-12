@@ -6,8 +6,8 @@ Simple voxel with attributes to compute shrinkage for.
 #Arguments
 - `Δz::Float`: Thickness of the voxel. [m]
 - `n::Float`: Shrinkage factor of the voxel. [-]
-- `L::Float`: Mass percentage of lutum.
-- `H::Float`: Mass percentage of organic.
+- `L::Float`: Mass fraction of lutum.
+- `H::Float`: Mass fraction of organic.
 - `τ::Float`: Time dependent factor for shrinkage process. [days]
 - `r::Float`: Direction of shrinkage, r is 3 indicates isoptropic. [-]
 - `sf::Float`: TODO: look-up in document [-]
