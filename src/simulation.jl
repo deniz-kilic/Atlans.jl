@@ -135,7 +135,29 @@ function Model(
     path_lookup,
 )
     subsoil = prepare_subsoil_data(path_subsoil, path_lookup)
+    Model(
+        groundwater,
+        consolidation,
+        oxidation,
+        preconsolidation,
+        shrinkage,
+        adaptive_cellsize,
+        timestepper,
+        subsoil
+    )
+end
 
+
+function Model(
+    groundwater::Type,
+    consolidation::Type,
+    oxidation::Type,
+    preconsolidation::Type,
+    shrinkage::Type,
+    adaptive_cellsize,
+    timestepper,
+    subsoil::SubsoilData,
+)
     x = subsoil.data[:x]
     y = subsoil.data[:y]
     base = subsoil.data[:zbase]
