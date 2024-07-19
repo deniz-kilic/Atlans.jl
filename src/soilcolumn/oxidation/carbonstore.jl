@@ -123,7 +123,7 @@ end
 Initialize an empty OxidationColumn (i.e. oxidation is ignored) at location I.
 """
 function initialize(::Type{NullOxidation}, domain, _, _)
-    cells = Vector{NullOxidation}
+    cells = Vector{NullOxidation}()
     for i in 1:length(domain.Δz)
         push!(cells, NullOxidation())
     end
