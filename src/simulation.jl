@@ -177,7 +177,12 @@ function Model(
     index = Vector{CartesianIndex}()
 
     for I in CartesianIndices(domainbase)
-        (ismissing(domainbase[I]) || ismissing(surface[I]) || ismissing(phreatic[I])) &&
+        (
+            ismissing(domainbase[I])
+            || ismissing(surface[I])
+            || ismissing(phreatic[I])
+            || all(ismissing.(thickness[:, I]))
+            ) &&
             continue
 
         domain = prepare_domain(
