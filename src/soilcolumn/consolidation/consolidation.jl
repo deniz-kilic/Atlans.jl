@@ -149,6 +149,9 @@ function total_stress!(column::AbstractConsolidationColumn, phreatic_level)
     # Iterate from top to bottom
     for index in reverse(eachindex(column.cells))
         cell = column.cells[index]
+        if cell.Δz == 0.0
+            continue
+        end
         zmid = column.z[index]
         zbot = zmid - 0.5 * cell.Δz
         midweight = weight(phreatic_level, zmid, 0.5 * cell.Δz, cell.γ_wet, cell.γ_dry)
