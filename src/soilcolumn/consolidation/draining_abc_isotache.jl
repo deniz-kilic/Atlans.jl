@@ -82,12 +82,13 @@ function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
     # consolidation
     elastoplastic = abc.a * log(σ′ / (σ′ - loadstep))
     creep = abc.c * log(τ / τ⃰)
-    strain = elastoplastic + creep
+    natural_strain = elastoplastic + creep
+
+    linear_strain = 1 - ℯ^(-natural_strain)
 
     # Thickness should not go below 0
-    consolidation = min(abc.Δz, strain * abc.Δz)
-
-
+    consolidation = min(abc.Δz, linear_strain * abc.Δz)
+    
     # return new state
     return DrainingAbcIsotache(
         abc.Δz - consolidation,  # new
