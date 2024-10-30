@@ -18,5 +18,5 @@ Currently, Atlans.jl is not available from the Julia package registry (is planne
 
 Go to the package manager and install Atlantis by:
 ```julia-repl
-pkg> add https://gitlab.com/deltares/subsidence/atlans.jl.git
+pkg> add https://github.com/Deltares-research/Atlans.jl.git
 ```
