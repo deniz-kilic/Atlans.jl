@@ -1,8 +1,8 @@
 name = "Atlans"
 uuid = "1fcd1f08-fdb6-477a-a0aa-3f8f0df25597"
 authors = [
-    "Huite Bootsma <huitebootsma@gmail.com>",
     "Bas Knaake <bas.knaake@deltares.nl",
+    "Huite Bootsma <huitebootsma@gmail.com>",
 ]
 version = "0.1.0"
 
