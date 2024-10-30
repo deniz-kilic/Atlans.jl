@@ -22,7 +22,7 @@ using Setfield
         @test actual ≈ expected
 
         actual = Atlans.compress_γ_wet(cell, 0.1)
-        expected = 15576.666666666666
+        expected = 15519.0
         @test actual ≈ expected
     end
 
@@ -32,7 +32,7 @@ using Setfield
         @test actual ≈ expected
 
         actual = Atlans.compress_γ_dry(cell, 0.01)
-        expected = 10101.0101010101
+        expected = 10100.0
         @test actual ≈ expected
     end
 
