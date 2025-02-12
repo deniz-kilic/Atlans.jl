@@ -1,5 +1,8 @@
 # Atlantis Subsidence (Atlans.jl)
 
+[![CI](https://github.com/Deltares-research/Atlans.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/Deltares-research/Atlans.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Deltares-research/Atlans.jl/graph/badge.svg)](https://codecov.io/gh/Deltares-research/Atlans.jl)
+
 Atlans is package to calculate 1D soil subsidence using voxel based geological and lithological models, such as [GeoTOP](https://basisregistratieondergrond.nl/inhoud-bro/registratieobjecten/modellen/geotop-gtm/) ([Stafleu et al., 2011](https://doi.org/10.1017/S0016774600000597)). The amount of subsidence is calculated over stressperiods which are typically related to groundwater management cycles.
 
 ## Processes which contribute to subsidence
