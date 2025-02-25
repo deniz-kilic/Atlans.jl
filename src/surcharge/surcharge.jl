@@ -31,7 +31,8 @@ function prepare_domain(thickness::Float, lithology::Int, Δzmax::Float)
 	z = fill(NaN, ncells)
 	geology = fill(1, ncells)
 	lithology = fill(lithology, ncells)
-	return VerticalDomain(z, Δz, geology, lithology, index, ncells)
+    zbottom = NaN
+	return VerticalDomain(z, Δz, geology, lithology, index, ncells, zbottom)
 end
 
 
@@ -45,7 +46,8 @@ function prepare_domain(thickness::Vector, lithology::Vector, Δzmax::Float)
 	z = fill(NaN, sum(ncells))
 	geology = fill(1, sum(ncells))
 	n = sum(ncells)
-	return VerticalDomain(z, Δz, geology, lithology[index], index, n)
+    zbottom = NaN
+	return VerticalDomain(z, Δz, geology, lithology[index], index, n, zbottom)
 end
 
 
