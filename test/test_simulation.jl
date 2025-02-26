@@ -62,6 +62,44 @@
 		@test domain.zbottom == -5.0
 	end
 
+	@testset "vertical domain offsetting domainbase" begin
+		modelbase = -2.0
+		surface = 0.0
+		Δzmax = 0.25
+		thickness = fill_optional_float(0.5, 4)
+		geology = fill_optional_int(1, 4)
+		lithology = fill_optional_int(2, 4)
+
+		offsetting_domainbase = -1.1 # Domainbase depth lies in the middle of a voxel
+		domain = Atlans.prepare_domain(
+			offsetting_domainbase,
+			modelbase,
+			surface,
+			thickness,
+			Δzmax,
+			geology,
+			lithology,
+		)
+
+		@test all(domain.z .≈ collect(-1.375:0.25:0.0))
+		@test all(domain.Δz .≈ 0.25)
+		@test domain.n == 6
+		@test domain.zbottom == -1.5 # Make sure zbottom is derived from cells, not domainbase
+
+		matching_domainbase = -1.0 # Domainbase depth lies at the bottom of a voxel
+		domain = Atlans.prepare_domain(
+			matching_domainbase,
+			modelbase,
+			surface,
+			thickness,
+			Δzmax,
+			geology,
+			lithology,
+		)
+		@test domain.n == 4
+		@test domain.zbottom == -1.0
+	end
+
 	@testset "model" begin
 		path_csv = AtlansFixtures.params_table()
 		path_nc = AtlansFixtures.subsoil_netcdf()
