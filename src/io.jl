@@ -153,28 +153,74 @@ function setup_output_netcdf(path, x, y)::NCDataset
         "time",
         Float,
         ("time",),
-        attrib=["units" => time_units, "calendar" => calendar],
+        attrib=["units" => time_units, "calendar" => calendar,
+        "axis" => "T", "long_name" => "time", "standard_name" => "time"],
     )
     defVar(
         ds,
         "x",
         x,
         ("x",),
-        attrib=["standard_name" => "projection_x_coordinate", "axis" => "X"],
+        attrib=["long_name" => "x-coordinate in cartesian system",
+        "standard_name" => "projection_x_coordinate", 
+        "axis" => "X", "units" => "Meter",
+        "cell_size" => 100.0],
+            
     )
     defVar(
         ds,
         "y",
         y,
         ("y",),
-        attrib=["standard_name" => "projection_y_coordinate", "axis" => "Y"],
+        attrib=[ "long_name" => "y-coordinate in cartesian system", 
+        "standard_name" => "projection_y_coordinate", "axis" => "Y", 
+        "grid_mapping" => "oblique_stereographic", "units" => "Meter",
+        "cell_size" => 100.0],
     )
 
-    defVar(ds, "phreatic_level", Float, ("x", "y", "time"))
-    defVar(ds, "consolidation", Float, ("x", "y", "time"))
-    defVar(ds, "oxidation", Float, ("x", "y", "time"))
-    defVar(ds, "shrinkage", Float, ("x", "y", "time"))
-    defVar(ds, "subsidence", Float, ("x", "y", "time"))
+    ds.attrib["Conventions"] = "CF-1.6"
+    ds.attrib["title"] = "Land subsidence output"
+    ds.attrib["pixel_size_x"] = 100.0
+    ds.attrib["pixel_size_y"] = 100.0                    
+                    
+    defVar(ds, "oblique_stereographic",
+            Int32,[],
+            attrib=["grid_mapping_name" => "oblique_stereographic",
+                    "longitude_of_central_meridian" => 5.38763888888889,
+                    "false_easting" => 155000.,
+                    "false_northing" => 463000.,
+                    "latitude_of_projection_origin" => 52.1561605555556,
+                    "scale_factor_at_central_meridian" => 0.9999079,
+                    "scale_factor_at_projection_origin" => 0.9999079,
+                    "long_name" => "CRS definition",
+                    "longitude_prime_meridian" => 0.0,
+                    "semi_major_axis" => 6378137.155,
+                    "inverse_flattening" => 299.1528128,                                        
+                    "spatial_ref" => "PROJCS[\"Amersfoort / RD New\",GEOGCS[\"Amersfoort\",DATUM[\"Amersfoort\",SPHEROID[\"Bessel 1841\",6377397.155,299.1528128,AUTHORITY[\"EPSG\",\"7004\"]],AUTHORITY[\"EPSG\",\"6289\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4289\"]],PROJECTION[\"Oblique_Stereographic\"],PARAMETER[\"latitude_of_origin\",52.15616055555555],PARAMETER[\"central_meridian\",5.38763888888889],PARAMETER[\"scale_factor\",0.9999079],PARAMETER[\"false_easting\",155000],PARAMETER[\"false_northing\",463000],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"X\",EAST],AXIS[\"Y\",NORTH],AUTHORITY[\"EPSG\",\"28992\"]]",                    
+                    "EPSG" => 28992]
+                    )
+
+
+    defVar(ds, "phreatic_level", Float, ("x", "y", "time"), 
+            attrib=["units" => "m",
+            "grid_mapping" => "oblique_stereographic"])
+    defVar(ds, "consolidation", Float, ("x", "y", "time"),
+            attrib=["units" => "m",
+            "coordinates" => "x y",
+            "grid_mapping" => "oblique_stereographic"])
+    defVar(ds, "oxidation", Float, ("x", "y", "time"), 
+            attrib=["units" => "m",
+            "coordinates" => "x y",
+            "grid_mapping" => "oblique_stereographic"])
+    defVar(ds, "shrinkage", Float, ("x", "y", "time"), 
+            attrib=["units" => "m",
+            "coordinates" => "x y",
+            "grid_mapping" => "oblique_stereographic"])
+    defVar(ds, "subsidence", Float, ("x", "y", "time"), 
+            attrib=["units" => "m",
+            "coordinates" => "x y",
+            "positive" => "down",
+            "grid_mapping" => "oblique_stereographic"])
     return ds
 end
 

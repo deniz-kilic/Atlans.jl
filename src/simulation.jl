@@ -15,13 +15,14 @@ struct Writer
 end
 
 struct Output
-	x::Vector{Float}
-	y::Vector{Float}
-	phreatic_level::Array{Float}
-	consolidation::Array{Float}
-	oxidation::Array{Float}
-	shrinkage::Array{Float}
-	subsidence::Array{Float}
+    x::Vector{Float}
+    y::Vector{Float}
+    oblique_stereographic::Array{Int32}
+    phreatic_level::Array{Float}
+    consolidation::Array{Float}
+    oxidation::Array{Float}
+    shrinkage::Array{Float}
+    subsidence::Array{Float}
 end
 
 
@@ -224,7 +225,7 @@ function Model(
 	shape = size(domainbase)
 	fillnan() = fill(NaN, shape)
 
-	output = Output(x, y, fillnan(), fillnan(), fillnan(), fillnan(), fillnan())
+    output = Output(x, y, Int32[],fillnan(), fillnan(), fillnan(), fillnan(), fillnan())
 
 	return Model(columns, index, timestepper, adaptive_cellsize, output)
 end
