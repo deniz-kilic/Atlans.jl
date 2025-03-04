@@ -17,11 +17,11 @@ end
 struct Output
 	x::Vector{Float}
 	y::Vector{Float}
-	phreatic_level::Array{Float}
-	consolidation::Array{Float}
-	oxidation::Array{Float}
-	shrinkage::Array{Float}
-	subsidence::Array{Float}
+	phreatic_level::Array{Float, 2}
+	consolidation::Array{Float, 2}
+	oxidation::Array{Float, 2}
+	shrinkage::Array{Float, 2}
+	subsidence::Array{Float, 2}
 end
 
 
@@ -107,7 +107,7 @@ function prepare_domain(
 	z = zbot[base_index] .+ cumsum(Δz) .- 0.5 .* Δz
 	n = sum(ncells)
 	index .+= (base_index - 1)
-    zbottom = zbot[base_index]
+	zbottom = zbot[base_index]
 	return VerticalDomain(z, Δz, geology[index], lithology[index], index, n, zbottom)
 end
 
@@ -214,7 +214,7 @@ function Model(
 			o_column,
 			s_column,
 		)
-		# Set values such as preconsolidation stress, τ0, etc.        
+		# Set values such as preconsolidation stress, τ0, etc.
 		# This requires groundwater: pore pressure, etc.
 		apply_preconsolidation!(column)
 		push!(columns, column)
@@ -232,7 +232,7 @@ end
 
 """
 	Simulation(model, path_output, stop_time, forcings, additional_times)
-	
+
 Setup a simulation from an initialized model.
 """
 function Simulation(
@@ -296,7 +296,7 @@ function advance_forcingperiod!(
 			column_subsidence,
 			column_phreatic_change,
 		)
-		# Apply changes 
+		# Apply changes
 		for forcing in (
 			stage_indexation,
 			deep_subsidence,
