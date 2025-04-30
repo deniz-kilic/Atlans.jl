@@ -39,7 +39,7 @@
 AdaptiveCellsize(Δzmax::Float, split_tolerance::Float)
 ```
 
-Logic for splitting a column to accomodate for a moving phreatic level in combination with organic matter stores. Handles how the thickness of thick voxels  (>Δzmax) should be discretized and determines when splitting occurs. If the thickness of a cell above, or below, the groundwater table is lower than the tolerance, no splitting occurs.
+Logic for splitting cells in a column to accomodate for a moving phreatic level in combination with organic matter stores. Handles how the thickness of thick voxels  (>Δzmax) should be discretized and determines when splitting occurs. If the thickness of a cell above, or below, the groundwater table is lower than the tolerance, no splitting occurs.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -53,7 +53,7 @@ Logic for splitting a column to accomodate for a moving phreatic level in combin
 Clock(time::Vector{DateTime}, iteration::int, stop_time::DateTime)
 ```
 
-Clock object that keeps track of the stress periods, iterations in a Simulation and stop time of the Simulation.
+Object to keep track of the stress periods, number of iterations and stop time of an Atlantis Simulation.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -79,19 +79,19 @@ Struct to discretize time steps (in days) within each stress period.
 
 ```julia
 Model(
-    groundwater::Type,
-    consolidation::Type,
-    oxidation::Type,
-    preconsolidation::Type,
-    shrinkage::Type,
-    adaptive_cellsize,
-    timestepper,
-    path_subsoil,
-    path_lookup
+	groundwater::Type,
+	consolidation::Type,
+	oxidation::Type,
+	preconsolidation::Type,
+	shrinkage::Type,
+	adaptive_cellsize,
+	timestepper,
+	path_subsoil,
+	path_lookup
 )
 ```
 
-Initialize a model with specified groundwater, consolidation, oxidation and shrinkage processes from a netCDF file and CSV lookup table describing the subsoil parameters, appropriate for the chosen processes.
+Initialize a model with specified groundwater, consolidation, oxidation and shrinkage processes from a netCDF file and CSV lookup table describing the subsurface parameters, appropriate for the chosen processes.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -143,13 +143,13 @@ Simple voxel with attributes to compute shrinkage for.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
-<a id='Atlans.Simulation' href='#Atlans.Simulation'>#</a>
-**`Atlans.Simulation`** &mdash; *Type*.
+<a id='Atlans.Simulation-Tuple{Atlans.Model, String, Dates.DateTime}' href='#Atlans.Simulation-Tuple{Atlans.Model, String, Dates.DateTime}'>#</a>
+**`Atlans.Simulation`** &mdash; *Method*.
 
 
 
 ```julia
-Simulation(model, path_output, stop_time)
+Simulation(model, path_output, stop_time, forcings, additional_times)
 ```
 
 Setup a simulation from an initialized model.
@@ -395,7 +395,7 @@ Turn a collection of vectors into a collection of DrainingAbcIsotache cells.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
-<a id='Atlans.effective_stress!-Tuple{Atlans.ConsolidationColumn}' href='#Atlans.effective_stress!-Tuple{Atlans.ConsolidationColumn}'>#</a>
+<a id='Atlans.effective_stress!-Tuple{Atlans.AbstractConsolidationColumn}' href='#Atlans.effective_stress!-Tuple{Atlans.AbstractConsolidationColumn}'>#</a>
 **`Atlans.effective_stress!`** &mdash; *Method*.
 
 
@@ -431,6 +431,20 @@ Initialize a OxidationColumn for a domain at location I based subsurface input.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
+<a id='Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Atlans.VerticalDomain, Dict}' href='#Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Atlans.VerticalDomain, Dict}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(::Type{CarbonStore}, domain::VerticalDomain, lookup_table::Dict)
+```
+
+Initialize a OxidationSurcharge column that can be added to an OxidationColumn when Surcharge is applied as a forcing during a forcingperiod.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
 <a id='Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any}' href='#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any}'>#</a>
 **`Atlans.initialize`** &mdash; *Method*.
 
@@ -441,6 +455,53 @@ initialize(::Type{DrainingAbcIsotache}, domain, subsoil, I)
 ```
 
 Initialize a ConsolidationColumn for a domain at location I based subsurface input.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Atlans.VerticalDomain, Dict}' href='#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Atlans.VerticalDomain, Dict}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(
+    ::Type{DrainingAbcIsotache},
+    preconsolidation::Type,
+    domain::VerticalDomain,
+    lookup_table::Dict
+)
+```
+
+Initialize a ConsolidationSurcharge column that can be added to a ConsolidationColumn when Surcharge is applied as a forcing during a forcingperiod.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.initialize-Tuple{Type{Atlans.HydrostaticGroundwater}, Atlans.Phreatic, Atlans.VerticalDomain}' href='#Atlans.initialize-Tuple{Type{Atlans.HydrostaticGroundwater}, Atlans.Phreatic, Atlans.VerticalDomain}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(::Type{HydrostaticGroundwater}, phreatic::Phreatic, domain::VerticalDomain)
+```
+
+Initialize a GroundwaterSurcharge column that can be added to a HydrostaticGroundwater column when Surcharge is applied as a forcing during a forcingperiod.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Type, Any, Any}' href='#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Type, Any, Any}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(::Type{NullConsolidation}, preconsolidation::Type, domain, _)
+```
+
+Initialize an empty ConsolidationSurcharge column when the consolidation process is ignored.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -473,6 +534,20 @@ Initialize an empty OxidationColumn (i.e. oxidation is ignored) at location I.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
+<a id='Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any}' href='#Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(::Type{NullOxidation}, domain, _)
+```
+
+Initialize an empty OxidationSurcharge column when the oxidation process is ignored.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
 <a id='Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any, Any}' href='#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any, Any}'>#</a>
 **`Atlans.initialize`** &mdash; *Method*.
 
@@ -487,6 +562,20 @@ Initialize an empty ShrinkageColumn (i.e. shrinkage is ignored) at location I.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
+<a id='Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any}' href='#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(::Type{NullShrinkage}, domain, _)
+```
+
+Initialize an empty ShrinkageSurcharge column when the shrinkage process is ignored.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
 <a id='Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any}' href='#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any}'>#</a>
 **`Atlans.initialize`** &mdash; *Method*.
 
@@ -497,6 +586,20 @@ initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
 ```
 
 Initialize a ShrinkageColumn for a domain at location I based subsurface input.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Atlans.VerticalDomain, Dict}' href='#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Atlans.VerticalDomain, Dict}'>#</a>
+**`Atlans.initialize`** &mdash; *Method*.
+
+
+
+```julia
+initialize(::Type{SimpleShrinkage}, domain::VerticalDomain, lookup_table::Dict)
+```
+
+Initialize a ShrinkageSurcharge column that can be added to an ShrinkageColumn when Surcharge is applied as a forcing during a forcingperiod.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -588,6 +691,20 @@ Reset degree of consolidation and time.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
+<a id='Atlans.prepare_surcharge_column-Tuple{Atlans.Surcharge, Atlans.SoilColumn, CartesianIndex}' href='#Atlans.prepare_surcharge_column-Tuple{Atlans.Surcharge, Atlans.SoilColumn, CartesianIndex}'>#</a>
+**`Atlans.prepare_surcharge_column`** &mdash; *Method*.
+
+
+
+```julia
+prepare_surcharge_column(sur::Surcharge, column::SoilColumn, I::CartesianIndex)
+```
+
+Create a SurchargeColumn with correct groundwater, consolidation, oxidation and shrinkage Surcharge columns. The correct Atlantis processes (e.g. DrainingAbcIsotache) that each of the Surcharge columns are built-up from, are derived from the input SoilColumn. The CartesianIndex reads to lithology and thickness to build the Surcharge column from at the correct location in the Surcharge forcing input.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
 <a id='Atlans.prepare_timestep!-Tuple{Atlans.SoilColumn, Any}' href='#Atlans.prepare_timestep!-Tuple{Atlans.SoilColumn, Any}'>#</a>
 **`Atlans.prepare_timestep!`** &mdash; *Method*.
 
@@ -606,6 +723,20 @@ This computes:
 * Total stress
 * Effective stress
 ```
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
+<a id='Atlans.prepare_timestep!-Tuple{Atlans.SurchargeColumn, Any}' href='#Atlans.prepare_timestep!-Tuple{Atlans.SurchargeColumn, Any}'>#</a>
+**`Atlans.prepare_timestep!`** &mdash; *Method*.
+
+
+
+```julia
+prepare_timestep!(column::SurchargeColumn, Δt)
+```
+
+Set the initial stresses for a SurchargeColumn.
 
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
@@ -654,6 +785,20 @@ Collect the period boundaries from the forcing input.
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
+<a id='Atlans.set_surcharge!-Tuple{Atlans.SoilColumn, Atlans.SurchargeColumn}' href='#Atlans.set_surcharge!-Tuple{Atlans.SoilColumn, Atlans.SurchargeColumn}'>#</a>
+**`Atlans.set_surcharge!`** &mdash; *Method*.
+
+
+
+```julia
+set_surcharge!(column::SoilColumn, surcharge::SurchargeColumn)
+```
+
+Combine a SoilColumn and SurchargeColumn when Surcharge is added as a forcing during a forcingperiod.
+
+
+<a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
+
 <a id='Atlans.shrink-Tuple{Atlans.SimpleShrinkage, Float64}' href='#Atlans.shrink-Tuple{Atlans.SimpleShrinkage, Float64}'>#</a>
 **`Atlans.shrink`** &mdash; *Method*.
 
@@ -687,7 +832,7 @@ Apply consolidation, oxidation and shrinkage to thickness
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
-<a id='Atlans.total_stress!-Tuple{Atlans.ConsolidationColumn, Any}' href='#Atlans.total_stress!-Tuple{Atlans.ConsolidationColumn, Any}'>#</a>
+<a id='Atlans.total_stress!-Tuple{Atlans.AbstractConsolidationColumn, Any}' href='#Atlans.total_stress!-Tuple{Atlans.AbstractConsolidationColumn, Any}'>#</a>
 **`Atlans.total_stress!`** &mdash; *Method*.
 
 
@@ -697,7 +842,7 @@ Compute total stress for entire column
 
 <a target='_blank' href='https://gitlab.com/deltares/subsidence/atlans.jl.git' class='documenter-source'>source</a><br>
 
-<a id='Atlans.transfer_stress!-Tuple{Atlans.ConsolidationColumn}' href='#Atlans.transfer_stress!-Tuple{Atlans.ConsolidationColumn}'>#</a>
+<a id='Atlans.transfer_stress!-Tuple{Atlans.AbstractConsolidationColumn}' href='#Atlans.transfer_stress!-Tuple{Atlans.AbstractConsolidationColumn}'>#</a>
 **`Atlans.transfer_stress!`** &mdash; *Method*.
 
 
@@ -784,19 +929,19 @@ Weight of (part of) a single cell
 - [`Atlans.Model`](index.md#Atlans.Model-Tuple{Type, Type, Type, Type, Type, Vararg{Any, 4}})
 - [`Atlans.ShrinkageColumn`](index.md#Atlans.ShrinkageColumn)
 - [`Atlans.SimpleShrinkage`](index.md#Atlans.SimpleShrinkage)
-- [`Atlans.Simulation`](index.md#Atlans.Simulation)
+- [`Atlans.Simulation`](index.md#Atlans.Simulation-Tuple{Atlans.Model, String, Dates.DateTime})
 - [`Atlans.SoilColumn`](index.md#Atlans.SoilColumn)
 - [`Atlans.VerticalDomain`](index.md#Atlans.VerticalDomain)
 - [`Atlans.Qcreep_derivative`](index.md#Atlans.Qcreep_derivative-Tuple{Atlans.AbcIsotache, Float64, Float64})
 - [`Atlans.U`](index.md#Atlans.U-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.add_time`](index.md#Atlans.add_time-Tuple{Any, Any})
 - [`Atlans.advance!`](index.md#Atlans.advance!-Tuple{Any})
-- [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Atlans.SoilColumn, Vector{Float64}})
-- [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Any, Any})
 - [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Any})
+- [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Any, Any})
+- [`Atlans.advance_forcingperiod!`](index.md#Atlans.advance_forcingperiod!-Tuple{Atlans.SoilColumn, Vector{Float64}})
 - [`Atlans.advance_timestep!`](index.md#Atlans.advance_timestep!-Tuple{Atlans.SoilColumn, Float64})
-- [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Atlans.OxidationColumn{Atlans.CarbonStore}, Vararg{Any, 4}})
 - [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Union{Atlans.ConsolidationColumn{Atlans.NullConsolidation, Atlans.OverConsolidationRatio}, Atlans.OxidationColumn{Atlans.NullOxidation}, Atlans.ShrinkageColumn{Atlans.NullShrinkage}}, Vararg{Any, 4}})
+- [`Atlans.cellsplit!`](index.md#Atlans.cellsplit!-Tuple{Atlans.OxidationColumn{Atlans.CarbonStore}, Vararg{Any, 4}})
 - [`Atlans.compress_γ_dry`](index.md#Atlans.compress_γ_dry-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.compress_γ_wet`](index.md#Atlans.compress_γ_wet-Tuple{Atlans.ConsolidationProcess, Float64})
 - [`Atlans.consolidate`](index.md#Atlans.consolidate-Tuple{Atlans.DrainingAbcIsotache, Any, Any})
@@ -804,29 +949,39 @@ Weight of (part of) a single cell
 - [`Atlans.currenttime`](index.md#Atlans.currenttime-Tuple{Any})
 - [`Atlans.discretize`](index.md#Atlans.discretize-Tuple{Any, Float64})
 - [`Atlans.draining_abc_isotache_column`](index.md#Atlans.draining_abc_isotache_column-NTuple{8, Any})
-- [`Atlans.effective_stress!`](index.md#Atlans.effective_stress!-Tuple{Atlans.ConsolidationColumn})
+- [`Atlans.effective_stress!`](index.md#Atlans.effective_stress!-Tuple{Atlans.AbstractConsolidationColumn})
 - [`Atlans.formulate`](index.md#Atlans.formulate-Tuple{Atlans.AbcIsotache, Vararg{Float64, 4}})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Vararg{Any, 4}})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Any, Any, Any})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any, Any})
-- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any})
 - [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Atlans.VerticalDomain, Dict})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Type, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.DrainingAbcIsotache}, Type, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullShrinkage}, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullOxidation}, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Any, Any, Any})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.CarbonStore}, Atlans.VerticalDomain, Dict})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.SimpleShrinkage}, Atlans.VerticalDomain, Dict})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.HydrostaticGroundwater}, Atlans.Phreatic, Atlans.VerticalDomain})
+- [`Atlans.initialize`](index.md#Atlans.initialize-Tuple{Type{Atlans.NullConsolidation}, Vararg{Any, 4}})
 - [`Atlans.parse_loglevel`](index.md#Atlans.parse_loglevel-Tuple{AbstractString})
 - [`Atlans.periodduration`](index.md#Atlans.periodduration-Tuple{Any})
 - [`Atlans.pow`](index.md#Atlans.pow-Tuple{Any, Any})
 - [`Atlans.prepare_domain`](index.md#Atlans.prepare_domain-NTuple{7, Any})
-- [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!-Tuple{Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, P} where P<:Atlans.Preconsolidation})
 - [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!)
+- [`Atlans.prepare_forcingperiod!`](index.md#Atlans.prepare_forcingperiod!-Tuple{Atlans.ConsolidationColumn{Atlans.DrainingAbcIsotache, P} where P<:Atlans.Preconsolidation})
+- [`Atlans.prepare_surcharge_column`](index.md#Atlans.prepare_surcharge_column-Tuple{Atlans.Surcharge, Atlans.SoilColumn, CartesianIndex})
+- [`Atlans.prepare_timestep!`](index.md#Atlans.prepare_timestep!-Tuple{Atlans.SurchargeColumn, Any})
 - [`Atlans.prepare_timestep!`](index.md#Atlans.prepare_timestep!-Tuple{Atlans.SoilColumn, Any})
 - [`Atlans.relative_oxidation_rate`](index.md#Atlans.relative_oxidation_rate)
 - [`Atlans.repeat_elements`](index.md#Atlans.repeat_elements-Tuple{Any, Any})
 - [`Atlans.run!`](index.md#Atlans.run!-Tuple{Any})
 - [`Atlans.set_periods!`](index.md#Atlans.set_periods!-Tuple{Any, Any})
+- [`Atlans.set_surcharge!`](index.md#Atlans.set_surcharge!-Tuple{Atlans.SoilColumn, Atlans.SurchargeColumn})
 - [`Atlans.shrink`](index.md#Atlans.shrink-Tuple{Atlans.SimpleShrinkage, Float64})
 - [`Atlans.subside!`](index.md#Atlans.subside!-Tuple{Atlans.SoilColumn})
-- [`Atlans.total_stress!`](index.md#Atlans.total_stress!-Tuple{Atlans.ConsolidationColumn, Any})
-- [`Atlans.transfer_stress!`](index.md#Atlans.transfer_stress!-Tuple{Atlans.ConsolidationColumn})
+- [`Atlans.total_stress!`](index.md#Atlans.total_stress!-Tuple{Atlans.AbstractConsolidationColumn, Any})
+- [`Atlans.transfer_stress!`](index.md#Atlans.transfer_stress!-Tuple{Atlans.AbstractConsolidationColumn})
 - [`Atlans.update_alpha`](index.md#Atlans.update_alpha-Tuple{Atlans.CarbonStore, Float64})
 - [`Atlans.update_z!`](index.md#Atlans.update_z!-Tuple{Atlans.SoilColumn})
 - [`Atlans.volume_organic`](index.md#Atlans.volume_organic-Tuple{Any, Any})
