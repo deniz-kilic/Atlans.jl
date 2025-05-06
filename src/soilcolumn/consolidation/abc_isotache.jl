@@ -1,6 +1,6 @@
 
 # compute intrinsic time (τ)
-function set_τ0_ocr(abc::ABC, ocr::Float) where {ABC<:AbstractAbcIsotache}
+function set_τ0_ocr(abc::ABC, ocr::Float) where {ABC <: AbstractAbcIsotache}
     if abc.c < 1.0e-4
         τ = 1.0e-9
     else
@@ -10,7 +10,7 @@ function set_τ0_ocr(abc::ABC, ocr::Float) where {ABC<:AbstractAbcIsotache}
 end
 
 
-function set_τ0_pop(abc::ABC, pop::Float) where {ABC<:AbstractAbcIsotache}
+function set_τ0_pop(abc::ABC, pop::Float) where {ABC <: AbstractAbcIsotache}
     ocr = (abc.σ′ + pop * 1.0e3) / abc.σ′
     return set_τ0_ocr(abc, ocr)
 end

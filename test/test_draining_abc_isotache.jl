@@ -41,7 +41,7 @@
         new_cell = Atlans.consolidate(cell, σ′, Δt)
         @test new_cell.consolidation > 0.0
         @test typeof(new_cell) == Atlans.DrainingAbcIsotache
-        @test isapprox(new_cell.consolidation, 0.006, atol=0.0001)
+        @test isapprox(new_cell.consolidation, 0.006, atol = 0.0001)
     end
 
 end

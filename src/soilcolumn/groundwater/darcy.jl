@@ -35,12 +35,12 @@ function harmonicmean_conductance(k1, k2, Δz1, Δz2)
 end
 
 function conductance!(column::DarcyColumn)
-    for i = 1:(length(column.ϕ)-1)
+    for i in 1:(length(column.ϕ) - 1)
         column.conductance[i] = harmonicmean_conductance(
             column.k[i],
-            column.k[i+1],
+            column.k[i + 1],
             column.Δz[i],
-            column.Δz[i+1],
+            column.Δz[i + 1],
         )
     end
     return
@@ -61,7 +61,7 @@ function formulate!(column::DarcyColumn, solution::NumericalSolution, Δt::Float
     solution.rhs .= 0.0
     # dv is diagonal value
     solution.A.dv[1] = -column.conductance[1]
-    solution.A.dv[2:end-1] .= -2 * column.conductance[2:end]
+    solution.A.dv[2:(end - 1)] .= -2 * column.conductance[2:end]
     solution.A.dv[end] = -column.conductance[1]
     # ev is off-diagonal value
     solution.A.ev .= column.conductance
@@ -84,12 +84,12 @@ function formulate!(column::DarcyColumn, solution::NumericalSolution, Δt::Float
         # Disconnect neighbor and add to rhs; conductance is already included
         # in diagonal above.
         if i > 1
-            solution.A.ev[i-1] = 0.0
-            solution.rhs[i-1] -= column.conductance[i-1] * ϕ
+            solution.A.ev[i - 1] = 0.0
+            solution.rhs[i - 1] -= column.conductance[i - 1] * ϕ
         end
         if i < n
             solution.A.ev[i] = 0.0
-            solution.rhs[i+1] -= column.conductance[i] * ϕ
+            solution.rhs[i + 1] -= column.conductance[i] * ϕ
         end
 
     end
@@ -104,7 +104,7 @@ Formulate system of equations for abc-isotache.
 Contains a (linear) storage term, and a (linearized) creep flux.
 """
 function formulate!(column::ConsolidationColumn, solution::NumericalSolution, Δt::Float)
-    for i = 1:length(column.cells)
+    for i in 1:length(column.cells)
         cell = column.cells[i]
         hcof, rhs = formulate(cell, solution.ϕ[i], column.z[i], column.σ[i], Δt)
         solution.A.dv[i] += hcof
@@ -117,7 +117,7 @@ end
 Formulate system of equations for abc-isotache.
 """
 function formulate__!(column::ConsolidationColumn, solution::NumericalSolution, Δt::Float)
-    for i = 1:length(column.cells)
+    for i in 1:length(column.cells)
         cell = column.cells[i]
         σ′ = column.σ[i] - γ_water * (solution.ϕ[i] - column.z[i])
         solution.rhs[i] -= cell.Δz * Qcreep(cell, σ′, Δt)

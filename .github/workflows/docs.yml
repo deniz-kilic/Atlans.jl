@@ -3,8 +3,8 @@ name: Atlans documentation
 on:
   push:
     branches: [main]
-    # paths:
-    # - 'docs/**'
+    paths:
+    - 'docs/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

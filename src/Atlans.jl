@@ -13,8 +13,8 @@ using LoggingExtras
 using TerminalLoggers
 
 const Float = Float64
-const OptionalFloat = Union{Float,Missing}
-const OptionalInt = Union{Int,Missing}
+const OptionalFloat = Union{Float, Missing}
+const OptionalInt = Union{Int, Missing}
 const γ_water = 9810.0
 const τ_ref = 1.0
 const ρw = 1000.0

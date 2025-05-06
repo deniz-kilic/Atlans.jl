@@ -1,4 +1,4 @@
-struct ConsolidationSurcharge{C,P} <: AbstractConsolidationColumn
+struct ConsolidationSurcharge{C, P} <: AbstractConsolidationColumn
     cells::Vector{C}
     z::Vector{Float}
     Δz::Vector{Float}
@@ -50,13 +50,13 @@ when Surcharge is applied as a forcing during a forcingperiod.
 function initialize(
     ::Type{HydrostaticGroundwater},
     phreatic::Phreatic,
-    domain::VerticalDomain
+    domain::VerticalDomain,
 )
     GroundwaterSurcharge(
         domain.z,
         phreatic,
         fill(true, length(domain.z)),
-        fill(0.0, length(domain.z))
+        fill(0.0, length(domain.z)),
     )
 end
 
@@ -98,8 +98,7 @@ function initialize(
     σ′ = fill(NaN, length(cells))
     p = fill(NaN, length(cells))
 
-    ConsolidationSurcharge(
-        cells, domain.z, domain.Δz, σ, σ′, p, precon)
+    ConsolidationSurcharge(cells, domain.z, domain.Δz, σ, σ′, p, precon)
 end
 
 
@@ -109,11 +108,7 @@ end
 Initialize a OxidationSurcharge column that can be added to an OxidationColumn when
 Surcharge is applied as a forcing during a forcingperiod.
 """
-function initialize(
-    ::Type{CarbonStore},
-    domain::VerticalDomain,
-    lookup_table::Dict,
-)
+function initialize(::Type{CarbonStore}, domain::VerticalDomain, lookup_table::Dict)
     f_minimum_organic = fetch_field(lookup_table, :minimal_mass_fraction_organic, domain)
     α = fetch_field(lookup_table, :oxidation_rate, domain)
 
@@ -136,11 +131,7 @@ end
 Initialize a ShrinkageSurcharge column that can be added to an ShrinkageColumn when
 Surcharge is applied as a forcing during a forcingperiod.
 """
-function initialize(
-    ::Type{SimpleShrinkage},
-    domain::VerticalDomain,
-    lookup_table::Dict,
-)
+function initialize(::Type{SimpleShrinkage}, domain::VerticalDomain, lookup_table::Dict)
     n = 0.5 # minimum shrinkage degree, no shrinkage occurs
     mass_lutum = 0.0
     mass_organic = 0.0
@@ -167,7 +158,7 @@ function initialize(::Type{NullConsolidation}, preconsolidation::Type, domain, _
         fill(NaN, n),
         fill(NaN, n),
         fill(NaN, n),
-        preconsolidation
+        preconsolidation,
     )
 end
 
@@ -212,12 +203,10 @@ function exchange_pore_pressure!(column::SurchargeColumn)
 end
 
 
-NullConsolidationSurchargeOcr = ConsolidationSurcharge{
-    NullConsolidation, OverConsolidationRatio
-}
-NullConsolidationSurchargePop = ConsolidationSurcharge{
-    NullConsolidation, PreOverburdenPressure
-}
+NullConsolidationSurchargeOcr =
+    ConsolidationSurcharge{NullConsolidation, OverConsolidationRatio}
+NullConsolidationSurchargePop =
+    ConsolidationSurcharge{NullConsolidation, PreOverburdenPressure}
 apply_preconsolidation!(::NullConsolidationSurchargeOcr) = nothing
 apply_preconsolidation!(::NullConsolidationSurchargePop) = nothing
 total_stress!(::NullConsolidationSurchargeOcr, _) = nothing
@@ -232,7 +221,7 @@ function apply_preconsolidation!(
     column::ConsolidationSurcharge{
         ABC,
         OverConsolidationRatio,
-    } where {ABC<:AbstractAbcIsotache},
+    } where {ABC <: AbstractAbcIsotache},
 )
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_ocr(cell, column.preconsolidation.ratio[i])
@@ -244,8 +233,8 @@ end
 function apply_preconsolidation!(
     column::ConsolidationSurcharge{
         ABC,
-        PreOverburdenPressure
-    } where {ABC<:AbstractAbcIsotache},
+        PreOverburdenPressure,
+    } where {ABC <: AbstractAbcIsotache},
 )
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_pop(cell, column.preconsolidation.pressure[i])

@@ -2,9 +2,7 @@
     column = AtlansFixtures.carbon_store_column()
 
     @testset "constructor" begin
-        @test typeof(column) == Atlans.OxidationColumn{
-            Atlans.CarbonStore
-        }
+        @test typeof(column) == Atlans.OxidationColumn{Atlans.CarbonStore}
     end
 
     @testset "surface_level" begin
@@ -15,7 +13,7 @@
         phreatic = 2.5
         oz = max(
             phreatic + column.no_oxidation_Δz,
-            Atlans.surface_level(column) - column.max_oxidation_depth
+            Atlans.surface_level(column) - column.max_oxidation_depth,
         )
         @test oz ≈ 3.0
     end
@@ -30,8 +28,6 @@
         expected_forg = [0.2, 0.2, 0.2, 0.19706930295578862]
 
         @test all(column.result .≈ expected_ox)
-        @test all(
-            c.f_organic ≈ forg for (c, forg) in zip(column.cells, expected_forg)
-        )
+        @test all(c.f_organic ≈ forg for (c, forg) in zip(column.cells, expected_forg))
     end
 end

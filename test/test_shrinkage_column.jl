@@ -3,9 +3,7 @@
     column = AtlansFixtures.shrinkage_column()
 
     @testset "constructor" begin
-        @test typeof(column) == Atlans.ShrinkageColumn{
-            Atlans.SimpleShrinkage
-        }
+        @test typeof(column) == Atlans.ShrinkageColumn{Atlans.SimpleShrinkage}
     end
 
     @testset "surface_level" begin

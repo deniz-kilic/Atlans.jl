@@ -2,7 +2,7 @@ abstract type AbstractTimeStepper end
 
 
 """
-    ExponentialTimestepper(start::Float, multiplier::T)
+	ExponentialTimestepper(start::Float, multiplier::T)
 
 Struct to discretize time steps (in days) within each stress period.
 """
@@ -34,7 +34,7 @@ end
 
 
 """
-    Clock(time::Vector{DateTime}, iteration::int, stop_time::DateTime)
+	Clock(time::Vector{DateTime}, iteration::int, stop_time::DateTime)
 
 Object to keep track of the stress periods, number of iterations and stop time of
 an Atlantis Simulation.
@@ -67,6 +67,6 @@ end
 Compute duration of forcing period from current time.
 """
 function periodduration(clock)
-    dt_milliseconds = clock.times[clock.iteration+1] - clock.times[clock.iteration]
+    dt_milliseconds = clock.times[clock.iteration + 1] - clock.times[clock.iteration]
     return Dates.value(dt_milliseconds) / (24 * 3600 * 1000)
 end

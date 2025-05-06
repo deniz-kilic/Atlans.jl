@@ -88,7 +88,7 @@ function consolidate(abc::DrainingAbcIsotache, σ′, Δt)
 
     # Thickness should not go below 0
     consolidation = min(abc.Δz, linear_strain * abc.Δz)
-    
+
     # return new state
     return DrainingAbcIsotache(
         abc.Δz - consolidation,  # new
@@ -124,7 +124,7 @@ function draining_abc_isotache_column(
 )::Vector{DrainingAbcIsotache}
     nlayer = length(Δz)
     consolidation = Vector{DrainingAbcIsotache}(undef, nlayer)
-    for i = 1:nlayer
+    for i in 1:nlayer
         cell = DrainingAbcIsotache(
             Δz[i],
             Δz_0[i],
@@ -206,7 +206,7 @@ function initialize(::Type{NullConsolidation}, _, domain, _, _)
         fill(NaN, length(z)),
         fill(NaN, length(z)),
         preconsolidation,
-        fill(0.0, length(z))
+        fill(0.0, length(z)),
     )
 end
 
@@ -215,7 +215,7 @@ end
 Reset degree of consolidation and time.
 """
 function prepare_forcingperiod!(
-    column::ConsolidationColumn{DrainingAbcIsotache,P} where {P<:Preconsolidation},
+    column::ConsolidationColumn{DrainingAbcIsotache, P} where {P <: Preconsolidation},
 )
     for (i, cell) in enumerate(column.cells)
         cell = @set cell.t = 0.0

@@ -86,7 +86,7 @@ function no_oxidation()
 
     Atlans.prepare_forcingperiod!(column, 0.0)
     Atlans.set_phreatic_difference!(column, -1.0)
-    for _ = 1:3
+    for _ in 1:3
         Atlans.advance_forcingperiod!(column, timesteps)
         Atlans.prepare_forcingperiod!(column, 0.0)
     end
@@ -131,7 +131,7 @@ Atlans.prepare_forcingperiod!(column, 0.01, 0.0, -1.0)
 Atlans.set_phreatic_difference!(column, -1.0)
 s, c, o = Atlans.advance_forcingperiod!(column, timesteps)
 #
-for _ = 1:20
+for _ in 1:20
     s, c, o = Atlans.advance_forcingperiod!(column, timesteps)
     Atlans.prepare_forcingperiod!(column, 0.01, 0.0, 0.0)
 end

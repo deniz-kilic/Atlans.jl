@@ -31,7 +31,7 @@ function init_logger(loglevel, path_log, silent)
     # https://github.com/JuliaLogging/LoggingExtras.jl/issues/46#issuecomment-803716480
     ConsoleLogger(
         IOContext(log_handle, :compact => false, :limit => false, :color => false),
-        loglevel,
+        loglevel;
         show_limited = false,
     )
 

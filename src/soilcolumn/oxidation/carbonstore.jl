@@ -16,9 +16,7 @@ end
 function CarbonStore(Δz, f_organic, f_minimum_organic, ρb, α)
     m_organic = mass_organic(f_organic, ρb, Δz)
     m_mineral = mass_mineral(f_organic, ρb, Δz)
-    return CarbonStore(
-        Δz, f_organic, f_minimum_organic, m_organic, m_mineral, α, α, NaN
-    )
+    return CarbonStore(Δz, f_organic, f_minimum_organic, m_organic, m_mineral, α, α, NaN)
 end
 
 
@@ -127,12 +125,5 @@ function initialize(::Type{NullOxidation}, domain, _, _)
     for i in 1:length(domain.Δz)
         push!(cells, NullOxidation())
     end
-    return OxidationColumn(
-        cells,
-        domain.z,
-        domain.Δz,
-        fill(0.0, domain.n),
-        NaN,
-        NaN
-    )
+    return OxidationColumn(cells, domain.z, domain.Δz, fill(0.0, domain.n), NaN, NaN)
 end

@@ -5,7 +5,7 @@ Empirical relation between the decay rate of organic soils and air temperature i
 Celsius from Hendriks and Vermeulen (1997). Relation is valid between 0° and 19.5°
 Celsius.
 """
-function relative_oxidation_rate(T::Float, Tref::Float=12.267464)
+function relative_oxidation_rate(T::Float, Tref::Float = 12.267464)
     krel = 0.264ℯ^(0.127T) / 0.264ℯ^(0.127Tref)
     return krel
 end

@@ -9,7 +9,7 @@ struct OverConsolidationRatio <: Preconsolidation
     ratio::Vector{Float}
 end
 
-struct ConsolidationColumn{C,P} <: AbstractConsolidationColumn
+struct ConsolidationColumn{C, P} <: AbstractConsolidationColumn
     cells::Vector{C}
     z::Vector{Float}  # cell center
     Δz::Vector{Float}  # cell height
@@ -34,7 +34,7 @@ function ConsolidationColumn(cells, z, Δz, preconsolidation)
     )
 end
 
-NullConsolidationColumn = ConsolidationColumn{NullConsolidation,OverConsolidationRatio}
+NullConsolidationColumn = ConsolidationColumn{NullConsolidation, OverConsolidationRatio}
 apply_preconsolidation!(::NullConsolidationColumn) = nothing
 total_stress!(::NullConsolidationColumn, _) = nothing
 effective_stress!(::NullConsolidationColumn) = nothing
@@ -48,7 +48,7 @@ function apply_preconsolidation!(
     column::ConsolidationColumn{
         ABC,
         OverConsolidationRatio,
-    } where {ABC<:AbstractAbcIsotache},
+    } where {ABC <: AbstractAbcIsotache},
 )
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_ocr(cell, column.preconsolidation.ratio[i])
@@ -60,8 +60,8 @@ end
 function apply_preconsolidation!(
     column::ConsolidationColumn{
         ABC,
-        PreOverburdenPressure
-    } where {ABC<:AbstractAbcIsotache},
+        PreOverburdenPressure,
+    } where {ABC <: AbstractAbcIsotache},
 )
     for (i, cell) in enumerate(column.cells)
         column.cells[i] = set_τ0_pop(cell, column.preconsolidation.pressure[i])
@@ -96,7 +96,7 @@ end
 """
 Consolidation reduces pore space, pushes out the water.
 """
-function compress_γ_wet(cell::C where {C<:ConsolidationProcess}, consolidation::Float)
+function compress_γ_wet(cell::C where {C <: ConsolidationProcess}, consolidation::Float)
     old_Δz = cell.Δz + consolidation
     return (cell.γ_wet * old_Δz - consolidation * γ_water) / cell.Δz
 end
@@ -104,7 +104,7 @@ end
 """
 Consolidation reduces pore space, pushes out the air.
 """
-function compress_γ_dry(cell::C where {C<:ConsolidationProcess}, consolidation::Float)
+function compress_γ_dry(cell::C where {C <: ConsolidationProcess}, consolidation::Float)
     old_Δz = cell.Δz + consolidation
     return (cell.γ_dry * old_Δz) / cell.Δz
 end
@@ -112,7 +112,7 @@ end
 """
 Terzaghi, degree of consolidation
 """
-function U(cell::C where {C<:ConsolidationProcess}, t::Float)
+function U(cell::C where {C <: ConsolidationProcess}, t::Float)
     t_factor = (cell.c_v * t) / (cell.Δz_0 * cell.c_d)^2
     t_pow3 = t_factor^3
     return (t_pow3 / (t_pow3 + 0.5))^(1.0 / 6.0)
@@ -169,7 +169,7 @@ Compute effective stress for entire column
 """
 function effective_stress!(column::AbstractConsolidationColumn)
     @. column.σ′ = column.σ - column.p
-    column.σ′[column.σ′.<0.0] .= 0
+    column.σ′[column.σ′ .< 0.0] .= 0
     return
 end
 
@@ -199,8 +199,11 @@ function consolidate!(column::ConsolidationColumn, phreatic_level, Δt)
     end
 end
 
-function synchronize_z!(column::ConsolidationColumn{C}, Δz) where {C<:ConsolidationProcess}
-    for i = 1:length(column.cells)
+function synchronize_z!(
+    column::ConsolidationColumn{C},
+    Δz,
+) where {C <: ConsolidationProcess}
+    for i in 1:length(column.cells)
         cell = column.cells[i]
         newcell = @set cell.Δz = Δz[i]
         column.cells[i] = newcell
@@ -211,8 +214,8 @@ end
 function update_γ!(
     column::ConsolidationColumn{C},
     shrinkage,
-) where {C<:ConsolidationProcess}
-    for i = 1:length(column.cells)
+) where {C <: ConsolidationProcess}
+    for i in 1:length(column.cells)
         cell = column.cells[i]
         γ_wet = compress_γ_wet(cell, shrinkage[i] + cell.consolidation)
         γ_dry = compress_γ_dry(cell, shrinkage[i] + cell.consolidation)

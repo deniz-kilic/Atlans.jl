@@ -1,7 +1,7 @@
 const NullColumn = Union{
-    ConsolidationColumn{NullConsolidation,OverConsolidationRatio},
+    ConsolidationColumn{NullConsolidation, OverConsolidationRatio},
     OxidationColumn{NullOxidation},
-    ShrinkageColumn{NullShrinkage}
+    ShrinkageColumn{NullShrinkage},
 }
 
 
@@ -62,7 +62,7 @@ end
 
 
 function cellsplit!(
-    column::Union{ConsolidationColumn,OxidationColumn,ShrinkageColumn},
+    column::Union{ConsolidationColumn, OxidationColumn, ShrinkageColumn},
     index,
     newlength,
     lowerΔz,
@@ -74,7 +74,7 @@ function cellsplit!(
         upper = @set cell.Δz = upperΔz
         lower = @set cell.Δz = lowerΔz
         insert!(column.cells, index, lower)
-        column.cells[index+1] = upper
+        column.cells[index + 1] = upper
     end
     return
 end
@@ -119,7 +119,7 @@ function cellsplit!(
         )
 
         insert!(column.cells, index, lower)
-        column.cells[index+1] = upper
+        column.cells[index + 1] = upper
     end
     return
 end
@@ -128,7 +128,7 @@ end
 function zsplit!(Δz, index, newlength, lowerΔz, upperΔz)
     if shouldsplit(Δz, newlength)
         insert!(Δz, index, lowerΔz)
-        Δz[index+1] = upperΔz
+        Δz[index + 1] = upperΔz
     end
     return
 end

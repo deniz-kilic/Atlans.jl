@@ -23,7 +23,7 @@ function InterpolatedGroundwater(
         z,
         Δz,
         phreatic_level,
-        aquifer_head,
+        aquifer_head;
         dry = fill(false, n),
         ϕ = fill(NaN, n),
         p = fill(NaN, n),

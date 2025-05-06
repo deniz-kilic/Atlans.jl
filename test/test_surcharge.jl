@@ -1,7 +1,7 @@
 @testset "Surcharge" begin
     Δzmax = 0.25
     I = CartesianIndex(1, 1)
-    
+
     function get_surcharge_forcing()
         model = AtlansFixtures.testing_model()
         f = AtlansFixtures.test_forcings()
@@ -14,7 +14,7 @@
         testcol_type == col_type
     end
 
-    @testset "prepare_domain" begin    
+    @testset "prepare_domain" begin
         domain = Atlans.prepare_domain(0.5, 2, Δzmax)
         @test domain.n == 2
         @test all(domain.Δz .== Δzmax)
@@ -50,13 +50,13 @@
         @test all(z .== surcol.shrinkage.z)
         @test all(Δz .== surcol.shrinkage.Δz)
     end
-    
+
     @testset "prepare_surcharge_column_all_processes" begin
         col = AtlansFixtures.soil_column_hg_abc_cs_shr()
         f = get_surcharge_forcing()
 
         surcol = Atlans.prepare_surcharge_column(f, col, I)
-        
+
         surcol_preconsolidation_type = typeof(surcol.consolidation.preconsolidation)
         col_preconsolidation_type = typeof(col.consolidation.preconsolidation)
 

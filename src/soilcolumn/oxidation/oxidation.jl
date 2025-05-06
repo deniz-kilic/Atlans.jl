@@ -19,7 +19,7 @@ function oxidation_level(
     phreatic_level,
     deep_subsidence,
     phreatic_change,
-) where {O<:OxidationProcess}
+) where {O <: OxidationProcess}
     oxidation_z = max(
         surface_level - deep_subsidence - column.max_oxidation_depth,
         phreatic_level + phreatic_change + column.no_oxidation_Δz,
@@ -32,10 +32,10 @@ function oxidate!(
     column::OxidationColumn{O},
     phreatic_level::Float,
     Δt::Float,
-) where {O<:OxidationProcess}
+) where {O <: OxidationProcess}
     oxidation_z = max( # Doesn't matter if oxidation_z is above surface_level of column
         phreatic_level + column.no_oxidation_Δz,
-        surface_level(column) - column.max_oxidation_depth
+        surface_level(column) - column.max_oxidation_depth,
     )
     column.result .= 0.0
     for index in reverse(1:length(column.cells))
@@ -52,8 +52,8 @@ function oxidate!(
 end
 
 
-function synchronize_z!(column::OxidationColumn{O}, Δz) where {O<:OxidationProcess}
-    for i = 1:length(column.cells)
+function synchronize_z!(column::OxidationColumn{O}, Δz) where {O <: OxidationProcess}
+    for i in 1:length(column.cells)
         cell = column.cells[i]
         newcell = @set cell.Δz = Δz[i]
         column.cells[i] = newcell

@@ -1,5 +1,5 @@
 @testset "Forcings" begin
-    
+
     test_subsidence = [0.05 0.07 0.02; 0.04 0.03 0.05]
 
     @testset "stage indexation" begin
@@ -88,11 +88,11 @@
 
     @testset "Surcharge profile" begin
         model = AtlansFixtures.testing_model()
-        forcings = Atlans.Forcings(
-            surcharge=Atlans.Surcharge(
+        forcings = Atlans.Forcings(;
+            surcharge = Atlans.Surcharge(
                 AtlansFixtures.surcharge_profiles_netcdf(),
-                AtlansFixtures.params_table()
-            )
+                AtlansFixtures.params_table(),
+            ),
         )
 
         f = Atlans.load_forcing!(forcings, :surcharge, DateTime("2020-01-01"), model)

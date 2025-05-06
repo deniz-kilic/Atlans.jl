@@ -28,7 +28,7 @@ function shrinkage_level(
     column::ShrinkageColumn{S},
     phreatic_level,
     phreatic_change,
-) where {S<:ShrinkageProcess}
+) where {S <: ShrinkageProcess}
     shrinkage_z = phreatic_level + phreatic_change + column.no_shrinkage_Δz
     return shrinkage_z
 end
@@ -38,7 +38,7 @@ function shrink!(
     column::ShrinkageColumn{S},
     phreatic_level::Float,
     Δt::Float,
-) where {S<:ShrinkageProcess}
+) where {S <: ShrinkageProcess}
     shrinkage_z = phreatic_level + column.no_shrinkage_Δz # Doesn't matter is this is above surface level
     column.result .= 0.0
     for index in reverse(1:length(column.cells))
@@ -55,8 +55,8 @@ function shrink!(
 end
 
 
-function synchronize_z!(column::ShrinkageColumn{S}, Δz) where {S<:ShrinkageProcess}
-    for i = 1:length(column.cells)
+function synchronize_z!(column::ShrinkageColumn{S}, Δz) where {S <: ShrinkageProcess}
+    for i in 1:length(column.cells)
         cell = column.cells[i]
         newcell = @set cell.Δz = Δz[i]
         column.cells[i] = newcell
@@ -83,13 +83,8 @@ function initialize(::Type{SimpleShrinkage}, domain, subsoil, I)
         push!(cells, cell)
     end
 
-    column = ShrinkageColumn(
-        cells,
-        domain.z,
-        domain.Δz,
-        fill(0.0, domain.n),
-        no_shrinkage_Δz,
-    )
+    column =
+        ShrinkageColumn(cells, domain.z, domain.Δz, fill(0.0, domain.n), no_shrinkage_Δz)
     return column
 end
 
@@ -104,11 +99,5 @@ function initialize(::Type{NullShrinkage}, domain, _, _)
     for i in 1:length(domain.Δz)
         push!(cells, NullShrinkage())
     end
-    return ShrinkageColumn(
-        cells,
-        domain.z,
-        domain.Δz,
-        fill(0.0, domain.n),
-        NaN
-    )
+    return ShrinkageColumn(cells, domain.z, domain.Δz, fill(0.0, domain.n), NaN)
 end

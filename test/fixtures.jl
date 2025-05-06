@@ -72,9 +72,7 @@ function draining_abc_isotache_column()
     result = fill(NaN, 4)
     preconsolidation = Atlans.OverConsolidationRatio(fill(2.15, 4))
 
-    return Atlans.ConsolidationColumn(
-        cells, z, Δz, σ, σ′, p, preconsolidation, result
-    )
+    return Atlans.ConsolidationColumn(cells, z, Δz, σ, σ′, p, preconsolidation, result)
 end
 
 
@@ -133,15 +131,27 @@ function soil_column_hg_abc_cs_shr()
     )
 
     oc = Atlans.OxidationColumn(
-        fill(carbon_store_cell(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
+        fill(carbon_store_cell(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        1.0,
+        0.0,
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(shrinkage_cell(), ncells), z, Δz, fill(0.0, ncells), 0.2
+        fill(shrinkage_cell(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        0.2,
     )
 
     gw = Atlans.HydrostaticGroundwater(
-        z, Atlans.Phreatic(3.0), fill(false, ncells), fill(NaN, ncells)
+        z,
+        Atlans.Phreatic(3.0),
+        fill(false, ncells),
+        fill(NaN, ncells),
     )
 
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc, shr)
@@ -169,15 +179,27 @@ function soil_column_hg_abc_nullox_nullshr()
     )
 
     oc = Atlans.OxidationColumn(
-        fill(Atlans.NullOxidation(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
+        fill(Atlans.NullOxidation(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        1.0,
+        0.0,
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(Atlans.NullShrinkage(), ncells), z, Δz, fill(0.0, ncells), 0.2
+        fill(Atlans.NullShrinkage(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        0.2,
     )
 
     gw = Atlans.HydrostaticGroundwater(
-        z, Atlans.Phreatic(3.0), fill(false, ncells), fill(NaN, ncells)
+        z,
+        Atlans.Phreatic(3.0),
+        fill(false, ncells),
+        fill(NaN, ncells),
     )
 
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc, shr)
@@ -205,15 +227,27 @@ function soil_column_hg_nullcons_cs_nullshr()
     )
 
     oc = Atlans.OxidationColumn(
-        fill(carbon_store_cell(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
+        fill(carbon_store_cell(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        1.0,
+        0.0,
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(Atlans.NullShrinkage(), ncells), z, Δz, fill(0.0, ncells), 0.2
+        fill(Atlans.NullShrinkage(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        0.2,
     )
 
     gw = Atlans.HydrostaticGroundwater(
-        z, Atlans.Phreatic(3.0), fill(false, ncells), fill(NaN, ncells)
+        z,
+        Atlans.Phreatic(3.0),
+        fill(false, ncells),
+        fill(NaN, ncells),
     )
 
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc, shr)
@@ -241,15 +275,27 @@ function soil_column_hg_nullcons_nullox_shr()
     )
 
     oc = Atlans.OxidationColumn(
-        fill(Atlans.NullOxidation(), ncells), z, Δz, fill(0.0, ncells), 1.0, 0.0
+        fill(Atlans.NullOxidation(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        1.0,
+        0.0,
     )
 
     shr = Atlans.ShrinkageColumn(
-        fill(shrinkage_cell(), ncells), z, Δz, fill(0.0, ncells), 0.2
+        fill(shrinkage_cell(), ncells),
+        z,
+        Δz,
+        fill(0.0, ncells),
+        0.2,
     )
 
     gw = Atlans.HydrostaticGroundwater(
-        z, Atlans.Phreatic(3.0), fill(false, ncells), fill(NaN, ncells)
+        z,
+        Atlans.Phreatic(3.0),
+        fill(false, ncells),
+        fill(NaN, ncells),
     )
 
     return Atlans.SoilColumn(0.0, 0.0, 0.0, z, Δz, gw, cc, oc, shr)
@@ -261,8 +307,8 @@ function create_xcoord!(ds, x)
         ds,
         "x",
         x,
-        ("x",),
-        attrib=["standard_name" => "projection_x_coordinate", "axis" => "X"],
+        ("x",);
+        attrib = ["standard_name" => "projection_x_coordinate", "axis" => "X"],
     )
 end
 
@@ -272,8 +318,8 @@ function create_ycoord!(ds, y)
         ds,
         "y",
         y,
-        ("y",),
-        attrib=["standard_name" => "projection_y_coordinate", "axis" => "Y"],
+        ("y",);
+        attrib = ["standard_name" => "projection_y_coordinate", "axis" => "Y"],
     )
 end
 
@@ -365,25 +411,25 @@ end
 
 function params_table()
     filename = tempname()
-    df = DataFrame(
-        geology_name=["NAWA"],
-        lithology_name=["sand"],
-        geology=[1],
-        lithology=[2],
-        gamma_wet=[15000.0],
-        gamma_dry=[10000.0],
-        drainage_factor=[2.0],
-        c_v=[0.006912],
-        a=[0.01737],
-        b=[0.1303],
-        c=[0.008686],
-        ocr=[2.15],
-        mass_fraction_organic=[0.2],
-        minimal_mass_fraction_organic=[0.05],
-        oxidation_rate=[0.001],
-        rho_bulk=[1000.0],
-        mass_fraction_lutum=[0.7],
-        shrinkage_degree=[1.4]
+    df = DataFrame(;
+        geology_name = ["NAWA"],
+        lithology_name = ["sand"],
+        geology = [1],
+        lithology = [2],
+        gamma_wet = [15000.0],
+        gamma_dry = [10000.0],
+        drainage_factor = [2.0],
+        c_v = [0.006912],
+        a = [0.01737],
+        b = [0.1303],
+        c = [0.008686],
+        ocr = [2.15],
+        mass_fraction_organic = [0.2],
+        minimal_mass_fraction_organic = [0.05],
+        oxidation_rate = [0.001],
+        rho_bulk = [1000.0],
+        mass_fraction_lutum = [0.7],
+        shrinkage_degree = [1.4],
     )
     CSV.write(filename, df)
     return filename
@@ -392,9 +438,9 @@ end
 
 function temperature_table()
     filename = tempname()
-    df = DataFrame(
-        times=DateTime.(["2020-01-01", "2020-02-01"]),
-        temperature=[14.0, 15.0]
+    df = DataFrame(;
+        times = DateTime.(["2020-01-01", "2020-02-01"]),
+        temperature = [14.0, 15.0],
     )
     CSV.write(filename, df)
     return filename
@@ -451,14 +497,14 @@ function test_forcings()
     t = Atlans.Temperature(AtlansFixtures.temperature_table())
     sur = Atlans.Surcharge(
         AtlansFixtures.simple_surcharge_netcdf(),
-        AtlansFixtures.params_table()
+        AtlansFixtures.params_table(),
     )
-    return Atlans.Forcings(
-        stage_change=sc,
-        stage_indexation=si,
-        deep_subsidence=ds,
-        temperature=t,
-        surcharge=sur
+    return Atlans.Forcings(;
+        stage_change = sc,
+        stage_indexation = si,
+        deep_subsidence = ds,
+        temperature = t,
+        surcharge = sur,
     )
 end
 

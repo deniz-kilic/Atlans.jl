@@ -31,17 +31,17 @@ model = Atlans.Model(
     Atlans.NullShrinkage,
     Atlans.AdaptiveCellsize(0.25, 0.01),
     Atlans.ExponentialTimeStepper(1.0, 2),
-    subsoil
+    subsoil,
 )
 
-forcing = Atlans.Forcings(surcharge=Atlans.Surcharge(path_surcharge, path_table))
+forcing = Atlans.Forcings(; surcharge = Atlans.Surcharge(path_surcharge, path_table))
 
 simulation = Atlans.Simulation(
     model,
     joinpath(workdir, "testrun.nc"),
-    DateTime("2080-01-01"),
-    forcings=forcing,
-    additional_times=[DateTime("2023-01-01")]
+    DateTime("2080-01-01");
+    forcings = forcing,
+    additional_times = [DateTime("2023-01-01")],
 )
 
 Atlans.run!(simulation)

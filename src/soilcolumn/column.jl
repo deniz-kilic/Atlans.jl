@@ -5,14 +5,14 @@ end
 """
 x, y, z are all midpoints.
 """
-struct SoilColumn{G,C,P,O,S}
+struct SoilColumn{G, C, P, O, S}
     base::Base
     x::Float
     y::Float
     z::Vector{Float}
     Δz::Vector{Float}
     groundwater::G
-    consolidation::ConsolidationColumn{C,P}
+    consolidation::ConsolidationColumn{C, P}
     oxidation::OxidationColumn{O}
     shrinkage::ShrinkageColumn{S}
     subsidence::Vector{Float}
@@ -127,8 +127,8 @@ before applying the changes to compute the pre-loading effective stress.
 function prepare_forcingperiod!(
     column::SoilColumn,
     split_tolerance,
-    deep_subsidence=0.0,
-    phreatic_change=0.0,
+    deep_subsidence = 0.0,
+    phreatic_change = 0.0,
 )
     surface = surface_level(column)
     phreatic = phreatic_level(column.groundwater)
@@ -146,11 +146,7 @@ function prepare_forcingperiod!(
     end
 
     # Now split for shrinkage process
-    shrinkage_z = shrinkage_level(
-        column.shrinkage,
-        phreatic,
-        phreatic_change,
-    )
+    shrinkage_z = shrinkage_level(column.shrinkage, phreatic, phreatic_change)
     if !isnothing(shrinkage_z)
         split!(column, shrinkage_z, split_tolerance)
     end
@@ -178,16 +174,14 @@ Apply consolidation, oxidation and shrinkage to thickness
 """
 function subside!(column::SoilColumn)
     # Δz should not become negative
-    column.subsidence .= min.(
-        (
-            column.consolidation.result
-            .+
-            column.oxidation.result
-            .+
-            column.shrinkage.result
-        ),
-        column.Δz,
-    )
+    column.subsidence .=
+        min.(
+            (
+                column.consolidation.result .+ column.oxidation.result .+
+                column.shrinkage.result
+            ),
+            column.Δz,
+        )
     column.Δz .-= column.subsidence
     synchronize_z!(column.groundwater, column.Δz)
     synchronize_z!(column.consolidation, column.Δz)
@@ -257,5 +251,5 @@ end
 # Output
 output(oc::OxidationColumn) = sum(cell.oxidation for cell in oc.cells)
 output(cc::ConsolidationColumn) = sum(cell.consolidation for cell in cc.cells)
-output(gw::GW where {GW<:GroundwaterColumn}) = phreatic_level(gw)
+output(gw::GW where {GW <: GroundwaterColumn}) = phreatic_level(gw)
 output(sc::ShrinkageColumn) = sum(cell.shrinkage for cell in sc.cells)

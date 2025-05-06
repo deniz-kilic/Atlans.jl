@@ -1,4 +1,4 @@
-function pore_pressure!(gw::GW where {GW<:GroundwaterColumn})
+function pore_pressure!(gw::GW where {GW <: GroundwaterColumn})
     @. gw.p = gw.ϕ - (gw.z + 0.5 * gw.Δz)
     @. gw.dry = gw.p < 0.0
     gw.p[gw.dry] .= 0.0
@@ -14,4 +14,4 @@ end
 #    hline!([ytop], color = :black, label = "") # top
 #end
 
-synchronize_z!(_::GW where {GW<:GroundwaterColumn}, _) = nothing
+synchronize_z!(_::GW where {GW <: GroundwaterColumn}, _) = nothing

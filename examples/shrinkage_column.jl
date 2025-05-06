@@ -19,9 +19,7 @@ function consolidation_column(z, Δz)
     preconsolidation = Atlans.OverConsolidationRatio(fill(2.15, length(z)))
     result = fill(0.0, length(z))
 
-    return Atlans.ConsolidationColumn(
-        cells, z, Δz, σ, σ′, p, preconsolidation, result
-    )
+    return Atlans.ConsolidationColumn(cells, z, Δz, σ, σ′, p, preconsolidation, result)
 end
 
 

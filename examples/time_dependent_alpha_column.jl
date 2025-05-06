@@ -8,10 +8,10 @@ using Atlans
 function lookup_table(path)
     df = CSV.read(
         path,
-        DataFrame,
-        delim="\t",
-        stringtype=String,
-        types=Atlans.column_type
+        DataFrame;
+        delim = "\t",
+        stringtype = String,
+        types = Atlans.column_type,
     )
     newnames = [
         :geology,
@@ -25,7 +25,7 @@ function lookup_table(path)
         :b,
         :c,
         :oxidation_rate,
-        :minimal_mass_fraction_organic
+        :minimal_mass_fraction_organic,
     ]
     rename!(df, newnames)
     insertcols!(df, :shrinkage_degree => 1.0)
@@ -41,8 +41,8 @@ function create_xcoord!(ds, x)
         ds,
         "x",
         x,
-        ("x",),
-        attrib=["standard_name" => "projection_x_coordinate", "axis" => "X"],
+        ("x",);
+        attrib = ["standard_name" => "projection_x_coordinate", "axis" => "X"],
     )
 end
 
@@ -52,19 +52,14 @@ function create_ycoord!(ds, y)
         ds,
         "y",
         y,
-        ("y",),
-        attrib=["standard_name" => "projection_y_coordinate", "axis" => "Y"],
+        ("y",);
+        attrib = ["standard_name" => "projection_y_coordinate", "axis" => "Y"],
     )
 end
 
 
 function create_var!(ds, name, values)
-    defVar(
-        ds,
-        name,
-        values,
-        ("layer",),
-    )
+    defVar(ds, name, values, ("layer",))
 end
 
 
@@ -79,7 +74,11 @@ function subsoil_netcdf()
 
     create_var!(ds, "geology", reverse([1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]))
     create_var!(ds, "lithology", reverse([2, 2, 2, 1, 1, 1, 1, 1, 1, 5, 5]))
-    create_var!(ds, "thickness", reverse([0.1, 0.1, 0.1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]))
+    create_var!(
+        ds,
+        "thickness",
+        reverse([0.1, 0.1, 0.1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
+    )
 
     phreatic = defVar(ds, "phreatic_level", Float64, ("x", "y"))
     base = defVar(ds, "zbase", Float64, ("x", "y"))
@@ -155,7 +154,7 @@ end
 
 
 function duration(dates, idx)
-    dt_milliseconds = dates[idx+1] - dates[idx]
+    dt_milliseconds = dates[idx + 1] - dates[idx]
     return Dates.value(dt_milliseconds) / (24 * 3600 * 1000)
 end
 
@@ -165,28 +164,25 @@ function temperature_range()
 
     time = DateTime.(DateTime(2020):Year(1):DateTime(2040))
 
-    df = DataFrame(
-        times=time,
-        temperature=LinRange(15, 16, length(time)),
-    )
+    df = DataFrame(; times = time, temperature = LinRange(15, 16, length(time)))
     CSV.write(outputname, df)
     return outputname
 end
 
 
-function calculate_surface_in_time(path, dates, timestepper, temperature=nothing)
+function calculate_surface_in_time(path, dates, timestepper, temperature = nothing)
     column = create_column(
         Atlans.HydrostaticGroundwater,
         Atlans.NullConsolidation,
         Atlans.CarbonStore,
         Atlans.OverConsolidationRatio,
         Atlans.NullShrinkage,
-        path
+        path,
     )
 
     surfaces = Vector{Float64}()
     push!(surfaces, Atlans.surface_level(column))
-    for ii in 1:length(dates)-1
+    for ii in 1:(length(dates) - 1)
         t = dates[ii]
         dt = duration(dates, ii)
 
@@ -208,7 +204,8 @@ function calculate_surface_in_time(path, dates, timestepper, temperature=nothing
 end
 
 
-workdir = raw"c:\Users\knaake\OneDrive - Stichting Deltares\Documents\bodemdaling\atlans_test"
+workdir =
+    raw"c:\Users\knaake\OneDrive - Stichting Deltares\Documents\bodemdaling\atlans_test"
 table_path = joinpath(workdir, "parameters_ophoging.tsv")
 
 temperature = Atlans.Temperature(temperature_range())
@@ -216,24 +213,15 @@ temperature = Atlans.Temperature(temperature_range())
 timestepper = Atlans.ExponentialTimeStepper(1.0, 2)
 dates = DateTime.(DateTime(2020):Year(1):DateTime(2040))
 
-s_with_forcing = calculate_surface_in_time(
-    table_path,
-    dates,
-    timestepper,
-    temperature
-)
+s_with_forcing = calculate_surface_in_time(table_path, dates, timestepper, temperature)
 
-s_without_forcing = calculate_surface_in_time(
-    table_path,
-    dates,
-    timestepper
-)
+s_without_forcing = calculate_surface_in_time(table_path, dates, timestepper)
 
 
-df = DataFrame(
-    time=dates,
-    s_with_forcing=s_with_forcing,
-    s_without_forcing=s_without_forcing
+df = DataFrame(;
+    time = dates,
+    s_with_forcing = s_with_forcing,
+    s_without_forcing = s_without_forcing,
 )
 
 # CSV.write(joinpath(workdir, "result_surface.csv"), df)
@@ -245,6 +233,6 @@ c = create_column(
     Atlans.CarbonStore,
     Atlans.OverConsolidationRatio,
     Atlans.SimpleShrinkage,
-    table_path
+    table_path,
 )
 #

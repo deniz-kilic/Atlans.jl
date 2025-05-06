@@ -43,7 +43,7 @@
             Atlans.DrainingAbcIsotache,
             Atlans.OverConsolidationRatio,
             Atlans.CarbonStore,
-            Atlans.SimpleShrinkage
+            Atlans.SimpleShrinkage,
         }
     end
 
@@ -103,9 +103,8 @@
         # Prepare forcing period: store pre-load stress
         Atlans.prepare_forcingperiod!(column, 10.0)
         # Set a single timestep of 1 day.
-        subsidence, consolidation, oxidation, shrinkage = Atlans.advance_timestep!(
-            column, 1.0
-        )
+        subsidence, consolidation, oxidation, shrinkage =
+            Atlans.advance_timestep!(column, 1.0)
 
         @test consolidation > 0.0
         @test oxidation > 0.0
@@ -131,7 +130,10 @@
               column.oxidation.z ===
               column.groundwater.z ===
               column.shrinkage.z
-        @test column.Δz === column.consolidation.Δz === column.oxidation.Δz === column.shrinkage.Δz
+        @test column.Δz ===
+              column.consolidation.Δz ===
+              column.oxidation.Δz ===
+              column.shrinkage.Δz
     end
 
     @testset "Compute: different forcing, same output" begin

@@ -17,7 +17,7 @@
         filename = AtlansFixtures.params_table()
         df = Atlans.read_params_table(filename)
         tables = Atlans.build_lookup_tables(df)
-        @test typeof(tables) == Dict{Symbol,Dict{Tuple{Int,Int},Float64}}
+        @test typeof(tables) == Dict{Symbol, Dict{Tuple{Int, Int}, Float64}}
         @test issetequal(
             keys(tables),
             [
@@ -34,7 +34,7 @@
                 :oxidation_rate,
                 :rho_bulk,
                 :mass_fraction_lutum,
-                :shrinkage_degree
+                :shrinkage_degree,
             ],
         )
         @test tables[:a][(1, 2)] == 0.01737
@@ -48,16 +48,16 @@
         subsoil = Atlans.prepare_subsoil_data(path_nc, path_csv)
 
         @test typeof(subsoil) == Atlans.SubsoilData
-        @test typeof(subsoil.data) == Dict{Symbol,Array}
+        @test typeof(subsoil.data) == Dict{Symbol, Array}
         @test Atlans.lookup(subsoil.tables[:a], [1, 1], [2, 2]) == [0.01737, 0.01737]
 
         lithology = subsoil.data[:lithology]
-        @test typeof(lithology) == Array{Int,3}
+        @test typeof(lithology) == Array{Int, 3}
         @test size(lithology) == (4, 2, 3)
 
 
         phreatic = subsoil.data[:phreatic_level]
-        @test typeof(phreatic) == Array{Float64,2}
+        @test typeof(phreatic) == Array{Float64, 2}
     end
 
     @testset "reader" begin
@@ -69,10 +69,10 @@
         @test all(reader.times .== DateTime.(["2020-01-01", "2020-02-01"]))
 
         diff = Atlans.ncread(reader, :stage_change)
-        @test typeof(diff) == Array{Float64,3}
+        @test typeof(diff) == Array{Float64, 3}
 
         diff = Atlans.ncread(reader, :stage_change, DateTime("2020-01-01"))
-        @test typeof(diff) == Array{Float64,2}
+        @test typeof(diff) == Array{Float64, 2}
     end
 
     @testset "output_netcdf" begin
@@ -95,7 +95,7 @@
                 "subsidence",
             ],
         )
-        @test dimsize(ds["subsidence"]) == (x=2, y=3, time=0)
+        @test dimsize(ds["subsidence"]) == (x = 2, y = 3, time = 0)
     end
 
     @testset "output_writer" begin
@@ -119,8 +119,8 @@
         values = fill(-1.0, (2, 3))
         Atlans.ncwrite(writer, :phreatic_level, values, index)
 
-        @test dimsize(writer.dataset["subsidence"]) == (x=2, y=3, time=2)
-        @test dimsize(writer.dataset["phreatic_level"]) == (x=2, y=3, time=2)
+        @test dimsize(writer.dataset["subsidence"]) == (x = 2, y = 3, time = 2)
+        @test dimsize(writer.dataset["phreatic_level"]) == (x = 2, y = 3, time = 2)
     end
 
     @testset "stage change" begin
