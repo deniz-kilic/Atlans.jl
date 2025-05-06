@@ -18,6 +18,7 @@ jobs:
         version:
           - "lts"
           - "1"
+          - "nightly"
         os:
           - ubuntu-latest
           - macOS-latest
