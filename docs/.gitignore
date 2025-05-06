@@ -1,6 +1,1 @@
-/.quarto/
-/_site/
-/site_libs/
-/build/
-*.html
 !Manifest.toml
