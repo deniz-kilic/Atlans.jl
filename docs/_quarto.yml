@@ -1,5 +1,7 @@
 project:
   type: website
+  pre-render:
+    - julia --project make.jl
 
 website:
   title: "Atlantis Subsidence (Atlans)"
