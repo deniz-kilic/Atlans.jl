@@ -8,11 +8,19 @@ First download and install the [current stable release of Julia](https://juliala
 If you are new to Julia, it may be a good idea to check out the [Getting Started section of the Julia Manual](https://docs.julialang.org/en/v1/manual/getting-started/). Links to other learning resources can be found at [julialang.org/learning](https://julialang.org/learning/).
 
 ### Installing as Julia package
-Currently, Atlantis is not available from the Julia package registry (is planned). Therefore, it must be installed directly from the Atlans.jl repository. This can be done from Julia's package manager within your project environment. To access the package manager, press `]` in the Julia REPL (press backspace or ^C to get back to the REPL).
-
-Go to the package manager and install Atlantis by:
+In the Julia REPL:
 ```julia-repl
-pkg> add https://gitlab.com/deltares/subsidence/atlans.jl.git
+julia> using Pkg; Pkg.add("Atlans")
+```
+
+or, enter the package manager by pressing `]` and type:
+```julia-repl
+pkg> add Atlans
+```
+
+To install the latest development version from the GitHub repository directly, enter the package manager and use:
+```julia-repl
+pkg> add https://github.com/Deltares-research/Atlans.jl.git
 ```
 
 Check installation by:

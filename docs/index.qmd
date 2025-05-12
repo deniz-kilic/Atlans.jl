@@ -4,6 +4,20 @@ title: "Atlantis Subsidence (Atlans)"
 
 Atlantis is a modelling environment which is implemented in the [Julia programming language](https://julialang.org/). The source code can found in the [Atlans repository](https://gitlab.com/deltares/subsidence/atlans.jl.git).
 
+# Installation
+
+Atlans is available in the general package registry. Installation in the Julia REPL:
+```julia-repl
+julia> using Pkg; Pkg.add("Atlans")
+```
+
+or, from the package manager (press `]` in the Julia REPL to enter):
+```julia-repl
+pkg> add Atlans
+```
+
+# Background
+
 Atlantis is a tool that can be used to create regional and national scale predictions of soil subsidence based on 3D voxelmodels of the subsurface buildup and scenarios of for example phreatic groundwater level management. 
 
 ![Flow diagram of the main workflow of Atlantis (*= impacted by climate change).](../images/flow_diagram.png){#fig-workflow width=560}
