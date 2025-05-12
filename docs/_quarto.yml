@@ -7,6 +7,8 @@ website:
   title: "Atlantis Subsidence (Atlans)"
   page-navigation: true
   navbar:
+    search: true
+    pinned: true
     left:
       - text: "Atlantis"
         file: core/index.qmd
@@ -16,6 +18,20 @@ website:
         file: usage/index.qmd
       - text: "API reference"
         file: build/index.md
+    right:
+      - icon: github
+        menu:
+          - text: Source Code
+            url:  https://github.com/Deltares-research/Atlans.jl
+          - text: Report an Issue
+            url:  https://github.com/Deltares-research/Atlans.jl/issues/new/choose
+      - href: https://www.deltares.nl
+        text: |
+          <span class="logo-container">
+            <img src="_static/images/deltares-blue.svg" class="footer-image-light" height="30">
+            <img src="_static/images/deltares-white.svg" class="footer-image-dark" height="30">
+          </span>
+        aria-label: Deltares logo
   
   sidebar:
     - title: "Atlantis"
@@ -36,9 +52,17 @@ website:
 
 format:
   html:
-    theme: cosmo
-    css: styles.css
+    theme:
+      light: [cosmo, _static/theme-light.scss]
+      dark: [cosmo, _static/theme-dark.scss]
+    css: _static/styles.css
+    theme-toggle: true
     toc: true
+    toc-expand: true
+    grid:
+      content-mode: standard
+      sidebar-width: 300px
+      body-width: 1000px
 
 bibliography: references.bib
 

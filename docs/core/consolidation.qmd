@@ -68,4 +68,4 @@ $$
 
 where $T$ is the non-dimensional consolidation time, $c_v$ the consolidation coefficient and $L$ the length scale of two-sided drainage. Presently, $L$ is set equal to the thickness of a voxel (which tends to decrease with time).
 
-![Change of equilibrium (drained) pore pressure due to a drop of the water table. (a) Aquifer pressure (and head) follows the water table drop. (b) Aquifer pressure (and head) remain stable.](../images/equilibrium_change.png){#fig-equilbrium-change width=500}
+![Change of equilibrium (drained) pore pressure due to a drop of the water table. (a) Aquifer pressure (and head) follows the water table drop. (b) Aquifer pressure (and head) remain stable.](../_static/images/equilibrium_change.png){#fig-equilbrium-change width=500}

@@ -20,7 +20,7 @@ pkg> add Atlans
 
 Atlantis is a tool that can be used to create regional and national scale predictions of soil subsidence based on 3D voxelmodels of the subsurface buildup and scenarios of for example phreatic groundwater level management. 
 
-![Flow diagram of the main workflow of Atlantis (*= impacted by climate change).](../images/flow_diagram.png){#fig-workflow width=560}
+![Flow diagram of the main workflow of Atlantis (*= impacted by climate change).](./_static/images/flow_diagram.png){#fig-workflow width=560}
 
 Subsidence is calculated per 1D subsurface column as the sum of a combination of three processes: [consolidation](core/consolidation.qmd), [oxidation](core/oxidation.qmd) and [shrinkage](core/shrinkage.qmd). In general, Atlantis does not consider horizontal interaction between individual columns. Currently, the only horizontal interaction is the possibility to apply a periodic groundwater table lowering based on the median subsidence within a regional area (for example within weir areas).
 

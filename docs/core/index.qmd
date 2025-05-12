@@ -12,12 +12,12 @@ title: "Atlantis"
 - Explanation of a column. Only discuss the four components (gw, cons, ox, shr) briefly as this will be covered in the respective pages.
 - Current calculation methods which are supported by Atlantis and including or ignoring these in the modelling
 
-![Schematic overview of the Atlantis modelling framework. (a) representation of a single modelling cycle in a stress period. (b) Time discretization of the model in terms of stress periods and time steps. Adapted from @bootsma2020atlantis.](../images/schematic_modelling.png){#fig-schematic}
+![Schematic overview of the Atlantis modelling framework. (a) representation of a single modelling cycle in a stress period. (b) Time discretization of the model in terms of stress periods and time steps. Adapted from @bootsma2020atlantis.](../_static/images/schematic_modelling.png){#fig-schematic}
 
 # Model
 The total model area is discretized by a grid of rectangalur cells. The cell size of the grid is depending on the input data and for all cells that have .
 
-![Main components of an Atlantis subsurface model that is used for modelling simulations.](../images/components_model.png){#fig-components width=400}
+![Main components of an Atlantis subsurface model that is used for modelling simulations.](../_static/images/components_model.png){#fig-components width=400}
 
 ## Column
 
