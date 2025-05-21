@@ -4,7 +4,7 @@ title: "Data requirements"
 
 (Topics on this page)<br>
 
-- What is needed in order to run Atlantis
+- What is needed in order to run Atlans
 - Explanation of a subsurface model
 - Which layers need to be present in the input model: maybe divide over mandatory layers and layers per process
 - Structure of the model axes

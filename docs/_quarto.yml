@@ -4,7 +4,7 @@ project:
     - julia --project make.jl
 
 website:
-  title: "Atlantis Subsidence (Atlans)"
+  title: "Atlans.jl"
   page-navigation: true
   navbar:
     search: true
@@ -28,8 +28,8 @@ website:
       - href: https://www.deltares.nl
         text: |
           <span class="logo-container">
-            <img src="_static/images/deltares-blue.svg" class="footer-image-light" height="30">
-            <img src="_static/images/deltares-white.svg" class="footer-image-dark" height="30">
+            <img src="/_static/images/deltares-blue.svg" class="footer-image-light" height="30">
+            <img src="/_static/images/deltares-white.svg" class="footer-image-dark" height="30">
           </span>
         aria-label: Deltares logo
   
