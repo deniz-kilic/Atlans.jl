@@ -2,16 +2,6 @@
 title: "Atlantis"
 ---
 
-# Background
-
-`Atlans` is a tool that can be used to create regional and national scale predictions of soil subsidence based on 3D voxelmodels of the subsurface buildup and scenarios of for example phreatic groundwater level management. 
-
-![Flow diagram of the main workflow of Atlans (*= impacted by climate change).](./_static/images/flow_diagram.png){#fig-workflow width=560}
-
-Subsidence is calculated per 1D subsurface column as the sum of a combination of three processes: [consolidation](core/consolidation.qmd), [oxidation](core/oxidation.qmd) and [shrinkage](core/shrinkage.qmd). In general, `Atlans` does not consider horizontal interaction between individual columns. Currently, the only horizontal interaction is the possibility to apply a periodic groundwater table lowering based on the median subsidence within a regional area (for example within weir areas).
-
-Besides the 3D subsurface model, the predictions of subsidence heavily rely on an input groundwater table which is typically a long-term mean lowest groundwater table (MLGT; in Dutch: GLG). This groundwater table is used to determine the depths where oxidation and shrinkage processes contribute to subsidence. Furthermore, calculations of consolidation use the groundwater table to determine water- and exchange pore-pressures. The modelling concepts and equations are explained further on the [Atlantis](core/index.qmd) page and an explanation of the installation, along with examples of the usage can be found on the [Usage](usage/index.qmd) page.
-
 # Subjects to cover in this page:
 - The input model for `Atlans` is constructed from the subsurface model, groundwater table and elevation data.
 - Time dimensions is categorized in terms of stress periods and time steps (@fig-schematic b). A stress period is the time during which a constant stress is applied (for example the surface water stage in a management area or a surcharge). Within a stress period, time is discretized into individual timesteps. A stress period therefore generally consists of multiple timesteps. A complete model simulation can consist of one or multiple stress periods which may all vary in duration.
