@@ -70,14 +70,14 @@ function apply_preconsolidation!(
 end
 
 #function apply_preconsolidation!(column::ConsolidationColumn{DrainingKoppejan, OverConsolidationRatio})
-#    for (i, cell) in enumerate column.cells 
+#    for (i, cell) in enumerate column.cells
 #        column.cells[i] = set_σ′pre_ocr(cell, column.preconsolidation.ratio[i])
 #    end
 #    return
 #end
 #
 #function apply_preconsolidation!(column::ConsolidationColumn{DrainingKoppejan, PreOverburdenPressure})
-#    for (i, cell) in enumerate column.cells 
+#    for (i, cell) in enumerate column.cells
 #        column.cells[i] = set_σ′pre_pop(cell, column.preconsolidation.pressure[i])
 #    end
 #    return
@@ -137,6 +137,10 @@ function weight(phreatic_level::Float, zbot::Float, Δz::Float, γ_wet::Float, �
     return weight
 end
 
+
+"""
+Calculate if there is weight of water above the land surface level.
+"""
 function submerged_weight(column::AbstractConsolidationColumn, phreatic)
     surface = column.z[end] + 0.5 * column.Δz[end]
     return (max(0.0, phreatic - surface) * γ_water)
