@@ -8,7 +8,7 @@ using LinearAlgebra
 using DataFrames
 using NCDatasets
 using StatsBase
-using ProgressLogging
+using ProgressMeter
 using LoggingExtras
 using TerminalLoggers
 

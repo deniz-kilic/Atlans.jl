@@ -274,7 +274,7 @@ function advance_forcingperiod!(
 	surcharge = nothing,
 )
 	timesteps = create_timesteps(model.timestepper, duration)
-	@progress for (I, column) in zip(model.index, model.columns)
+	@showprogress dt=0.1 for (I, column) in zip(model.index, model.columns)
 		# Compute pre-loading stresses, set t to 0, etc.
 		if isnothing(deep_subsidence)
 			column_subsidence = 0.0
