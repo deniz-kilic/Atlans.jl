@@ -1,7 +1,7 @@
 name = "Atlans"
 uuid = "1fcd1f08-fdb6-477a-a0aa-3f8f0df25597"
 authors = ["Bas Knaake <bas.knaake@deltares.nl", "Huite Bootsma <huitebootsma@gmail.com>"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 CFTime = "179af706-886a-5703-950a-314cd64e0468"
